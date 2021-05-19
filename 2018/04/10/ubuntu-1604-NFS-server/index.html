@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Server,Configuration," />
+
+
+<meta name="description" content="NFS 即网络文件系统（Network File System），是一种分布式文件系统协议，该协议允许客户端主机可以像访问本地文件系统一样通过网络访问服务器端文件，即可以将远程服务器文件直接 mount（挂载）到本地的文件目录结构中进行访问。  一、软件安装服务器端需要安装 nfs-kernel-server 软件包：$ sudo apt-get update$ sudo apt-get ins">
+<meta name="keywords" content="Linux,Admin,Server,Configuration">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu 16.04 搭建 NFS 文件共享服务器">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/04/10/ubuntu-1604-NFS-server/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="NFS 即网络文件系统（Network File System），是一种分布式文件系统协议，该协议允许客户端主机可以像访问本地文件系统一样通过网络访问服务器端文件，即可以将远程服务器文件直接 mount（挂载）到本地的文件目录结构中进行访问。  一、软件安装服务器端需要安装 nfs-kernel-server 软件包：$ sudo apt-get update$ sudo apt-get ins">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a3eb2a355b1edbcc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-1cd19722ebcdfca3.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-abd2ad3656c2264a.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-15fd0ec1ad75efc9.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-b2b1af4b6061e532.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-b54b56f1ddd88963.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-04-11T13:26:16.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ubuntu 16.04 搭建 NFS 文件共享服务器">
+<meta name="twitter:description" content="NFS 即网络文件系统（Network File System），是一种分布式文件系统协议，该协议允许客户端主机可以像访问本地文件系统一样通过网络访问服务器端文件，即可以将远程服务器文件直接 mount（挂载）到本地的文件目录结构中进行访问。  一、软件安装服务器端需要安装 nfs-kernel-server 软件包：$ sudo apt-get update$ sudo apt-get ins">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-a3eb2a355b1edbcc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/04/10/ubuntu-1604-NFS-server/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Ubuntu 16.04 搭建 NFS 文件共享服务器 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/04/10/ubuntu-1604-NFS-server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Ubuntu 16.04 搭建 NFS 文件共享服务器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-10T00:00:00+08:00">2018-04-10</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/04/10/ubuntu-1604-NFS-server/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/04/10/ubuntu-1604-NFS-server/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/04/10/ubuntu-1604-NFS-server/" class="leancloud_visitors" data-flag-title="Ubuntu 16.04 搭建 NFS 文件共享服务器">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:06</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Network_File_System" target="_blank" rel="noopener"><strong>NFS</strong></a> 即<strong>网络文件系统</strong>（Network File System），是一种<strong>分布式</strong>文件系统协议，该协议允许客户端主机可以像访问本地文件系统一样通过网络访问服务器端文件，即可以将远程服务器文件直接 <strong>mount</strong>（<strong>挂载</strong>）到本地的文件目录结构中进行访问。</p>
+</blockquote>
+<h4 id="一、软件安装"><a href="#一、软件安装" class="headerlink" title="一、软件安装"></a>一、软件安装</h4><p>服务器端需要安装 <strong>nfs-kernel-server</strong> 软件包：<br><code>$ sudo apt-get update</code><br><code>$ sudo apt-get install nfs-kernel-server</code></p>
+<h4 id="二、服务器配置"><a href="#二、服务器配置" class="headerlink" title="二、服务器配置"></a>二、服务器配置</h4><p>默认情况下，NFS 服务器上定义了某个共享目录，则该目录及其子目录下的所有文件都可被访问。<br>出于对安全的考虑，客户端任何需要<strong>超级用户</strong>（即 <strong>root</strong> 用户，UID=0 &amp; GID=0）权限的文件操作都默认映射到 UID=65534 和 GID=65534 的用户，即 Ubuntu 系统中的 nobody:nogroup。<br>例如客户端使用 root 权限在挂载的共享目录中创建文件时，该文件的<strong>属主</strong>和<strong>属组</strong>自动变为 <strong>nobody:nogroup</strong>，而非 <strong>root:root</strong> 。</p>
+<h5 id="1-在服务器端创建共享目录"><a href="#1-在服务器端创建共享目录" class="headerlink" title="1. 在服务器端创建共享目录"></a>1. 在服务器端创建共享目录</h5><p><code>sudo mkdir -p /var/nfs/gernel</code><br><code>sudo mkdir -p /var/nfs/public</code><br><code>sudo chown nobody:nogroup /var/nfs/gernel</code></p>
+<h5 id="2-修改-exports-文件"><a href="#2-修改-exports-文件" class="headerlink" title="2. 修改 exports 文件"></a>2. 修改 exports 文件</h5><p>为了使 NFS 服务器定义的共享文件可被指定的客户端主机访问，需要在服务器端的 <code>/etc/exports</code> 文件中添加对应的记录。<br>该文件的格式如下：<br><code>Directory  Host(Options ...)  Host(Options)  #comment</code><br>关于 <code>/etc/exports</code> 文件的详细语法格式可参考 <code>man exports</code> 。</p>
+<p><strong>文件示例：</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/var/nfs/gernel  192.168.56.0/24(rw,insecure,sync,no_subtree_check)</span><br><span class="line">/var/nfs/public  *(ro,insecure,sync,no_subtree_check)</span><br><span class="line">/home/starky 192.168.56.1(rw,insecure,no_root_squash,sync,no_subtree_check)</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>第一条纪录表示 <strong>192.168.56.0/24 子网</strong>中的所有主机都可挂载 <code>var/nfs/gernel</code> 目录并拥有读写（<strong>rw</strong>）权限</li>
+<li>第二条纪录表示<strong>所有</strong>主机都可挂载 <code>/var/nfs/public</code> 目录且拥有<strong>只读</strong>（<strong>ro</strong>）权限</li>
+<li><p>第三条纪录表示客户端 IP 地址为 192.168.56.1 的主机可以挂载 <code>/home/starky</code> 目录并拥有<strong>读写</strong>权限，而且任何 root 权限（UID=0 , GID=0）的文件操作都不默认映射给 nobody:nogroup，而保持属主（组）仍为 root（<strong>no_root_squash</strong>）</p>
+</li>
+<li><p><strong>insecure</strong> 选项：允许通过任意端口的远程访问</p>
+</li>
+<li><strong>sync</strong> 选项：强制 NFS 服务器在响应请求之前将文件的改动写入磁盘（强调客户端和服务端文件内容的一致性，但会降低文件操作的效率）。</li>
+<li><strong>no_subtree_check</strong> 选项：禁用 <strong>subtree_check</strong> 。subtree_check 用来设置服务器在收到请求时，检查该文件是否在指定目录结构中依旧可用（该选项会在某些情况下发生错误：重命名某文件的同时，该文件在客户端打开）。</li>
+</ul>
+<h4 id="三、客户端挂载共享目录"><a href="#三、客户端挂载共享目录" class="headerlink" title="三、客户端挂载共享目录"></a>三、客户端挂载共享目录</h4><p><strong>列出 nfs 服务器上的共享目录</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ showmount -e 192.168.56.102</span><br><span class="line">Exports list on 192.168.56.102:</span><br><span class="line">/home/starky                        192.168.56.1</span><br><span class="line">/var/nfs/public                     *</span><br><span class="line">/var/nfs/gernel                     192.168.56.0/24</span><br></pre></td></tr></table></figure></p>
+<p><strong>创建挂载点</strong><br><code>sudo mkdir -p /mnt/nfs/gernel</code><br><code>sudo mkdir -p /mnt/nfs/public</code><br><code>sudo mkdir -p /mnt/nfs/starky</code></p>
+<p><strong>挂载远程目录</strong><br><code>sudo mount 192.168.56.102:/var/nfs/gernel /mnt/nfs/gernel</code><br><code>sudo mount 192.168.56.102:/var/nfs/public /mnt/nfs/public</code><br><code>sudo mount 192.168.56.102:/home/starky /mnt/nfs/starky</code></p>
+<p><strong>权限测试</strong></p>
+<p>如截图所示：<img src="https://upload-images.jianshu.io/upload_images/6875152-a3eb2a355b1edbcc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="nfs 权限测试"></p>
+<p>NFS 的权限设定基于 Linux 文件系统的权限管理，即客户端挂载远程共享目录后，会把它们当成本地磁盘目录一样对待，也是根据文件的属主（组）及其对应的权限设定来限制访问。<br>gernel 目录的属主（组）为 nobody:nogroup（65534:65534），所以虽然该目录为读写权限，非 root 用户无法执行新建操作。而 root 用户由于 NFS 默认的安全机制，会自动映射到 nobody:nogroup。<br>由于我在客户端和服务端都有一个名为 starky 的用户，且它们的 UID:GID 都为1000:1000，所以服务端的 <code>/home/starky</code> 目录可以直接被客户端的 starky 用户访问。且由于 <strong>no_root_squash</strong> 选项，通过 <strong>sudo</strong> 命令创建的文件其属主仍为 root（而不会再映射为 nobody）。<br>当然这会导致一些安全问题，比如多个客户端同时都有 UID（GID）为1000的用户（不管用户名是什么），则这些用户会共享服务端 <code>/home/starky</code> 目录里的文件权限。</p>
+<h5 id="四、系统启动时自动挂载共享目录"><a href="#四、系统启动时自动挂载共享目录" class="headerlink" title="四、系统启动时自动挂载共享目录"></a>四、系统启动时自动挂载共享目录</h5><p>可编辑 <code>/etc/fstab</code> 文件令挂载共享目录的 <strong>mount</strong> 操作成为系统的固定配置（手动输入的 mount 命令属于临时挂载，重启会自动卸载），使得系统重启后可以自动挂载远程文件系统。<code>/etc/fstab</code> 文件的示例内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># filesystem                    mountpoint       fstype  flags                        dump    fsck</span><br><span class="line">192.168.56.102:/var/nfs/gernel  /mnt/nfs/gernel  nfs     rw,bg,intr,hard,nodev,nosuid 0       0</span><br><span class="line">192.168.56.102:/var/nfs/public  /mnt/nfs/public  nfs4    ro,bg,intr,soft,nodev,nosuid 0       0</span><br><span class="line">192.168.56.102:/home/starky     /mnt/nfs/starky  nfs     rw,bg,intr,hard,nodev,nosuid 0       0</span><br></pre></td></tr></table></figure></p>
+<h4 id="附录："><a href="#附录：" class="headerlink" title="附录："></a>附录：</h4><h5 id="1-etc-exports-文件中的-Host-格式"><a href="#1-etc-exports-文件中的-Host-格式" class="headerlink" title="1. /etc/exports 文件中的 Host 格式"></a>1. /etc/exports 文件中的 Host 格式</h5><p><code>/etc/exports</code> 文件的格式为：<code>Directory  Host(Options ...)  Host(Options)  #comment</code><br>其中的 Host 项用来指定可访问对应共享目录的主机，其格式可分为以下几种：</p>
+<ul>
+<li><p>单个主机<br>Host 项可以为一个或多个单独的 TCP/IP 主机名或 IP 地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">admin</span><br><span class="line">admin.starky.net</span><br><span class="line">192.168.56.101</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>IP 子网</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">10.0.0.0/255.0.0.0  </span><br><span class="line">172.16.0.0/255.255.0.0</span><br><span class="line">192.168.56.0/24</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TCP/IP 域<br>通过使用<strong>通配符</strong>，可以指定某个特定域中的全部或部分主机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*.starky.net</span><br><span class="line">*craft.starky.net</span><br><span class="line">???.starky.net</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>NIS 组<br>可以指定某个 NIS 组中所有主机的访问权限，使用 <code>@group</code></p>
+</li>
+</ul>
+<h5 id="2-etc-exports-文件中的-Options"><a href="#2-etc-exports-文件中的-Options" class="headerlink" title="2. /etc/exports 文件中的 Options"></a>2. /etc/exports 文件中的 Options</h5><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ro</td>
+<td>只读权限</td>
+</tr>
+<tr>
+<td>rw</td>
+<td>读写权限（默认）</td>
+</tr>
+<tr>
+<td>rw=<em>list</em></td>
+<td>通过 <em>list</em> 指定具有写权限的客户端主机，其他主机则为只读权限</td>
+</tr>
+<tr>
+<td>root_squash</td>
+<td>将 UID 0 和 GID 0 映射到 anonuid 和 anongid（即 Ubuntu 系统中的 nobody 和 nogroup）</td>
+</tr>
+<tr>
+<td>no_root_squash</td>
+<td>允许需要 root 权限的文件操作，有安全风险</td>
+</tr>
+<tr>
+<td>all_squash</td>
+<td>将所有的 UID 和 GID 映射到它们的匿名形式，主要针对不信任的主机</td>
+</tr>
+<tr>
+<td>anonuid=<em>xxx</em></td>
+<td>指定客户端 root 权限的操作需要映射到的 UID（默认是65534）</td>
+</tr>
+<tr>
+<td>anongid=<em>xxx</em></td>
+<td>指定客户端 root 权限的操作需要映射到的 GID（默认是65534）</td>
+</tr>
+<tr>
+<td>insecure</td>
+<td>允许通过任意端口的远程访问</td>
+</tr>
+<tr>
+<td>async</td>
+<td>服务器可以在写入硬盘之前响应客户端的写入请求</td>
+</tr>
+<tr>
+<td>wdelay</td>
+<td>通过延迟同步多个客户端对文件的更新</td>
+</tr>
+<tr>
+<td>sec=<em>flavor</em></td>
+<td>指定共享目录的安全验证方法，包括 <code>sys</code>（UNIX 验证），<code>dh</code> (DES)，<code>krb5i</code>，<code>krb5p</code> 和 <code>none</code>（匿名访问）</td>
+</tr>
+</tbody>
+</table>
+<h5 id="3-NFS-挂载选项"><a href="#3-NFS-挂载选项" class="headerlink" title="3. NFS 挂载选项"></a>3. NFS 挂载选项</h5><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rw</td>
+<td>以读写模式挂载文件系统（rw 也需在服务端定义）</td>
+</tr>
+<tr>
+<td>ro</td>
+<td>以只读模式挂载文件系统</td>
+</tr>
+<tr>
+<td>bg</td>
+<td>如挂载失败（服务器无响应），在后台继续尝试并执行其他挂载请求</td>
+</tr>
+<tr>
+<td>hard</td>
+<td>如果服务器无响应，重复发送请求直到服务器回复</td>
+</tr>
+<tr>
+<td>soft</td>
+<td>如果服务器无响应，重复发送请求，超过一定时间后返回错误，而不会一直阻塞</td>
+</tr>
+<tr>
+<td>intr</td>
+<td>允许用户中断阻塞的文件操作（并返回错误）</td>
+</tr>
+<tr>
+<td>nointr</td>
+<td>不允许用户中断客户端的文件操作请求</td>
+</tr>
+<tr>
+<td>retrans=<em>n</em></td>
+<td>在 soft 模式下，指定返回错误前重复发送请求的次数</td>
+</tr>
+<tr>
+<td>timeo=<em>n</em></td>
+<td>设置超时后重复发送请求的时间间隔（单位 1/10 秒）</td>
+</tr>
+<tr>
+<td>rsize=<em>n</em></td>
+<td>设置读取 buffer 大小为 n bytes</td>
+</tr>
+<tr>
+<td>wsize=<em>n</em></td>
+<td>设置写入 buffer 大小为 n bytes</td>
+</tr>
+<tr>
+<td>sec=<em>flavor</em></td>
+<td>设置安全验证方法</td>
+</tr>
+<tr>
+<td>proto=<em>proto</em></td>
+<td>设置传输协议，NFSv4 必须为 TCP</td>
+</tr>
+</tbody>
+</table>
+<h5 id="4-NFS-协议讨论"><a href="#4-NFS-协议讨论" class="headerlink" title="4. NFS 协议讨论"></a>4. NFS 协议讨论</h5><p><strong>传输协议</strong><br>最初的 NFSv2 由于性能原因使用 UDP 协议，虽然 NFS 添加了自己的<strong>包序列重组</strong>和<strong>错误检查</strong>功能，但 UDP 和 NFS 都不具备<strong>阻塞控制</strong>算法，所以在大型的互联网络环境中缺乏足够的性能。<br>NFSv3 提供了 UDP 和 TCP 协议之间的选择。NFSv4 只能使用 TCP 协议。<br>随着 CPU，内存等硬件设备和网络传输速度的提高，最初由于性能需求而倾向 UDP 协议的选择也变得不再必要。</p>
+<p><strong>State</strong><br>NFSv2 和 NFSv3 是<strong>无状态</strong>的连接，服务端不会跟踪客户端对共享目录的挂载情况，而是使用 “cookie” 来记录一次成功的挂载。”cookie” 不会因为服务器重启而删除，可以用来在服务器挂掉之后保留客户端的连接信息。<br>NFSv4 是<strong>有状态</strong>的连接，客户端和服务端都会维护文件操作纪录及文件锁的状态。所以不再需要 “cookie” 的使用。</p>
+<p><strong>文件锁</strong><br>早期版本的 NFS 协议（v2 &amp; v3）由于是<strong>无状态</strong>的连接，它们并不清楚哪些主机正在使用哪些文件。但是文件锁的实现又需要获取状态信息。所以早期协议中的文件锁是独立于 NFS 实现的。<br>而 NFSv4 将文件锁的实现整合到了核心协议中，虽然此举增加了复杂度，但同时也解决了早期版本中的很多问题。<br>但是为了兼容使用 V2 和 V3 协议的客户端，独立的 <strong>locked</strong> 和 <strong>statd</strong> 守护进程仍旧需要。</p>
+<p><strong>安全相关</strong><br>NFS 协议最初在设计时并不关注安全性，NFSv4 通过引入对更强大的安全服务和身份验证的支持，加强了该协议的安全性。</p>
+<p>传统的 NFS 协议大多使用 AUTH_SYS 验证方式，基于 UNIX 的用户和组标识。在这种方式下，客户端只需要发送自己的 UID 和 GID 并与服务器上的 <code>/etc/passwd</code> 文件内容作对比，以决定其拥有怎样的权限。<br>所以当多个客户端存在 UID 相同的用户时，这些用户会拥有相同的文件权限。更进一步，拥有 root 权限的用户可以通过 <strong>su</strong> 命令切换到任意 UID 登录，服务器会因此给予其对应 UID 的权限。<br>为了防止上面的问题出现，服务器可选择使用更健壮的验证机制比如 <strong>Kerberos</strong> 结合 NFS PRCSEC_GSS。</p>
+<p>NFS 共享目录的访问控制基于 <code>/etc/exports</code> 文件中定义的主机名或 IP 地址。但是客户端很容易针对其身份和 IP 地址造假，这也会导致一些安全问题。<br>NFSv4 只使用 TCP 作为自己的传输协议，而且通常只开放 2049 端口进行数据传输。在配置防火墙时，除了放开 2049 端口的限制外，还要时刻注意数据传输的源地址和目标地址。</p>
+<h5 id="5-Windows-系统挂载共享目录"><a href="#5-Windows-系统挂载共享目录" class="headerlink" title="5. Windows 系统挂载共享目录"></a>5. Windows 系统挂载共享目录</h5><p>win10 系统默认不能挂载 NFS 共享目录，需要进入<strong>控制面板 - 程序 - 程序和功能 - 启用或关闭 Windows 功能</strong>，勾选上 <strong>NFS 服务</strong>。<img src="https://upload-images.jianshu.io/upload_images/6875152-1cd19722ebcdfca3.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="启用 nfs 服务"><br>之后就可以使用 <strong>mount</strong> 命令挂载共享目录了。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-abd2ad3656c2264a.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mount 命令挂载共享目录"><br>只是 Windows 系统并不使用 Linux 那样的用户管理，导致挂载的共享目录只能读取而没有写入的权限。<img src="https://upload-images.jianshu.io/upload_images/6875152-15fd0ec1ad75efc9.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="无法写入文件"><br>解决办法是在<strong>注册表</strong>中新建两个 <strong>DWORD</strong> 值，用作<strong>匿名用户</strong>的 UID 和 GID。<br>默认参数下的挂载选项，UID 和 GID 都为 -2：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-b2b1af4b6061e532.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="默认挂载选项"><br>可进入<strong>注册表编辑器</strong>（<strong>regedit</strong>），定位到 <code>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ClientForNFS\CurrentVersion\Default</code> ，新建两个名为 <strong>AnonymousUid</strong> 和 <strong>AnonymousGid</strong> 的 DWORD（32位）值，改成自己需要用到的数字（我都改成了 0 ，即对应 Linux 系统中的 root 用户。如需要改为 0 以外的数字，注意先转换成 16 位）。<br>此时的挂载选项变为：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-b54b56f1ddd88963.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="更改 UID 和 GID"><br>如更改未生效，可重启电脑。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://a.co/andind8" target="_blank" rel="noopener">UNIX and Linux System Administration Handbook, 4th Edition</a><br><a href="https://graspingtech.com/mount-nfs-share-windows-10/" target="_blank" rel="noopener">How to Mount an NFS Share Using a Windows 10 Machine
+</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Server/" rel="tag"># Server</a>
+          
+            <a href="/tags/Configuration/" rel="tag"># Configuration</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/29/netstat-manual/" rel="next" title="netstat 命令用法详解">
+                <i class="fa fa-chevron-left"></i> netstat 命令用法详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/27/diskutil-manual/" rel="prev" title="MacOS 磁盘管理工具 diskutil 介绍">
+                MacOS 磁盘管理工具 diskutil 介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、软件安装"><span class="nav-number">1.</span> <span class="nav-text">一、软件安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、服务器配置"><span class="nav-number">2.</span> <span class="nav-text">二、服务器配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-在服务器端创建共享目录"><span class="nav-number">2.1.</span> <span class="nav-text">1. 在服务器端创建共享目录</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-修改-exports-文件"><span class="nav-number">2.2.</span> <span class="nav-text">2. 修改 exports 文件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、客户端挂载共享目录"><span class="nav-number">3.</span> <span class="nav-text">三、客户端挂载共享目录</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#四、系统启动时自动挂载共享目录"><span class="nav-number">3.1.</span> <span class="nav-text">四、系统启动时自动挂载共享目录</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#附录："><span class="nav-number">4.</span> <span class="nav-text">附录：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-etc-exports-文件中的-Host-格式"><span class="nav-number">4.1.</span> <span class="nav-text">1. /etc/exports 文件中的 Host 格式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-etc-exports-文件中的-Options"><span class="nav-number">4.2.</span> <span class="nav-text">2. /etc/exports 文件中的 Options</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-NFS-挂载选项"><span class="nav-number">4.3.</span> <span class="nav-text">3. NFS 挂载选项</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-NFS-协议讨论"><span class="nav-number">4.4.</span> <span class="nav-text">4. NFS 协议讨论</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-Windows-系统挂载共享目录"><span class="nav-number">4.5.</span> <span class="nav-text">5. Windows 系统挂载共享目录</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

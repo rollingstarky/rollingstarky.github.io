@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,DataStructure,Algorithm,Advanced,Program,CSP," />
+
+
+<meta name="description" content="由计算工具解决的很大一部分问题都可以归类为约束满足问题（CSPs, constraint-satisfaction problems）。CSP 一般包含三个基本概念：变量（variables）、域（domains）和约束条件（constraints）。 比如需要在星期五为 Joe、Mary、Sue 三个人安排一场会议，要求 Sue 必须和另外的至少一个人同时在场。针对此问题：  Joe、Mary、">
+<meta name="keywords" content="Python,DataStructure,Algorithm,Advanced,Program,CSP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基本算法问题的 Python 解法——约束满足问题（CSP）">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="由计算工具解决的很大一部分问题都可以归类为约束满足问题（CSPs, constraint-satisfaction problems）。CSP 一般包含三个基本概念：变量（variables）、域（domains）和约束条件（constraints）。 比如需要在星期五为 Joe、Mary、Sue 三个人安排一场会议，要求 Sue 必须和另外的至少一个人同时在场。针对此问题：  Joe、Mary、">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-7d5dcdd81b242fa3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-bc114087e7adbbc7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-9424bba1dc8714d0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2021-02-03T12:39:37.488Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基本算法问题的 Python 解法——约束满足问题（CSP）">
+<meta name="twitter:description" content="由计算工具解决的很大一部分问题都可以归类为约束满足问题（CSPs, constraint-satisfaction problems）。CSP 一般包含三个基本概念：变量（variables）、域（domains）和约束条件（constraints）。 比如需要在星期五为 Joe、Mary、Sue 三个人安排一场会议，要求 Sue 必须和另外的至少一个人同时在场。针对此问题：  Joe、Mary、">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-7d5dcdd81b242fa3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>基本算法问题的 Python 解法——约束满足问题（CSP） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">基本算法问题的 Python 解法——约束满足问题（CSP）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-02-03T00:00:00+08:00">2021-02-03</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/" class="leancloud_visitors" data-flag-title="基本算法问题的 Python 解法——约束满足问题（CSP）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">9.7k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:10</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>由计算工具解决的很大一部分问题都可以归类为<strong>约束满足问题（CSPs, constraint-satisfaction problems）</strong>。CSP 一般包含三个基本概念：<strong>变量（variables）</strong>、<strong>域（domains）</strong>和<strong>约束条件（constraints）</strong>。</p>
+<p>比如需要在星期五为 Joe、Mary、Sue 三个人安排一场会议，要求 Sue 必须和另外的至少一个人同时在场。针对此问题：</p>
+<ul>
+<li>Joe、Mary、Sue 三个人即为变量（variables）</li>
+<li>每个人（变量）各自空闲的时间点即为对应的域（domains）。比如变量 Mary 在下午 2 点和 3 点的时候有空，这两个时间点即为变量 Mary 对应的域</li>
+<li>约束条件（constraints）有两点：Sue 必须在场；除 Sue 以外至少还需要另一人到场</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-7d5dcdd81b242fa3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="约会问题是非常经典的约束满足问题"></p>
+<h4 id="构建-CSP-框架"><a href="#构建-CSP-框架" class="headerlink" title="构建 CSP 框架"></a>构建 CSP 框架</h4><p>约束条件通过 <code>Constraint</code> 类实现。该类中包含被约束的变量以及测试其是否满足约束的 <code>satisfied()</code> 方法。确定是否满足约束条件是针对某个特定的 CSP 的核心逻辑，该 <code>satisfied()</code> 方法必须为抽象方法，由子类覆盖后发挥实际作用，以满足不同问题的不同约束条件。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># csp.py</span></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> Generic, TypeVar, Dict, List, Optional</span><br><span class="line"><span class="keyword">from</span> abc <span class="keyword">import</span> ABC, abstractmethod</span><br><span class="line"></span><br><span class="line">V = TypeVar(<span class="string">'V'</span>)  <span class="comment"># variable type</span></span><br><span class="line"></span><br><span class="line">D = TypeVar(<span class="string">'D'</span>)  <span class="comment"># domain type</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Constraint</span><span class="params">(Generic[V, D], ABC)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, variables: List[V])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.variables = variables</span><br><span class="line"></span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">satisfied</span><span class="params">(self, assignment: Dict[V, D])</span> -&gt; bool:</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure></p>
+<p>约束满足框架的核心部分代码是 <code>CSP</code> 类，该类集中处理变量、域和约束条件。CSP 的类型使用 Generic，目的是使其足够灵活，能够处理各种类型的 variables 和 domains。其中 variables 是 list 类型，domains 是由 variable 和对应的 list （所有可能的值）关联成的 dict 类型，constraints 则是由 variable 和对应的 list（约束条件列表）关联成的 dict 类型。</p>
+<p><code>__init__()</code> 初始化方法会创建 <code>constraints</code> 字典，将 variables 中的值作为键，每个键关联一个空列表。<code>add_constraint()</code> 方法遍历 variables 中的值（同时也是 <code>constraints</code> 中的键），将对应的 constraint 添加到 <code>constraints</code> 字典的该 variable 键关联的列表中。<br>从而完成对 variables、domains、constraints 三类数据的初始化。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># csp.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CSP</span><span class="params">(Generic[V, D])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, variables: List[V], domains: Dict[V, List[D]])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.variables = variables</span><br><span class="line">        self.domains = domains</span><br><span class="line">        self.constraints: Dict[V, List[Constraint[V, D]]] = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> variable <span class="keyword">in</span> self.variables:</span><br><span class="line">            self.constraints[variable] = []</span><br><span class="line">            <span class="keyword">if</span> variable <span class="keyword">not</span> <span class="keyword">in</span> self.domains:</span><br><span class="line">                <span class="keyword">raise</span> LookupError(<span class="string">"Every variable should have a domain assigned to it"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_constraint</span><span class="params">(self, constraint: Constraint[V, D])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="keyword">for</span> variable <span class="keyword">in</span> constraint.variables:</span><br><span class="line">            <span class="keyword">if</span> variable <span class="keyword">not</span> <span class="keyword">in</span> self.variables:</span><br><span class="line">                <span class="keyword">raise</span> LookupError(<span class="string">"Variable in constraint not in CSP"</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                self.constraints[variable].append(constraint)</span><br></pre></td></tr></table></figure></p>
+<p><code>consistent()</code> 方法用于检查给定的 variable 对应的每一个约束条件是否一一符合当前预设的方案。这个临时的方案用 assignment 表示。<br>即先有某个 variable，然后为其选择对应的 domain 中的任意一个值作为临时的 assignment，再检查该 assignment 是否符合对应的 variable 关联的所有约束条件。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># csp.py</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consistent</span><span class="params">(self, variable: V, assignment: Dict[V, D])</span> -&gt; bool:</span></span><br><span class="line">    <span class="keyword">for</span> constraint <span class="keyword">in</span> self.constraints[variable]:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> constraint.satisfied(assignment):</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">True</span></span><br></pre></td></tr></table></figure></p>
+<p>约束满足框架还需要一个简单的 <em>backtracking</em> 搜索用于查找问题的解决方案。Backtracking 意味着一旦在搜索路径的某个节点上终止，则返回到上一个已知的搜索节点，选择另一条搜索路径。有点类似于<strong>深度优先</strong>搜索（<strong>DFS, depth-first search</strong>）。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">backtracking_search</span><span class="params">(self, assignment: Dict[V, D] = &#123;&#125;)</span> -&gt; Optional[Dict[V, D]]:</span></span><br><span class="line">    <span class="comment"># assignment is complete if every variable is assigned</span></span><br><span class="line">    <span class="keyword">if</span> len(assignment) == len(self.variables):</span><br><span class="line">        <span class="keyword">return</span> assignment</span><br><span class="line"></span><br><span class="line">    <span class="comment"># get all variables in the CSP but not in the assignment</span></span><br><span class="line">    unassigned: List[V] = [v <span class="keyword">for</span> v <span class="keyword">in</span> self.variables <span class="keyword">if</span> v <span class="keyword">not</span> <span class="keyword">in</span> assignment]</span><br><span class="line">    first: V = unassigned[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> self.domains[first]:</span><br><span class="line">        local_assignment = assignment.copy()</span><br><span class="line">        local_assignment[first] = value</span><br><span class="line">        <span class="keyword">if</span> self.consistent(first, local_assignment):</span><br><span class="line">            result: Optional[Dict[V, D]] = self.backtracking_search(local_assignment)</span><br><span class="line">            <span class="keyword">if</span> result <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">                <span class="keyword">return</span> result</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">None</span></span><br></pre></td></tr></table></figure></p>
+<p>逐条分析以上代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if len(assignment) == len(self.variables):</span><br><span class="line">    return assignment</span><br></pre></td></tr></table></figure></p>
+<p>上面的 backtracking 搜索采用了<strong>递归</strong>的形式，此 <code>if</code> 语句则提供了一种递归的终止条件。即当所有 variable 都被赋予了合法的值时，意味着其中一种搭配方案已被找到，则停止进一步的搜索，返回该搭配方案。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">unassigned: List[V] = [v for v in self.variables if v not in assignment]</span><br><span class="line">first: V = unassigned[0]</span><br></pre></td></tr></table></figure>
+<p>取出 variables 中第一个还未被赋值（未做选择）的 variable，作为下一步中进行赋值（做决定）和约束条件测试的对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if self.consistent(first, local_assignment):</span><br><span class="line">    result: Optional[Dict[V, D]] = self.backtracking_search(local_assignment)</span><br><span class="line">    if result is not None:</span><br><span class="line">        return result</span><br></pre></td></tr></table></figure>
+<p>为前面未赋值的某个 variable “做决定”。将对应的 domain 中所有存在的值依次赋值给该 variable，形成一个新的方案（local_assignment）。若该方案符合所有的约束条件（通过 <code>consistent()</code> 方法检测），则借助递归进行下一轮对另一个 variable 的赋值，直到触发终止条件（所有 variable 都被赋值）。</p>
+<p><code>return None</code></p>
+<p>若针对某个特定的 variable，已经检查完 domain 中包含的所有可能的值，仍没有找到符合要求的方案，则返回 <code>None</code> 表示没有解决。这会导致 backtracking 搜索结束本轮 <code>for</code> 循环，返回到递归的上一层中的 <code>for</code> 循环，尝试为上一步中已赋值的 variable 做出不同的决定，并继续递归（或回溯）下去。</p>
+<h4 id="地图上色问题"><a href="#地图上色问题" class="headerlink" title="地图上色问题"></a>地图上色问题</h4><p>假如有一张澳大利亚地图，需要按州进行上色。要求所有相邻的州不能有相同的颜色。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-bc114087e7adbbc7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="地图上色问题的一种解决方案"></p>
+<p>借助前面构建的约束符合框架，实现代码如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># map_coloring.py</span></span><br><span class="line"><span class="keyword">from</span> csp <span class="keyword">import</span> Constraint, CSP</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> Dict, List, Optional</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MapColoringConstraint</span><span class="params">(Constraint[str, str])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, place1: str, place2: str)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        super().__init__([place1, place2])</span><br><span class="line">        self.place1 = place1</span><br><span class="line">        self.place2 = place2</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">satisfied</span><span class="params">(self, assignment: Dict[str, str])</span> -&gt; bool:</span></span><br><span class="line">        <span class="comment"># if either place is not in the assignment, then it is not</span></span><br><span class="line">        <span class="comment"># yet possible for their colors to be conflicting</span></span><br><span class="line">        <span class="keyword">if</span> self.place1 <span class="keyword">not</span> <span class="keyword">in</span> assignment <span class="keyword">or</span> self.place2 <span class="keyword">not</span> <span class="keyword">in</span> assignment:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">        <span class="comment"># check the color assigned to place1 is not the same as the</span></span><br><span class="line">        <span class="comment"># color assigned to place2</span></span><br><span class="line">        <span class="keyword">return</span> assignment[self.place1] != assignment[self.place2]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    variables: List[str] = [<span class="string">"Western Australia"</span>, <span class="string">"Northern Territory"</span>, <span class="string">"South Australia"</span>,</span><br><span class="line">                            <span class="string">"Queensland"</span>, <span class="string">"New South Wales"</span>, <span class="string">"Victoria"</span>, <span class="string">"Tasmania"</span>]</span><br><span class="line">    domains: Dict[str, List[str]] = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> variable <span class="keyword">in</span> variables:</span><br><span class="line">        domains[variable] = [<span class="string">"red"</span>, <span class="string">"green"</span>, <span class="string">"blue"</span>]</span><br><span class="line">    csp: CSP[str, str] = CSP(variables, domains)</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Western Australia"</span>, <span class="string">"Northern Territory"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Western Australia"</span>, <span class="string">"South Australia"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"South Australia"</span>, <span class="string">"Northern Territory"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Queensland"</span>, <span class="string">"Northern Territory"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Queensland"</span>, <span class="string">"South Australia"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Queensland"</span>, <span class="string">"New South Wales"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"New South Wales"</span>, <span class="string">"South Australia"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Victoria"</span>, <span class="string">"South Australia"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Victoria"</span>, <span class="string">"New South Wales"</span>))</span><br><span class="line">    csp.add_constraint(MapColoringConstraint(<span class="string">"Victoria"</span>, <span class="string">"Tasmania"</span>))</span><br><span class="line"></span><br><span class="line">    solution: Optional[Dict[str, str]] = csp.backtracking_search()</span><br><span class="line">    <span class="keyword">if</span> solution <span class="keyword">is</span> <span class="keyword">None</span>:</span><br><span class="line">        print(<span class="string">"No solution found"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(solution)</span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; &#123;'Western Australia': 'red', 'Northern Territory': 'green', 'South</span></span><br><span class="line"><span class="comment"># Australia': 'blue', 'Queensland': 'red', 'New South Wales': 'green',</span></span><br><span class="line"><span class="comment"># 'Victoria': 'red', 'Tasmania': 'green'&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>简单梳理一下程序逻辑：</p>
+<p>在上述 CSP 中，地图中的 7 个州即为 variables（为方便，以 a、b、c、d、e、f、g 代替）<br><code>variables = [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;, &#39;g&#39;]</code></p>
+<p>每个州都可以涂成红绿蓝三种颜色（假设用 1、2、3 指代）中的任何一种，各 variable 对应的所有颜色即组成对应 variable 的 domain：<br><code>domains = {&#39;a&#39;: [1, 2, 3], &#39;b&#39;: [1, 2, 3], &#39;c&#39;: [1, 2, 3], &#39;d&#39;: [1, 2, 3], &#39;e&#39;: [1, 2, 3], &#39;f&#39;: [1, 2, 3], &#39;g&#39;: [1, 2, 3]}</code></p>
+<p>constraints 的逻辑在 MapColoringConstraints 类中实现，即已经涂色的相邻的两个州色彩须不一致。比如 a 与 b 相邻，则该 constraint 的表示如下：<br><code>MapColoringConstraint(&#39;a&#39;, &#39;b&#39;)</code><br>而所有的 constraints 都会关联到对应的以 variable 为键的字典中。即若 a 同时与 b 和 c 相邻，则变量 a 的 constraints 表示为：<br><code>{&#39;a&#39;: [MapColoringConstraint(&#39;a&#39;, &#39;b&#39;), MapColoringConstraint(&#39;a&#39;, &#39;c&#39;)]}</code></p>
+<p><code>backtrack_search()</code> 方法的执行流程为：</p>
+<ul>
+<li>在 variables 中取第一个未被赋值（涂色）的 variable，为其赋予对应 domain 中的某个数值作为临时方案</li>
+<li>用该 variable 对应的所有 constraints 测试上述临时方案的可行性。若符合要求，则借助递归开启下一轮循环，继续为另一个未被赋值（涂色）的 variable 赋值</li>
+<li>若不符合要求，则继续本轮循环，为本 variable 赋予 domain 中的另一个值</li>
+<li>若对应 domain 中的所有值赋予 variable 后都不能符合约束要求，则返回 None。本轮循环结束，回到递归的上一轮继续循环，为上一轮中已赋值的 variable 赋予不同的值，延续递归操作</li>
+<li>若所有 variable 都已被赋值，则返回 variable 及其对应的值作为最终的解决方案；若所有循环（递归/回溯）结束，返回结果最终为 None，则表示无法找到合理的解决方案</li>
+</ul>
+<h4 id="国际象棋的八王后问题"><a href="#国际象棋的八王后问题" class="headerlink" title="国际象棋的八王后问题"></a>国际象棋的八王后问题</h4><p>国际象棋的棋盘由 8x8 的方格组成，棋子落于方格上。而棋子王后能够吃掉处于同一行、同一列、同一斜线上的任何一个敌方棋子。<br>八王后问题是指需要将 8 个王后放置到国际象棋棋盘上且彼此之间不会产生冲突（即不会有任意两枚棋子位于同一行、同一列或者同一斜线上）。</p>
+<p>其中一种可能的解决方案如下图：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-9424bba1dc8714d0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="eight queens"></p>
+<p>实现代码如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> csp <span class="keyword">import</span> Constraint, CSP</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> Dict, List, Optional</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">QueensConstraint</span><span class="params">(Constraint[int, int])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, columns: List[int])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        super().__init__(columns)</span><br><span class="line">        self.columns = columns</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">satisfied</span><span class="params">(self, assignment: Dict[int, int])</span> -&gt; bool:</span></span><br><span class="line">        <span class="comment"># q1c = queen 1 column, q1r = queen 1 row</span></span><br><span class="line">        <span class="keyword">for</span> q1c, q1r <span class="keyword">in</span> assignment.items():</span><br><span class="line">            <span class="comment"># q2c = queen 2 column</span></span><br><span class="line">            <span class="keyword">for</span> q2c <span class="keyword">in</span> range(q1c + <span class="number">1</span>, len(self.columns) + <span class="number">1</span>):</span><br><span class="line">                <span class="keyword">if</span> q2c <span class="keyword">in</span> assignment:</span><br><span class="line">                    q2r = assignment[q2c]</span><br><span class="line">                    <span class="keyword">if</span> q1r == q2r:  <span class="comment"># same row?</span></span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">                    <span class="keyword">if</span> abs(q1r - q2r) == abs(q1c - q2c):  <span class="comment"># same diagonal?</span></span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    columns: List[int] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>]</span><br><span class="line">    rows: Dict[int, List[int]] = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> column <span class="keyword">in</span> columns:</span><br><span class="line">        rows[column] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>]</span><br><span class="line">    csp: CSP[int, int] = CSP(columns, rows)</span><br><span class="line"></span><br><span class="line">    csp.add_constraint(QueensConstraint(columns))</span><br><span class="line">    solution: Optional[Dict[int, int]] = csp.backtracking_search()</span><br><span class="line">    <span class="keyword">if</span> solution <span class="keyword">is</span> <span class="keyword">None</span>:</span><br><span class="line">        print(<span class="string">"No solution found!"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(solution)</span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; &#123;1: 1, 2: 5, 3: 8, 4: 6, 5: 3, 6: 7, 7: 2, 8: 4&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>简单解释下 <code>satisfied()</code> 方法中的两个 <code>for</code> 循环。<code>assignment</code> 采用类似 <code>{1: 1, 2: 5, 3: 8, 4: 6, 5: 3, 6: 7, 7: 2, 8: 4}</code> 的字典类型（一开始会短一些），上述两个 <code>for</code> 循环的作用在于，先以棋盘上的第一列为标准，若第一列与剩余的几列不存在冲突，则去掉第一列，再比较第二列与剩余的几列是否存在冲突，以此类推。一旦出现任何冲突，则返回 False。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/classic-computer-science-problems-in-python" target="_blank" rel="noopener">Classic Computer Science Problems in Python</a><br><a href="https://github.com/davecom/ClassicComputerScienceProblemsInPython" target="_blank" rel="noopener">davecom/ClassicComputerScienceProblemsInPython</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/DataStructure/" rel="tag"># DataStructure</a>
+          
+            <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+          
+            <a href="/tags/Advanced/" rel="tag"># Advanced</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/CSP/" rel="tag"># CSP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/02/03/python-design-patterns-anti-pattern/" rel="next" title="Python 设计模式——反模式">
+                <i class="fa fa-chevron-left"></i> Python 设计模式——反模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/02/20/classic-compute-problems-with-python-graph-problems/" rel="prev" title="基本算法问题的 Python 解法——图（Graph）问题">
+                基本算法问题的 Python 解法——图（Graph）问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#构建-CSP-框架"><span class="nav-number">1.</span> <span class="nav-text">构建 CSP 框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#地图上色问题"><span class="nav-number">2.</span> <span class="nav-text">地图上色问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#国际象棋的八王后问题"><span class="nav-number">3.</span> <span class="nav-text">国际象棋的八王后问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

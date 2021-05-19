@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Admin,Tools,Development,Docker," />
+
+
+<meta name="description" content="一、容器（Container）简单来说，容器是对应用程序及其依赖库的一种封装。 乍看上去，容器就像一个轻量级的虚拟机系统（VM），也封装了一个操作系统实例用来运行某些应用程序。相比于传统的虚拟机，容器的优势主要在以下几个方面：  容器与宿主机共享资源，使得其效率有了很大的提升。与主机中运行的应用程序相比，在容器中运行的应用程序几乎没有任何额外的开销。  容器可移植的特性可以解决由于运行环境的微小变">
+<meta name="keywords" content="Admin,Tools,Development,Docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker 初探">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/10/09/docker-beginning-guide/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="一、容器（Container）简单来说，容器是对应用程序及其依赖库的一种封装。 乍看上去，容器就像一个轻量级的虚拟机系统（VM），也封装了一个操作系统实例用来运行某些应用程序。相比于传统的虚拟机，容器的优势主要在以下几个方面：  容器与宿主机共享资源，使得其效率有了很大的提升。与主机中运行的应用程序相比，在容器中运行的应用程序几乎没有任何额外的开销。  容器可移植的特性可以解决由于运行环境的微小变">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-10-10T05:46:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker 初探">
+<meta name="twitter:description" content="一、容器（Container）简单来说，容器是对应用程序及其依赖库的一种封装。 乍看上去，容器就像一个轻量级的虚拟机系统（VM），也封装了一个操作系统实例用来运行某些应用程序。相比于传统的虚拟机，容器的优势主要在以下几个方面：  容器与宿主机共享资源，使得其效率有了很大的提升。与主机中运行的应用程序相比，在容器中运行的应用程序几乎没有任何额外的开销。  容器可移植的特性可以解决由于运行环境的微小变">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/10/09/docker-beginning-guide/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Docker 初探 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/10/09/docker-beginning-guide/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Docker 初探</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-09T00:00:00+08:00">2018-10-09</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tools/" itemprop="url" rel="index"><span itemprop="name">Tools</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/10/09/docker-beginning-guide/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/10/09/docker-beginning-guide/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/10/09/docker-beginning-guide/" class="leancloud_visitors" data-flag-title="Docker 初探">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:12</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、容器（Container）"><a href="#一、容器（Container）" class="headerlink" title="一、容器（Container）"></a>一、容器（Container）</h4><p>简单来说，<strong>容器</strong>是对应用程序及其依赖库的一种<strong>封装</strong>。</p>
+<p>乍看上去，容器就像一个轻量级的虚拟机系统（VM），也封装了一个操作系统实例用来运行某些应用程序。<br>相比于传统的虚拟机，容器的优势主要在以下几个方面：</p>
+<ul>
+<li><p>容器与宿主机共享资源，使得其效率有了很大的提升。与主机中运行的应用程序相比，在容器中运行的应用程序几乎没有任何额外的开销。</p>
+</li>
+<li><p>容器<strong>可移植</strong>的特性可以解决由于运行环境的微小变化引发的一系列问题。</p>
+</li>
+<li><p>容器的轻量级特性意味着开发人员可以同时运行数十个容器，从而可以模拟出生产级别的<strong>分布式系统</strong>。</p>
+</li>
+<li><p>对于不使用云端应用的用户和开发者，用户可以节省下大量的安装和配置时间，也不用担心系统的依赖冲突等问题。而开发者同时也可以避免由于用户系统环境的差异导致的可用性问题。</p>
+</li>
+</ul>
+<p>总的来说，虚拟机的基本目标，是<strong>完整</strong>地虚拟出一个<strong>外部</strong>（独立）的系统环境，而容器是为了达到应用程序的可移植和自成一体。</p>
+<p>而 Docker Engine 为运行容器提供了快捷方便的交互接口。</p>
+<h4 id="二、Docker-安装（Linux）"><a href="#二、Docker-安装（Linux）" class="headerlink" title="二、Docker 安装（Linux）"></a>二、Docker 安装（Linux）</h4><p>Linux 系统上的 Docker 安装，可以直接使用官方提供的安装脚本（<a href="https://get.docker.com），命令如下：" target="_blank" rel="noopener">https://get.docker.com），命令如下：</a><br><code>$ sudo wget -qO- https://get.docker.com/ | sh</code><br>或<br><code>$ sudo curl -sSL https://get.docker.com/ | sh</code></p>
+<p>Mac OS 和 Windows 系统上的 Docker 安装，可参考官方文档 <a href="https://docs.docker.com/docker-for-mac/install/" target="_blank" rel="noopener">Docker for Mac</a> 和 <a href="https://docs.docker.com/docker-for-windows/install/" target="_blank" rel="noopener">Docker for Windows</a></p>
+<blockquote>
+<p>Docker 官方镜像访问缓慢，可以使用阿里云提供的<strong>加速</strong>服务（参考 <a href="https://cr.console.aliyun.com/#/accelerator" target="_blank" rel="noopener">镜像加速器</a>）</p>
+</blockquote>
+<p>Docker 需要特定的权限才能运行，即普通用户执行 docker 命令时需要加上 sudo 。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ docker version</span><br><span class="line">Client:</span><br><span class="line"> Version:           18.06.1-ce</span><br><span class="line"> API version:       1.38</span><br><span class="line"> Go version:        go1.10.3</span><br><span class="line"> Git commit:        e68fc7a</span><br><span class="line"> Built:             Tue Aug 21 17:24:51 2018</span><br><span class="line"> OS/Arch:           linux/amd64</span><br><span class="line"> Experimental:      false</span><br><span class="line">Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/version: dial unix /var/run/docker.sock: connect: permission denied</span><br></pre></td></tr></table></figure></p>
+<p>可以将本地用户添加到 <strong>docker 用户组</strong>中，后续使用 docker 命令时即无需加上 sudo 前缀。<br><code>$ sudo usermod -aG docker &lt;username&gt;</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ docker version</span><br><span class="line">Client:</span><br><span class="line"> Version:           18.06.1-ce</span><br><span class="line"> API version:       1.38</span><br><span class="line"> Go version:        go1.10.3</span><br><span class="line"> Git commit:        e68fc7a</span><br><span class="line"> Built:             Tue Aug 21 17:24:51 2018</span><br><span class="line"> OS/Arch:           linux/amd64</span><br><span class="line"> Experimental:      false</span><br><span class="line"></span><br><span class="line">Server:</span><br><span class="line"> Engine:</span><br><span class="line">  Version:          18.06.1-ce</span><br><span class="line">  API version:      1.38 (minimum version 1.12)</span><br><span class="line">  Go version:       go1.10.3</span><br><span class="line">  Git commit:       e68fc7a</span><br><span class="line">  Built:            Tue Aug 21 17:23:15 2018</span><br><span class="line">  OS/Arch:          linux/amd64</span><br><span class="line">  Experimental:     false</span><br></pre></td></tr></table></figure></p>
+<h4 id="三、操作入门"><a href="#三、操作入门" class="headerlink" title="三、操作入门"></a>三、操作入门</h4><h5 id="Hello-World"><a href="#Hello-World" class="headerlink" title="Hello World"></a>Hello World</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker run debian echo &quot;Hello World&quot;</span><br><span class="line">Unable to find image &apos;debian:latest&apos; locally</span><br><span class="line">latest: Pulling from library/debian</span><br><span class="line">05d1a5232b46: Pull complete</span><br><span class="line">Digest: sha256:07fe888a6090482fc6e930c1282d1edf67998a39a09a0b339242fbfa2b602fff</span><br><span class="line">Status: Downloaded newer image for debian:latest</span><br><span class="line">Hello World</span><br></pre></td></tr></table></figure>
+<p><code>docker run</code> 命令用于加载容器并执行某个命令。上述命令中的 <em>debian</em> 用于指定所使用的镜像的名字。<br>如本地磁盘上没有名为 debian 的镜像文件，则 Docker 会检查在线的 Docker Hub 并将最新版本的 Debian 镜像下载到本地。<br>之后将下载好的镜像转化成运行的容器，并在容器中执行指定的命令。<br>命令执行完毕后，输出的结果传送到标准输出，容器停止运行。</p>
+<h5 id="交互式-Shell"><a href="#交互式-Shell" class="headerlink" title="交互式 Shell"></a>交互式 Shell</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -i -t debian /bin/bash</span><br><span class="line">root@4af9c13b78d7:/# echo &quot;Hello from Container&quot;</span><br><span class="line">Hello from Container</span><br><span class="line">root@4af9c13b78d7:/# exit</span><br><span class="line">exit</span><br></pre></td></tr></table></figure>
+<p>上面的命令会在容器中打开一个交互式 Shell （就像是 ssh 到了一个远程主机上）。<br><code>-i</code> 和 <code>-t</code> 选项表示打开一个已绑定了 tty 的<strong>交互式会话</strong>。<br>当使用 <code>exit</code> 命令退出 bash 后，运行中的容器也会停止。</p>
+<blockquote>
+<p>可以使用 <code>docker start -i &lt;Container_name&gt;</code> 命令回到交互式 Shell 中</p>
+</blockquote>
+<h5 id="列出-删除容器"><a href="#列出-删除容器" class="headerlink" title="列出 / 删除容器"></a>列出 / 删除容器</h5><p><code>docker ps</code> 命令可以列出当前<strong>正在运行</strong>的容器及其相关信息，如容器ID、使用的镜像、执行的命令、创建时间、当前状态和<strong>名称</strong>等，加上 <code>-a</code> 选项则列出所有容器（包含已停止运行的容器）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker ps</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES</span><br><span class="line">$</span><br><span class="line">$ docker ps -a</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS                     PORTS               NAMES</span><br><span class="line">f74ed03352d3        debian              &quot;/bin/bash&quot;            9 minutes ago       Exited (0) 8 minutes ago                       mystifying_beaver</span><br><span class="line">45e9e3f3847b        debian              &quot;echo &apos;Hello World&apos;&quot;   9 minutes ago       Exited (0) 9 minutes ago                       quirky_mirzakhani</span><br></pre></td></tr></table></figure></p>
+<p>可以使用 <code>docker rm &lt;Container_name&gt;</code> 命令删除已停止运行的容器。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker rm mystifying_beaver</span><br><span class="line">mystifying_beaver</span><br><span class="line">$ docker ps -a</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS                      PORTS               NAMES</span><br><span class="line">45e9e3f3847b        debian              &quot;echo &apos;Hello World&apos;&quot;   13 minutes ago      Exited (0) 13 minutes ago                       quirky_mirzakhani</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p><code>docker rm -v $(docker ps -aq -f status=exited)</code> 命令可以删除<strong>所有</strong>已停止运行的容器</p>
+</blockquote>
+<h5 id="手动创建镜像文件"><a href="#手动创建镜像文件" class="headerlink" title="手动创建镜像文件"></a>手动创建镜像文件</h5><p>从 Docker Hub 上拉取的镜像很多为初始的精简系统，运行容器后，可以给容器内的系统安装软件并提交更改，做成新的镜像供后期使用。</p>
+<h6 id="使用-docker-run-命令运行容器并安装软件"><a href="#使用-docker-run-命令运行容器并安装软件" class="headerlink" title="使用 docker run 命令运行容器并安装软件"></a>使用 <code>docker run</code> 命令运行容器并安装软件</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --name cowsay --hostname cowsay debian /bin/bash</span><br><span class="line">root@cowsay:/# apt-get update</span><br><span class="line">...</span><br><span class="line">root@cowsay:/# apt-get install -y cowsay fortune</span><br><span class="line">...</span><br><span class="line">root@cowsay:/# /usr/games/fortune | /usr/games/cowsay</span><br><span class="line"> ________________________</span><br><span class="line">&lt; Don&apos;t get to bragging. &gt;</span><br><span class="line"> ------------------------</span><br><span class="line">        \   ^__^</span><br><span class="line">         \  (oo)\_______</span><br><span class="line">            (__)\       )\/\</span><br><span class="line">                ||----w |</span><br><span class="line">                ||     ||</span><br></pre></td></tr></table></figure>
+<p>其中 <code>--name</code> 选项用于指定容器的名称，<code>--hostname</code> 选项用于指定容器系统的主机名。</p>
+<h6 id="使用-docker-commit-命令将容器转换成镜像文件。"><a href="#使用-docker-commit-命令将容器转换成镜像文件。" class="headerlink" title="使用 docker commit 命令将容器转换成镜像文件。"></a>使用 <code>docker commit</code> 命令将容器转换成镜像文件。</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ docker commit cowsay test/cowsayimage</span><br><span class="line">sha256:2dcb2f4d09f824120db19f79d3bfbdb85c24d4888732bcc7eaae79f707d80e32</span><br><span class="line">$ docker images</span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">test/cowsayimage    latest              2dcb2f4d09f8        13 minutes ago      159MB</span><br><span class="line">debian              latest              f2aae6ff5d89        3 weeks ago         101MB</span><br></pre></td></tr></table></figure>
+<p><code>docker images</code> 命令用来查看已在本地的镜像文件及其信息。</p>
+<h6 id="使用生成的镜像文件"><a href="#使用生成的镜像文件" class="headerlink" title="使用生成的镜像文件"></a>使用生成的镜像文件</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ docker run test/cowsayimage /usr/games/fortune | /usr/games/cowsay</span><br><span class="line"> _______________________________________</span><br><span class="line">/ Today is the first day of the rest of \</span><br><span class="line">\ the mess.                             /</span><br><span class="line"> ---------------------------------------</span><br><span class="line">        \   ^__^</span><br><span class="line">         \  (oo)\_______</span><br><span class="line">            (__)\       )\/\</span><br><span class="line">                ||----w |</span><br><span class="line">                ||     ||</span><br></pre></td></tr></table></figure>
+<h5 id="使用-Dockerfile-创建镜像文件"><a href="#使用-Dockerfile-创建镜像文件" class="headerlink" title="使用 Dockerfile 创建镜像文件"></a>使用 Dockerfile 创建镜像文件</h5><p>Dockerfile 其实就是一个简单的文本文件，里面包含了创建 Docker 镜像的一系列步骤。相比于手动创建 Docker 镜像，使用 Dockerfile 自动地创建镜像文件，省去了大量重复的操作，同时也便于分享给其他人。</p>
+<h6 id="编辑-Dockerfile"><a href="#编辑-Dockerfile" class="headerlink" title="编辑 Dockerfile"></a>编辑 Dockerfile</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir cowsay &amp;&amp; cd cowsay</span><br><span class="line">$ vim Dockerfile</span><br></pre></td></tr></table></figure>
+<p>然后在新建的 Dockerfile 中填入以下内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FROM debian:wheezy</span><br><span class="line">RUN apt-get update &amp;&amp; apt-get install -y cowsay fortune</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>FROM</code> 用于指定构建时使用的初始镜像文件，<code>RUN</code> 用于指定在镜像中执行的 Shell 命令</p>
+<h6 id="构建镜像并测试"><a href="#构建镜像并测试" class="headerlink" title="构建镜像并测试"></a>构建镜像并测试</h6><p>使用 <code>docker build</code> 命令创建 Docker 镜像：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t test/cowsay-dockerfile .</span><br><span class="line">Sending build context to Docker daemon  2.048kB</span><br><span class="line">Step 1/2 : FROM debian:wheezy</span><br><span class="line">wheezy: Pulling from library/debian</span><br><span class="line">703d6f3fb41c: Pull complete</span><br><span class="line">Digest: sha256:d00f167f8f2e70ecc2e0f5410a3cb74cd4ad720e33b9810da6a2dcfa81dccfc0</span><br><span class="line">Status: Downloaded newer image for debian:wheezy</span><br><span class="line"> ---&gt; 94825a89630c</span><br><span class="line">Step 2/2 : RUN apt-get update &amp;&amp; apt-get install -y cowsay fortune</span><br><span class="line"> ---&gt; Running in efcf246bde0f</span><br><span class="line">...</span><br><span class="line">Setting up cowsay (3.03+dfsg1-4) ...</span><br><span class="line">Removing intermediate container efcf246bde0f</span><br><span class="line"> ---&gt; 88e9a0f834cd</span><br><span class="line">Successfully built 88e9a0f834cd</span><br><span class="line">Successfully tagged test/cowsay-dockerfile:latest</span><br></pre></td></tr></table></figure>
+<p>测试刚构建好的 Docker 镜像：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ docker run test/cowsay-dockerfile /usr/games/cowsay &quot;Moo&quot;</span><br><span class="line"> _____</span><br><span class="line">&lt; Moo &gt;</span><br><span class="line"> -----</span><br><span class="line">        \   ^__^</span><br><span class="line">         \  (oo)\_______</span><br><span class="line">            (__)\       )\/\</span><br><span class="line">                ||----w |</span><br><span class="line">                ||     ||</span><br></pre></td></tr></table></figure></p>
+<h6 id="ENTRYPOINT"><a href="#ENTRYPOINT" class="headerlink" title="ENTRYPOINT"></a>ENTRYPOINT</h6><p>Dockerfile 中的 ENTRYPOINT 选项可以用来指定容器运行时自动执行的命令。如将 Dockerfile 改为如下内容并重新构建：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FROM debian:wheezy</span><br><span class="line">RUN apt-get update &amp;&amp; apt-get install -y cowsay fortune</span><br><span class="line">ENTRYPOINT [&quot;/usr/games/cowsay&quot;]</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t test/cowsay-dockerfile .</span><br><span class="line">...</span><br><span class="line">$ docker run test/cowsay-dockerfile &quot;Moo&quot;</span><br><span class="line"> _____</span><br><span class="line">&lt; Moo &gt;</span><br><span class="line"> -----</span><br><span class="line">        \   ^__^</span><br><span class="line">         \  (oo)\_______</span><br><span class="line">            (__)\       )\/\</span><br><span class="line">                ||----w |</span><br><span class="line">                ||     ||</span><br></pre></td></tr></table></figure>
+<p>运行上述容器时则不需要再指定命令（<code>/usr/games/cowsay</code>）而只输入命令的参数即可。</p>
+<p>可以在当前目录下新建一个 <code>entrypoint.sh</code> 脚本：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">if [ $# -eq 0 ]; then</span><br><span class="line">	/usr/games/fortune | /usr/games/cowsay</span><br><span class="line">else</span><br><span class="line">	/usr/games/cowsay &quot;$@&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>上述内容为 Shell 脚本文件，不作详细解释。作用是当 <code>docker run</code> 没有为容器中执行的命令提供参数时，执行 <code>fortune | cowsay</code> ，如提供了参数，则执行 <code>cowsay &lt;参数&gt;</code> 命令。</p>
+</blockquote>
+<p>将 entrypoint.sh 文件添加执行权限：<code>chmod +x entrypoint.sh</code><br>将 Dockerfile 改为如下版本：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FROM debian:wheezy</span><br><span class="line">RUN apt-get update &amp;&amp; apt-get install -y cowsay fortune</span><br><span class="line">COPY entrypoint.sh /</span><br><span class="line">ENTRYPOINT [&quot;/entrypoint.sh&quot;]</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>COPY</code> 选项用来将本地主机上的文件复制到镜像的文件系统里（类似于 <code>cp</code> 命令）</p>
+<p>最终效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t test/cowsay-dockerfile .</span><br><span class="line">...</span><br><span class="line">$ docker run test/cowsay-dockerfile</span><br><span class="line"> _________________________________________</span><br><span class="line">/ You don&apos;t become a failure until you&apos;re \</span><br><span class="line">\ satisfied with being one.               /</span><br><span class="line"> -----------------------------------------</span><br><span class="line">        \   ^__^</span><br><span class="line">         \  (oo)\_______</span><br><span class="line">            (__)\       )\/\</span><br><span class="line">                ||----w |</span><br><span class="line">                ||     ||</span><br><span class="line">$ docker run test/cowsay-dockerfile Hello Moo</span><br><span class="line"> ___________</span><br><span class="line">&lt; Hello Moo &gt;</span><br><span class="line"> -----------</span><br><span class="line">        \   ^__^</span><br><span class="line">         \  (oo)\_______</span><br><span class="line">            (__)\       )\/\</span><br><span class="line">                ||----w |</span><br><span class="line">                ||     ||</span><br></pre></td></tr></table></figure></p>
+<h4 id="四、基本使用"><a href="#四、基本使用" class="headerlink" title="四、基本使用"></a>四、基本使用</h4><h5 id="端口转发"><a href="#端口转发" class="headerlink" title="端口转发"></a>端口转发</h5><p>假如容器中运行着一个 Web 服务器，需要外部世界可以访问。此时可以使用 docker 的 <code>-p</code> 或 <code>-P</code> 选项，将本地主机的端口转发至容器内的端口。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -d -p 8000:80 nginx</span><br><span class="line">Unable to find image &apos;nginx:latest&apos; locally</span><br><span class="line">latest: Pulling from library/nginx</span><br><span class="line">...</span><br><span class="line">Status: Downloaded newer image for nginx:latest</span><br><span class="line">be1364f343ae7aff9d5a6f6040b5d6ca69363a4480f04548988dd798ab04ab7b</span><br><span class="line">$ docker ps</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES</span><br><span class="line">be1364f343ae        nginx               &quot;nginx -g &apos;daemon of…&quot;   8 seconds ago       Up 7 seconds        0.0.0.0:8000-&gt;80/tcp   quirky_mclean</span><br><span class="line">$ curl localhost:8000</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">...</span><br><span class="line">$</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>docker run -d -p 8000:80 nginx</code> 命令用于在<strong>后台</strong>（<code>-d</code> 选项）启动一个由官方 nginx 镜像创建的容器，并将本地主机的 8000 端口映射到容器的 80 端口（<code>-p 8000:80</code>），即容器中 nginx 服务运行的端口。<br>可以看到，当使用 curl 命令访问本地主机的 8000 端口时，等同于访问了容器的 80 端口，即容器中的 nginx 服务。</p>
+<p>而 <code>-P</code> 选项可以自动选择空闲的端口进行转发，无需指定本地主机或容器的端口。可参考以下实例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ID=$(docker run -d -P nginx)</span><br><span class="line">$ docker port $ID 80</span><br><span class="line">0.0.0.0:32768</span><br><span class="line">$ curl localhost:32768</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<h5 id="关联容器"><a href="#关联容器" class="headerlink" title="关联容器"></a>关联容器</h5><p><strong>容器关联</strong>可以允许同一个主机上的多个容器相互交换数据。当使用默认的网络模型时，这些关联的容器通过其<strong>“内部”</strong>网络传输数据，即关联容器间的相互交流不会暴露给本地主机。</p>
+<p>可参考以下实例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker run --name myredis -d redis</span><br><span class="line">be53967c42fd3292dfd59fd5d15e7025fa436816e46f6e7cbc3c47b06ddb0047</span><br><span class="line">$ docker run --rm -it --link myredis:redis redis /bin/bash</span><br><span class="line">root@b27aca7d8c54:/data# redis-cli -h redis -p 6379</span><br><span class="line">redis:6379&gt; ping</span><br><span class="line">PONG</span><br><span class="line">redis:6379&gt;</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>docker run --name myredis -d redis</code> 命令用于在后台启动一个 redis 容器，并将其命名为 myredis 。同时返回该容器的 ID 到标准输出。<br><code>docker run --rm -it --link myredis:redis redis /bin/bash</code> 命令用于启动另一个 redis 容器，并以交互的方式访问其 Shell （<code>-it /bin/bash</code>）。<code>--rm</code> 选项表示该容器退出后将自动删除。</p>
+<p>容器关联的操作则由 <code>--link myredis:redis</code> 选项实现。表示将新容器关联至已存在的 “myredis” 容器，并为 “myredis” 容器设置别名为 “redis” ，即可以在当前的新容器中通过别名（redis）访问。</p>
+<p>该选项会在新容器的 <code>/etc/hosts</code> 文件中添加一条主机名为 <code>redis</code> 的记录，并将其指向 “myredis” 容器的 IP 地址。所以在当前容器的 Shell 中使用 <code>redis-cli</code> 命令访问 “myredis” 中的服务时，可以无需指定其 IP 地址，直接使用主机名 “redis” 即可。（<code>redis-cli -h redis -P 6379</code>）</p>
+<h5 id="存储卷"><a href="#存储卷" class="headerlink" title="存储卷"></a>存储卷</h5><p>可以在使用 <code>docker run</code> 时通过 <code>-v</code> 选项指定存储卷：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --name container-test -h CONTAINER -v /data debian /bin/bash</span><br><span class="line">root@CONTAINER:/# cd /data ; touch test-file</span><br><span class="line">root@CONTAINER:/data# ls</span><br><span class="line">test-file</span><br><span class="line">root@CONTAINER:/data# exit</span><br><span class="line">exit</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令会将容器中的 <code>/data</code> 目录变成一个存储卷，该目录下的任何文件都会被复制到卷中。</p>
+<p>可以使用 <code>docker inspect</code> 命令查看该存储卷在本地主机中的位置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker inspect -f &#123;&#123;.Mounts&#125;&#125; container-test</span><br><span class="line">[&#123;volume 7ae1... /var/lib/docker/volumes/7ae1.../_data /data local  true &#125;]</span><br></pre></td></tr></table></figure></p>
+<p>可以在存储卷对应于本地主机的目录（<code>/var/lib/docker/volumes/7ae1.../_data</code>）中创建文件，容器中对应目录（<code>/data</code>）下则会立即出现同样的文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ sudo ls /var/lib/docker/volumes/7ae1.../_data</span><br><span class="line">test-file</span><br><span class="line">$ sudo touch /var/lib/docker/volumes/7ae1.../_data/test-file2</span><br><span class="line">$ docker start -i container-test</span><br><span class="line">root@CONTAINER:/# ls /data</span><br><span class="line">test-file  test-file2</span><br><span class="line">root@CONTAINER:/#</span><br></pre></td></tr></table></figure></p>
+<p>存储卷还可以通过 Dockerfile 中的 VOLUME 选项指定。如：<code>VOLUME /data</code></p>
+<h6 id="共享数据"><a href="#共享数据" class="headerlink" title="共享数据"></a>共享数据</h6><p>可以使用 <code>-v HOST_DIR:CONTAINER_DIR</code> 选项在本地主机和一（或多）个容器间共享数据。如：<br><code>$ docker run -v /home/starky/data:/data debian ls /data</code></p>
+<p> 该命令会将本地主机上的 <code>/home/starky/data</code> 目录挂载到容器中的 <code>/data</code> 目录下，所有已经存在于 <code>/home/starky/data</code> 目录下的文件在容器中也同样能够被访问。<br>但是原本存在于容器的 <code>/data</code> 目录下的文件则被隐藏。<br>如某些配置文件可以一直存放在本地主机上，并在需要时挂载到通用镜像构建的容器中。</p>
+<p>可以使用 <code>docker run</code> 命令的 <code>--volumes-from CONTAINER</code> 选项在<strong>容器间</strong>共享数据。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it -h NEWCONTAINER --volumes-from container-test debian /bin/bash</span><br><span class="line">root@NEWCONTAINER:/# ls /data</span><br><span class="line">test-file  test-file2</span><br><span class="line">root@NEWCONTAINER:/#</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令创建了一个新的容器，且通过 <code>--volumes-from</code> 选项，该容器可以访问之前的 container-test 容器中的存储卷（<code>/data</code>）。</p>
+<h5 id="数据容器"><a href="#数据容器" class="headerlink" title="数据容器"></a>数据容器</h5><p>数据容器是一种特殊的容器，其唯一目的是为了方便其他容器之间共享数据。如创建一个 PostgreSQL 的数据容器：<br><code>$ docker run --name dbdata postgres echo &quot;Data-only container for postgres&quot;</code><br>该命令用于从 postgres 镜像创建一个容器，并初始化镜像里定义的存储卷。</p>
+<p>之后可以通过 <code>--volumes-from</code> 选项使用数据容器里的存储卷：<br><code>$ docker run -d --volumes-from dbdata --name db1 postgres</code></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://shop.oreilly.com/product/0636920035671.do" target="_blank" rel="noopener">Using Docker: Developing and Deploying Software with Containers</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Development/" rel="tag"># Development</a>
+          
+            <a href="/tags/Docker/" rel="tag"># Docker</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/05/linux-user-management/" rel="next" title="Linux 用户管理简介">
+                <i class="fa fa-chevron-left"></i> Linux 用户管理简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/16/raspberry-pi-wifi-wpa2-eap/" rel="prev" title="树莓派 3B+ 连接 WPA2 企业级加密的 WIFI">
+                树莓派 3B+ 连接 WPA2 企业级加密的 WIFI <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、容器（Container）"><span class="nav-number">1.</span> <span class="nav-text">一、容器（Container）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、Docker-安装（Linux）"><span class="nav-number">2.</span> <span class="nav-text">二、Docker 安装（Linux）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、操作入门"><span class="nav-number">3.</span> <span class="nav-text">三、操作入门</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Hello-World"><span class="nav-number">3.1.</span> <span class="nav-text">Hello World</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#交互式-Shell"><span class="nav-number">3.2.</span> <span class="nav-text">交互式 Shell</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#列出-删除容器"><span class="nav-number">3.3.</span> <span class="nav-text">列出 / 删除容器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#手动创建镜像文件"><span class="nav-number">3.4.</span> <span class="nav-text">手动创建镜像文件</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#使用-docker-run-命令运行容器并安装软件"><span class="nav-number">3.4.1.</span> <span class="nav-text">使用 docker run 命令运行容器并安装软件</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#使用-docker-commit-命令将容器转换成镜像文件。"><span class="nav-number">3.4.2.</span> <span class="nav-text">使用 docker commit 命令将容器转换成镜像文件。</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#使用生成的镜像文件"><span class="nav-number">3.4.3.</span> <span class="nav-text">使用生成的镜像文件</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-Dockerfile-创建镜像文件"><span class="nav-number">3.5.</span> <span class="nav-text">使用 Dockerfile 创建镜像文件</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#编辑-Dockerfile"><span class="nav-number">3.5.1.</span> <span class="nav-text">编辑 Dockerfile</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#构建镜像并测试"><span class="nav-number">3.5.2.</span> <span class="nav-text">构建镜像并测试</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#ENTRYPOINT"><span class="nav-number">3.5.3.</span> <span class="nav-text">ENTRYPOINT</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、基本使用"><span class="nav-number">4.</span> <span class="nav-text">四、基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#端口转发"><span class="nav-number">4.1.</span> <span class="nav-text">端口转发</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#关联容器"><span class="nav-number">4.2.</span> <span class="nav-text">关联容器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#存储卷"><span class="nav-number">4.3.</span> <span class="nav-text">存储卷</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#共享数据"><span class="nav-number">4.3.1.</span> <span class="nav-text">共享数据</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据容器"><span class="nav-number">4.4.</span> <span class="nav-text">数据容器</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

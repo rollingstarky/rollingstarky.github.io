@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,Advanced,Program,Concurrency,Performance,Async,Eventloop,Coroutine," />
+
+
+<meta name="description" content="Python 中通过 asyncio 实现的异步编程主要包含如下三个模块：  事件循环（event loop）：每一个需要异步执行的任务都会在事件循环中注册，事件循环负责管理这些任务之间的执行流程 协程（Coroutine）：指用于执行具体某个异步任务的函数。函数体中的 await 关键字可以将协程的控制权释放给事件循环 Future：表示已经执行或者尚未执行的任务的结果  在异步程序的世界里，所">
+<meta name="keywords" content="Python,Advanced,Program,Concurrency,Performance,Async,Eventloop,Coroutine">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 3.7 通过 asyncio 实现异步编程">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/11/07/python-37-async-programming-with-asyncio/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="Python 中通过 asyncio 实现的异步编程主要包含如下三个模块：  事件循环（event loop）：每一个需要异步执行的任务都会在事件循环中注册，事件循环负责管理这些任务之间的执行流程 协程（Coroutine）：指用于执行具体某个异步任务的函数。函数体中的 await 关键字可以将协程的控制权释放给事件循环 Future：表示已经执行或者尚未执行的任务的结果  在异步程序的世界里，所">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-11-07T14:44:18.163Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 3.7 通过 asyncio 实现异步编程">
+<meta name="twitter:description" content="Python 中通过 asyncio 实现的异步编程主要包含如下三个模块：  事件循环（event loop）：每一个需要异步执行的任务都会在事件循环中注册，事件循环负责管理这些任务之间的执行流程 协程（Coroutine）：指用于执行具体某个异步任务的函数。函数体中的 await 关键字可以将协程的控制权释放给事件循环 Future：表示已经执行或者尚未执行的任务的结果  在异步程序的世界里，所">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/11/07/python-37-async-programming-with-asyncio/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Python 3.7 通过 asyncio 实现异步编程 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/11/07/python-37-async-programming-with-asyncio/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Python 3.7 通过 asyncio 实现异步编程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-07T00:00:00+08:00">2019-11-07</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/11/07/python-37-async-programming-with-asyncio/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/11/07/python-37-async-programming-with-asyncio/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/11/07/python-37-async-programming-with-asyncio/" class="leancloud_visitors" data-flag-title="Python 3.7 通过 asyncio 实现异步编程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">9.2k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:09</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Python 中通过 asyncio 实现的异步编程主要包含如下三个模块：</p>
+<ul>
+<li>事件循环（event loop）：每一个需要异步执行的任务都会在<strong>事件循环</strong>中注册，事件循环负责管理这些任务之间的执行流程</li>
+<li>协程（Coroutine）：指用于执行具体某个异步任务的函数。函数体中的 <code>await</code> 关键字可以将协程的控制权释放给事件循环</li>
+<li>Future：表示已经执行或者尚未执行的任务的结果</li>
+</ul>
+<p>在异步程序的世界里，所有代码都运行在事件循环中，可以同时执行多个协程。这些协程异步地执行，直到遇到 <code>await</code> 关键字，此时该协程会让出程序控制权给事件循环，使得其他协程有机会发挥作用。<br>需要注意的是，<strong>不能在同一个函数中同时包含异步和同步代码</strong>。即在同步函数中无法使用 <code>await</code> 关键字。</p>
+<h4 id="一、Hello-World"><a href="#一、Hello-World" class="headerlink" title="一、Hello World"></a>一、Hello World</h4><p>以下是一段简单的使用了 <code>async</code> 关键字的 Hello World 程序：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(first_print, second_print)</span>:</span></span><br><span class="line">    print(first_print)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(second_print)</span><br><span class="line"></span><br><span class="line">asyncio.run(hello(<span class="string">"Welcome"</span>, <span class="string">"Good-bye"</span>))</span><br><span class="line"><span class="comment"># =&gt; Welcome</span></span><br><span class="line"><span class="comment"># =&gt; Good-bye</span></span><br></pre></td></tr></table></figure></p>
+<p>上述代码的行为看上去更像是同步代码，先输出 <code>Welcome</code>，等待一秒钟之后，再输出 <code>Good-bye</code>。<br>在进一步探究之前，先看下上述异步代码中出现的几个基本概念：</p>
+<ul>
+<li>Python 语言中，任何由 <code>async def</code> 定义的函数（即上面的 <code>hello()</code>）都可以称之为<strong>协程</strong>。调用协程函数所返回的对象称为协程对象。</li>
+<li>函数 <code>asyncio.run</code> 是所有异步代码的主入口，只应该被调用一次。它负责组织传入的协程对象，同时管理 asyncio 的事件循环。</li>
+<li><code>await</code> 关键字用于将协程运行时获取的程序控制权移交给事件循环，并中断该协程的执行流程。</li>
+</ul>
+<p>一个更现实的异步程序的示例如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">say_something</span><span class="params">(delay, words)</span>:</span></span><br><span class="line">    print(<span class="string">f"Started: <span class="subst">&#123;words&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(delay)</span><br><span class="line">    print(<span class="string">f"Finished: <span class="subst">&#123;words&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">f"Starting Tasks: <span class="subst">&#123;time.strftime(<span class="string">'%X'</span>)&#125;</span>"</span>)</span><br><span class="line">    task1 = asyncio.create_task(say_something(<span class="number">1</span>, <span class="string">"First task"</span>))</span><br><span class="line">    task2 = asyncio.create_task(say_something(<span class="number">2</span>, <span class="string">"Second task"</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> task1</span><br><span class="line">    <span class="keyword">await</span> task2</span><br><span class="line"></span><br><span class="line">    print(<span class="string">f"Finished Tasks: <span class="subst">&#123;time.strftime(<span class="string">'%X'</span>)&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; Starting Tasks: 20:32:28</span></span><br><span class="line"><span class="comment"># =&gt; Started: First task</span></span><br><span class="line"><span class="comment"># =&gt; Started: Second task</span></span><br><span class="line"><span class="comment"># =&gt; Finished: First task</span></span><br><span class="line"><span class="comment"># =&gt; Finished: Second task</span></span><br><span class="line"><span class="comment"># =&gt; Finished Tasks: 20:32:30</span></span><br></pre></td></tr></table></figure></p>
+<p>从同步执行的逻辑来看，应该是 <code>task1</code> 开始，等待一秒钟，结束；<code>task2</code> 开始，等待两秒钟，结束。共耗时 3 秒以上。<br>异步程序实际的执行流程为，<code>task1</code> 和 <code>task2</code> 同时开始，各自等待一段时间后，先后结束。共耗时 2 秒。具体如下：</p>
+<ul>
+<li><code>task1</code> 中的 <code>say_something</code> 协程开始执行</li>
+<li><code>say_something</code> 遇到 <code>await</code> 关键字时（<code>await asyncio.sleep(delay)</code>），协程暂停执行并等待 1 秒钟，在暂停的同时将程序控制权转移给事件循环</li>
+<li><code>task2</code> 从事件循环获取控制权开始执行，同样遇到 <code>await</code> 关键字时暂停协程并等待 2 秒钟，在暂停的同时将程序控制权转移给事件循环</li>
+<li><code>task1</code> 等待时间结束后，事件循环将控制权移交给 <code>task1</code>，恢复其协程的运行直至结束</li>
+<li><code>task1</code> 运行结束，<code>task2</code> 等待时间完成，<code>task2</code> 获取程序控制权并恢复运行直至结束。两个任务执行完成。</li>
+</ul>
+<h4 id="二、Awaitable-对象"><a href="#二、Awaitable-对象" class="headerlink" title="二、Awaitable 对象"></a>二、Awaitable 对象</h4><p><code>await</code> 关键字用于将程序控制权移交给事件循环并中断当前协程的执行。它有以下几个使用规则：</p>
+<ul>
+<li>只能用在由 <code>async def</code> 修饰的函数中，在普通函数中使用会抛出异常</li>
+<li>调用一个协程函数后，就必须等待其执行完成并返回结果</li>
+<li><code>await func()</code> 中的 <code>func()</code> 必须是一个 <strong>awaitable</strong> 对象。即一个协程函数或者一个在内部实现了 <code>__await__()</code> 方法的对象，该方法会返回一个生成器</li>
+</ul>
+<p>Awaitable 对象包含协程、Task 和 Future 等。</p>
+<h5 id="协程"><a href="#协程" class="headerlink" title="协程"></a>协程</h5><p>关于被 <code>await</code> 调用的协程，即上面的第二条规则，可以参考如下代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">mult</span><span class="params">(first, second)</span>:</span></span><br><span class="line">    print(<span class="string">f"Calculating multiply of <span class="subst">&#123;first&#125;</span> and <span class="subst">&#123;second&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    num_mul = first * second</span><br><span class="line">    print(<span class="string">f"Multiply is <span class="subst">&#123;num_mul&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">return</span> num_mul</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">sum</span><span class="params">(first, second)</span>:</span></span><br><span class="line">    print(<span class="string">f"Calculating sum of <span class="subst">&#123;first&#125;</span> and <span class="subst">&#123;second&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    num_sum = first + second</span><br><span class="line">    print(<span class="string">f"Sum is <span class="subst">&#123;num_sum&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">return</span> num_sum</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(first, second)</span>:</span></span><br><span class="line">    <span class="keyword">await</span> sum(first, second)</span><br><span class="line">    <span class="keyword">await</span> mult(first, second)</span><br><span class="line"></span><br><span class="line">asyncio.run(main(<span class="number">7</span>, <span class="number">8</span>))</span><br><span class="line"><span class="comment"># =&gt; Calculating sum of 7 and 8</span></span><br><span class="line"><span class="comment"># =&gt; Sum is 15</span></span><br><span class="line"><span class="comment"># =&gt; Calculating multiply of 7 and 8</span></span><br><span class="line"><span class="comment"># =&gt; Multiply is 56</span></span><br></pre></td></tr></table></figure></p>
+<p>上述代码中由 <code>await</code> 修饰的两个协程函数 <code>sum</code> 和 <code>mult</code> 即为 <strong>awaitable</strong> 对象，从输出结果中可以看出，<code>sum</code> 函数先执行完毕并输出结果，随后 <code>mult</code> 函数执行并输出结果。<br>即 <code>await</code> 调用的协程函数必须执行完毕后才能继续执行另外的 <code>await</code> 协程，这看上去并不符合异步程序的定义。</p>
+<h5 id="Tasks"><a href="#Tasks" class="headerlink" title="Tasks"></a>Tasks</h5><p>协程异步执行的关键在于 Tasks。<br>当任意一个协程函数被类似于 <code>asyncio.create_task()</code> 的函数调用时，该协程就会自动排进由事件循环管理的执行流程里。在 asyncio 的定义中，由事件循环控制运行的协程即被称为<strong>任务</strong>。<br>绝大多数情况下，编写异步代码即意味着需要使用 <code>create_task()</code> 方法将协程放进事件循环。</p>
+<p>参考如下代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">mul</span><span class="params">(first, second)</span>:</span></span><br><span class="line">    print(<span class="string">f"Calculating multiply of <span class="subst">&#123;first&#125;</span> and <span class="subst">&#123;second&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    num_mul = first * second</span><br><span class="line">    print(<span class="string">f"Multiply is <span class="subst">&#123;num_mul&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">return</span> num_mul</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">sum</span><span class="params">(first, second)</span>:</span></span><br><span class="line">    print(<span class="string">f"Calculating sum of <span class="subst">&#123;first&#125;</span> and <span class="subst">&#123;second&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    num_sum = first + second</span><br><span class="line">    print(<span class="string">f"Sum is <span class="subst">&#123;num_sum&#125;</span>"</span>)</span><br><span class="line">    <span class="keyword">return</span> num_sum</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(first, second)</span>:</span></span><br><span class="line">    sum_task = asyncio.create_task(sum(first, second))</span><br><span class="line">    mul_task = asyncio.create_task(mul(first, second))</span><br><span class="line">    <span class="keyword">await</span> sum_task</span><br><span class="line">    <span class="keyword">await</span> mul_task</span><br><span class="line"></span><br><span class="line">asyncio.run(main(<span class="number">7</span>, <span class="number">8</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; Calculating sum of 7 and 8</span></span><br><span class="line"><span class="comment"># =&gt; Calculating multiply of 7 and 8</span></span><br><span class="line"><span class="comment"># =&gt; Sum is 15</span></span><br><span class="line"><span class="comment"># =&gt; Multiply is 56</span></span><br></pre></td></tr></table></figure></p>
+<p>对比上一段代码示例，从输出中可以看出，<code>sum_task</code> 和 <code>mul_task</code> 两个任务的执行流程符合异步程序的逻辑。<br><code>sum_task</code> 遇到 <code>await asyncio.sleep(1)</code> 语句后并没有让整个程序等待自己返回计算结果，而是中断执行并把控制权通过事件循环移交给 <code>mul_task</code>。两个任务先后执行并进入等待，最后在各自的等待时间结束后输出结果。</p>
+<p>除 <code>create_task()</code> 函数以外，还可以使用 <code>asyncio.gather()</code> 函数创建异步任务：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">greetings</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"Welcome"</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(<span class="string">"Good by"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.gather(greetings(), greetings())</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">say_greet</span><span class="params">()</span>:</span></span><br><span class="line">    start = time.perf_counter()</span><br><span class="line">    asyncio.run(main())</span><br><span class="line">    elasped = time.perf_counter() - start</span><br><span class="line">    print(<span class="string">f"Total time elasped: <span class="subst">&#123;elasped&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">say_greet()</span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; Welcome</span></span><br><span class="line"><span class="comment"># =&gt; Welcome</span></span><br><span class="line"><span class="comment"># =&gt; Good by</span></span><br><span class="line"><span class="comment"># =&gt; Good by</span></span><br><span class="line"><span class="comment"># =&gt; Total time elasped: 1.0213364</span></span><br></pre></td></tr></table></figure></p>
+<p>实际两个任务完成的时间略大于 1 秒而不是 2 秒。</p>
+<h5 id="Futures"><a href="#Futures" class="headerlink" title="Futures"></a>Futures</h5><p>Futures 代表异步操作的<strong>预期</strong>结果，即该异步操作可能已经执行也可能尚未执行完毕。通常情况下并不需要在代码中显式地管理 Future 对象，这些工作一般由 asyncio 库隐式地处理。</p>
+<p>当一个 Future 实例被创建成功以后，即代表该实例关联的异步操作还没有完成，但是会在未来的某个时间返回结果。<br>asyncio 有一个 <code>asyncio.wait_for(aws, timeout, *)</code> 方法可以为异步任务设置超时时间。如果超过指定时间后异步操作仍未执行完毕，则该任务被取消并抛出 <code>asyncio.TimeoutError</code> 异常。<br><code>timeout</code> 的默认值为 <code>None</code>，即程序会阻塞并一直等待直到 Future 对象关联的操作返回结果。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">long_time_taking_method</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">4000</span>)</span><br><span class="line">    print(<span class="string">"Completed the work"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">await</span> asyncio.wait_for(long_time_taking_method(),</span><br><span class="line">        timeout=<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">except</span> asyncio.TimeoutError:</span><br><span class="line">        print(<span class="string">"Timeout occurred"</span>)</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br><span class="line"><span class="comment"># =&gt; Timeout occurred</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="三、Async-实例代码"><a href="#三、Async-实例代码" class="headerlink" title="三、Async 实例代码"></a>三、Async 实例代码</h4><p>通过创建子进程异步执行 Shell 命令：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(cmd)</span>:</span></span><br><span class="line">    proc = <span class="keyword">await</span> asyncio.create_subprocess_shell(</span><br><span class="line">        cmd,</span><br><span class="line">        stdout=asyncio.subprocess.PIPE,</span><br><span class="line">        stderr=asyncio.subprocess.PIPE)</span><br><span class="line"></span><br><span class="line">    stdout, stderr = <span class="keyword">await</span> proc.communicate()</span><br><span class="line"></span><br><span class="line">    print(<span class="string">f'[<span class="subst">&#123;cmd!r&#125;</span> exited with <span class="subst">&#123;proc.returncode&#125;</span>]'</span>)</span><br><span class="line">    <span class="keyword">if</span> stdout:</span><br><span class="line">        print(<span class="string">f'[stdout]\n<span class="subst">&#123;stdout.decode()&#125;</span>'</span>)</span><br><span class="line">    <span class="keyword">if</span> stderr:</span><br><span class="line">        print(<span class="string">f'[stderr]\n<span class="subst">&#123;stderr.decode()&#125;</span>'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.gather(</span><br><span class="line">        run(<span class="string">'sleep 2; echo "world"'</span>),</span><br><span class="line">        run(<span class="string">'sleep 1; echo "hello"'</span>),</span><br><span class="line">        run(<span class="string">'ls /zzz'</span>))</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; ['ls /zzz' exited with 2]</span></span><br><span class="line"><span class="comment"># =&gt; [stderr]</span></span><br><span class="line"><span class="comment"># =&gt; ls: cannot access '/zzz': No such file or directory</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; ['sleep 1; echo "hello"' exited with 0]</span></span><br><span class="line"><span class="comment"># =&gt; [stdout]</span></span><br><span class="line"><span class="comment"># =&gt; hello</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># =&gt; ['sleep 2; echo "world"' exited with 0]</span></span><br><span class="line"><span class="comment"># =&gt; [stdout]</span></span><br><span class="line"><span class="comment"># =&gt; world</span></span><br></pre></td></tr></table></figure></p>
+<p>通过 Queue 将工作负载分发给多个异步执行的 Task 处理：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">worker</span><span class="params">(name, queue)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">        <span class="comment"># Get a "work item" out of the queue.</span></span><br><span class="line">        sleep_for = <span class="keyword">await</span> queue.get()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Sleep for the "sleep_for" seconds.</span></span><br><span class="line">        <span class="keyword">await</span> asyncio.sleep(sleep_for)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Notify the queue that the "work item" has been processed.</span></span><br><span class="line">        queue.task_done()</span><br><span class="line"></span><br><span class="line">        print(<span class="string">f'<span class="subst">&#123;name&#125;</span> has slept for <span class="subst">&#123;sleep_for:<span class="number">.2</span>f&#125;</span> seconds'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># Create a queue that we will use to store our "workload".</span></span><br><span class="line">    queue = asyncio.Queue()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Generate random timings and put them into the queue.</span></span><br><span class="line">    total_sleep_time = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">20</span>):</span><br><span class="line">        sleep_for = random.uniform(<span class="number">0.05</span>, <span class="number">1.0</span>)</span><br><span class="line">        total_sleep_time += sleep_for</span><br><span class="line">        queue.put_nowait(sleep_for)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Create three worker tasks to process the queue concurrently.</span></span><br><span class="line">    tasks = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):</span><br><span class="line">        task = asyncio.create_task(worker(<span class="string">f'worker-<span class="subst">&#123;i&#125;</span>'</span>, queue))</span><br><span class="line">        tasks.append(task)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Wait until the queue is fully processed.</span></span><br><span class="line">    started_at = time.monotonic()</span><br><span class="line">    <span class="keyword">await</span> queue.join()</span><br><span class="line">    total_slept_for = time.monotonic() - started_at</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Cancel our worker tasks.</span></span><br><span class="line">    <span class="keyword">for</span> task <span class="keyword">in</span> tasks:</span><br><span class="line">        task.cancel()</span><br><span class="line">    <span class="comment"># Wait until all worker tasks are cancelled.</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.gather(*tasks, return_exceptions=<span class="keyword">True</span>)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'===='</span>)</span><br><span class="line">    print(<span class="string">f'3 workers slept in parallel for <span class="subst">&#123;total_slept_for:<span class="number">.2</span>f&#125;</span> seconds'</span>)</span><br><span class="line">    print(<span class="string">f'total expected sleep time: <span class="subst">&#123;total_sleep_time:<span class="number">.2</span>f&#125;</span> seconds'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br><span class="line"><span class="comment"># =&gt; worker-2 has slept for 0.12 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.28 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.12 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-0 has slept for 0.46 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-0 has slept for 0.49 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-2 has slept for 0.90 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.62 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.67 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-0 has slept for 0.85 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-2 has slept for 0.94 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.45 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-2 has slept for 0.19 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-0 has slept for 0.99 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-2 has slept for 0.86 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.97 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-0 has slept for 0.74 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.58 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-2 has slept for 0.73 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-1 has slept for 0.27 seconds</span></span><br><span class="line"><span class="comment"># =&gt; worker-0 has slept for 0.57 seconds</span></span><br><span class="line"><span class="comment"># =&gt; ====</span></span><br><span class="line"><span class="comment"># =&gt; 3 workers slept in parallel for 4.10 seconds</span></span><br><span class="line"><span class="comment"># =&gt; total expected sleep time: 11.80 seconds</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://docs.python.org/3.7/library/asyncio.html" target="_blank" rel="noopener">asyncio — Asynchronous I/O</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Advanced/" rel="tag"># Advanced</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Concurrency/" rel="tag"># Concurrency</a>
+          
+            <a href="/tags/Performance/" rel="tag"># Performance</a>
+          
+            <a href="/tags/Async/" rel="tag"># Async</a>
+          
+            <a href="/tags/Eventloop/" rel="tag"># Eventloop</a>
+          
+            <a href="/tags/Coroutine/" rel="tag"># Coroutine</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/06/python-celery-distributed-message-queue/" rel="next" title="Python 通过 Celery 框架实现分布式任务队列">
+                <i class="fa fa-chevron-left"></i> Python 通过 Celery 框架实现分布式任务队列
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/28/python-build-rest-api-with-flask-1-modeling/" rel="prev" title="Python 通过 Flask 框架构建 REST API（一）——数据库建模">
+                Python 通过 Flask 框架构建 REST API（一）——数据库建模 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、Hello-World"><span class="nav-number">1.</span> <span class="nav-text">一、Hello World</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、Awaitable-对象"><span class="nav-number">2.</span> <span class="nav-text">二、Awaitable 对象</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#协程"><span class="nav-number">2.1.</span> <span class="nav-text">协程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Tasks"><span class="nav-number">2.2.</span> <span class="nav-text">Tasks</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Futures"><span class="nav-number">2.3.</span> <span class="nav-text">Futures</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、Async-实例代码"><span class="nav-number">3.</span> <span class="nav-text">三、Async 实例代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

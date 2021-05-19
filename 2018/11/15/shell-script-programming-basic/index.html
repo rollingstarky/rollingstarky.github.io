@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Shell,Programming," />
+
+
+<meta name="description" content="基础篇一、输出信息大部分 Shell 命令都会生成自己的输出信息，在脚本运行时打印到终端屏幕上。但是很多时候，仍需要在输出的信息中添加上自己的内容，以提示用户脚本运行时究竟发生着什么，达到更好的交互效果。 echo 命令可以用来打印字符串内容。123$  echo This is a testThis is a test$ PS：默认是不需要将 echo 命令后面的字符串包含在一对引号中的 ech">
+<meta name="keywords" content="Linux,Admin,Shell,Programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shell 脚本编程（基础篇）">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/11/15/shell-script-programming-basic/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="基础篇一、输出信息大部分 Shell 命令都会生成自己的输出信息，在脚本运行时打印到终端屏幕上。但是很多时候，仍需要在输出的信息中添加上自己的内容，以提示用户脚本运行时究竟发生着什么，达到更好的交互效果。 echo 命令可以用来打印字符串内容。123$  echo This is a testThis is a test$ PS：默认是不需要将 echo 命令后面的字符串包含在一对引号中的 ech">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-12-02T20:01:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Shell 脚本编程（基础篇）">
+<meta name="twitter:description" content="基础篇一、输出信息大部分 Shell 命令都会生成自己的输出信息，在脚本运行时打印到终端屏幕上。但是很多时候，仍需要在输出的信息中添加上自己的内容，以提示用户脚本运行时究竟发生着什么，达到更好的交互效果。 echo 命令可以用来打印字符串内容。123$  echo This is a testThis is a test$ PS：默认是不需要将 echo 命令后面的字符串包含在一对引号中的 ech">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/11/15/shell-script-programming-basic/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Shell 脚本编程（基础篇） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/11/15/shell-script-programming-basic/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Shell 脚本编程（基础篇）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-15T00:00:00+08:00">2018-11-15</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/15/shell-script-programming-basic/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/11/15/shell-script-programming-basic/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/11/15/shell-script-programming-basic/" class="leancloud_visitors" data-flag-title="Shell 脚本编程（基础篇）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:09</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="基础篇"><a href="#基础篇" class="headerlink" title="基础篇"></a>基础篇</h3><h4 id="一、输出信息"><a href="#一、输出信息" class="headerlink" title="一、输出信息"></a>一、输出信息</h4><p>大部分 Shell 命令都会生成自己的输出信息，在脚本运行时打印到终端屏幕上。但是很多时候，仍需要在输出的信息中添加上自己的内容，以提示用户脚本运行时究竟发生着什么，达到更好的交互效果。</p>
+<p><code>echo</code> 命令可以用来打印字符串内容。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$  echo This is a test</span><br><span class="line">This is a test</span><br><span class="line">$</span><br></pre></td></tr></table></figure></p>
+<p><strong>PS</strong>：默认是不需要将 <code>echo</code> 命令后面的字符串包含在一对引号中的</p>
+<p><code>echo</code> 可以使用<strong>引号</strong>作为文本字符串的分隔符。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ echo &apos;Hello</span><br><span class="line">&gt; World&apos;</span><br><span class="line">Hello</span><br><span class="line">World</span><br></pre></td></tr></table></figure></p>
+<p>当输出的文本内容中本来就有引号出现时，如（<code>Let&#39;s see if this&#39;ll work</code>），可以结合单、双引号的使用，或者使用<strong>转义符</strong>（<code>\</code>）前缀<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 引号作为字符串分隔符而不是文本内容</span><br><span class="line">$ echo Let&apos;s see if this&apos;ll work</span><br><span class="line">Lets see if thisll work</span><br><span class="line"># 使用 \ 前缀进行转义</span><br><span class="line">$ echo Let\&apos;s see if this\&apos;ll work</span><br><span class="line">Let&apos;s see if this&apos;ll work</span><br><span class="line"># 使用双引号作为分隔符，单引号作为中间的文本正常输出</span><br><span class="line">$ echo &quot;Let&apos;s see if this&apos;ll work&quot;</span><br><span class="line">Let&apos;s see if this&apos;ll work</span><br></pre></td></tr></table></figure></p>
+<h5 id="脚本的执行权限"><a href="#脚本的执行权限" class="headerlink" title="脚本的执行权限"></a>脚本的执行权限</h5><p>默认创建的脚本文件没有<strong>执行权限</strong>，不能直接在命令行中运行。<br>如创建包含以下内容的脚本文件 <code>info.sh</code> ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">echo The time and date are:</span><br><span class="line">date</span><br><span class="line">echo &quot;Let&apos;s see who&apos;s logged into the system:&quot;</span><br><span class="line">who</span><br></pre></td></tr></table></figure></p>
+<p>直接执行上述脚本时会提示 <code>permission denied</code> 错误：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$  ./info.sh</span><br><span class="line">zsh: permission denied: ./info.sh</span><br></pre></td></tr></table></figure></p>
+<p>需要使用 <code>chomd +x filename</code> 命令为该脚本文件<strong>添加执行权限</strong>后再运行，效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x info.sh</span><br><span class="line">$ ./info.sh</span><br><span class="line">The time and date are:</span><br><span class="line">Wed Oct 31 11:48:07 CST 2018</span><br><span class="line">Let&apos;s see who&apos;s logged into the system:</span><br><span class="line">starky   console  Oct 28 12:42</span><br><span class="line">starky   ttys000  Oct 29 16:52</span><br><span class="line">starky   ttys001  Oct 31 11:23</span><br></pre></td></tr></table></figure></p>
+<h4 id="二、变量"><a href="#二、变量" class="headerlink" title="二、变量"></a>二、变量</h4><h5 id="1-系统环境变量"><a href="#1-系统环境变量" class="headerlink" title="1. 系统环境变量"></a>1. 系统环境变量</h5><p>在 Shell 脚本中可以直接访问系统中的<strong>环境变量</strong>，以获取相关的系统信息（如计算机名称，当前登录用户的账户名、 UID 和主目录等）。<br>当前定义的所有环境变量可以通过 <code>set</code> 命令获取。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ set</span><br><span class="line">...</span><br><span class="line">HISTCMD=2217</span><br><span class="line">HISTFILE=/Users/starky/.zsh_history</span><br><span class="line">HISTSIZE=50000</span><br><span class="line">HOME=/Users/starky</span><br><span class="line">HOST=skitars-MacBook-Pro.local</span><br><span class="line">IFS=$&apos; \t\n\C-@&apos;</span><br><span class="line">ITERM_PROFILE=starky</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>当需要在 Shell 脚本中使用具体某个环境变量的值时，可以用<strong>环境变量名称加上 <code>$</code> 前缀</strong>表示（如 <code>$HOST</code>）。<br>编辑如下 <code>sys_info.sh</code> 文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">echo User info for userid: $USER</span><br><span class="line">echo UID: $UID</span><br><span class="line">echo HOME: $HOME</span><br></pre></td></tr></table></figure></p>
+<p>运行效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x sys_info.sh</span><br><span class="line">$ ./sys_info.sh</span><br><span class="line">User info for userid: starky</span><br><span class="line">UID: 501</span><br><span class="line">HOME: /Users/starky</span><br></pre></td></tr></table></figure></p>
+<p><strong>PS</strong>：由于在 Shell 脚本中，<code>$</code> 作为变量的前缀符，所以当需要在文本输出中显示 <code>$</code> 时，应使用转义。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># $15 被当成了代入到字符串中的“变量”</span><br><span class="line">$ echo &quot;The cost of the item is $15&quot;</span><br><span class="line">The cost of the item is</span><br><span class="line"># 使用 \ 转义后正常打印 $ 字符</span><br><span class="line">$ echo &quot;The cost of the item is \$15&quot;</span><br><span class="line">The cost of the item is $15</span><br></pre></td></tr></table></figure></p>
+<h5 id="2-用户自定义变量"><a href="#2-用户自定义变量" class="headerlink" title="2. 用户自定义变量"></a>2. 用户自定义变量</h5><p>Shell 脚本允许用户自行定义和使用<strong>变量</strong>，这样就可以将脚本中用到的数据临时存储在指定的变量中，使用时再通过 <code>$变量名</code> 的形式获取。</p>
+<ul>
+<li>变量赋值：<code>var=value</code> （注意 <code>=</code> 号两边不能有<strong>空格</strong>，即 <code>var = value</code> 是错误的）</li>
+<li>变量使用：<code>$var</code></li>
+</ul>
+<blockquote>
+<p><strong>PS</strong>：Shell 脚本中的变量名<strong>区分大小写</strong><br>Shell 脚本会<strong>自动判断</strong>变量值的<strong>数据类型</strong><br>变量的有效性贯穿脚本的整个生命周期，即脚本执行完毕后变量会自行删除</p>
+</blockquote>
+<p>编辑如下 <code>variables.sh</code> 文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">days=10</span><br><span class="line">guest=&quot;Katie&quot;</span><br><span class="line">echo &quot;$guest checked in $days days ago&quot;</span><br><span class="line"></span><br><span class="line">days=5</span><br><span class="line">guest=&quot;Jessica&quot;</span><br><span class="line">echo &quot;$guest checked in $days days ago&quot;</span><br></pre></td></tr></table></figure></p>
+<p>运行效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x variables.sh</span><br><span class="line">$ ./variables.sh</span><br><span class="line">Katie checked in 10 days ago</span><br><span class="line">Jessica checked in 5 days ago</span><br><span class="line">$ echo $days</span><br></pre></td></tr></table></figure></p>
+<p>可以看到，脚本退出后，脚本中定义的 <code>$days</code> 变量又恢复为<strong>未定义</strong>的状态。</p>
+<h4 id="三、命令替换"><a href="#三、命令替换" class="headerlink" title="三、命令替换"></a>三、命令替换</h4><p>Shell 脚本最有用处的特性之一，就是它可以<strong>提取某个命令的输出信息，并将其赋值给一个变量</strong>。<br>可以通过以下两种方式将命令输出赋值给变量：</p>
+<ul>
+<li>反单引号（`）</li>
+<li><code>$()</code> 格式</li>
+</ul>
+<p>如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 使用 date 命令获取当前的日期和时间</span><br><span class="line">$ date</span><br><span class="line">Thu Nov  1 01:03:02 CST 2018</span><br><span class="line"># 将 date 命令的输出（即当前日期和时间）赋值给 var1 变量</span><br><span class="line">$ var1=`date`</span><br><span class="line">$ echo Today is: $var1</span><br><span class="line">Today is: Thu Nov  1 01:03:15 CST 2018</span><br><span class="line"># 将 date 命令的输出赋值给 var2 变量（使用 $() 格式）</span><br><span class="line">$ var2=$(date)</span><br><span class="line">$ echo Today is: $var2</span><br><span class="line">Today is: Thu Nov  1 01:03:36 CST 2018</span><br></pre></td></tr></table></figure></p>
+<p><strong>示例程序</strong>：<br>使用命令替换完成一个脚本（<code>log.sh</code>），该脚本可以创建以当前时间水印为后缀的文本文件，内容为 <code>/usr/bin</code> 目录下的所有文件列表。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">today=$(date +%y%m%d%H%M%S)</span><br><span class="line">ls -al /usr/bin &gt; log.$today</span><br><span class="line">echo The file log.$today has been created, you can check it later.</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>date +%y%m%d%H%M%S</code> 命令可以输出纯数字格式的日期和时间<br>运行效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x log.sh</span><br><span class="line">$ ./log.sh</span><br><span class="line">The file log.181101012159 has been created, you can check it later.</span><br><span class="line">$ ls log*</span><br><span class="line">log.181101012159 log.sh</span><br><span class="line">$ head log.181101012159</span><br><span class="line">total 103992</span><br><span class="line">drwxr-xr-x  971 root   wheel     31072 Oct 13 17:44 .</span><br><span class="line">drwxr-xr-x@   9 root   wheel       288 Sep 21 12:01 ..</span><br><span class="line">-rwxr-xr-x    4 root   wheel       925 Aug 18 08:45 2to3-</span><br><span class="line">lrwxr-xr-x    1 root   wheel        74 Oct 13 17:44 2to3-2.7 -&gt; ../../System/Library/Frameworks/Python.framework/Versions/2.7/bin/2to3-2.7</span><br><span class="line">-rwxr-xr-x    1 root   wheel     55072 Sep 21 12:16 AssetCacheLocatorUtil</span><br><span class="line">-rwxr-xr-x    1 root   wheel     53472 Sep 21 12:16 AssetCacheManagerUtil</span><br><span class="line">-rwxr-xr-x    1 root   wheel     48256 Sep 21 12:17 AssetCacheTetheratorUtil</span><br><span class="line">-rwxr-xr-x    1 root   wheel     18320 Sep 21 12:17 BuildStrings</span><br><span class="line">-rwxr-xr-x    1 root   wheel     18288 Sep 21 12:17 CpMac</span><br></pre></td></tr></table></figure></p>
+<h4 id="四、重定向输入和输出"><a href="#四、重定向输入和输出" class="headerlink" title="四、重定向输入和输出"></a>四、重定向输入和输出</h4><h5 id="1-输出重定向"><a href="#1-输出重定向" class="headerlink" title="1. 输出重定向"></a>1. 输出重定向</h5><p>最基本的<strong>重定向</strong>，就是通过<strong>大于号</strong>（&gt;），将某个命令的输出内容保存至一个文件中。</p>
+<p>格式：<code>command &gt; outputfile</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ date &gt; current_date.txt</span><br><span class="line">$ ls -l current_date.txt</span><br><span class="line">-rw-r--r--  1 starky  staff  29 Nov  1 01:29 current_date.txt</span><br><span class="line">$ cat current_date.txt</span><br><span class="line">Thu Nov  1 01:29:45 CST 2018</span><br></pre></td></tr></table></figure>
+<p><strong>PS</strong>：如使用重定向时，指定的文件已存在，则该文件的原始内容会被新内容<strong>覆盖</strong>。<br>如果只是想在文件末尾<strong>追加</strong>内容，则可以使用<strong>双大于号</strong>（&gt;&gt;）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ date &gt;&gt; current_date.txt</span><br><span class="line">$ cat current_date.txt</span><br><span class="line">Thu Nov  1 01:29:45 CST 2018</span><br><span class="line">Thu Nov  1 01:34:03 CST 2018</span><br></pre></td></tr></table></figure></p>
+<h5 id="2-输入重定向"><a href="#2-输入重定向" class="headerlink" title="2. 输入重定向"></a>2. 输入重定向</h5><p>输入重定向和输出重定向相反。即从文件中读取内容，并将该内容传递给某个命令。</p>
+<p>格式：<code>command &lt; inputfile</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l /Users/starky</span><br><span class="line">total 49864</span><br><span class="line">drwx------@  3 starky  staff        96 Oct 13 18:00 Applications</span><br><span class="line">drwx------+ 23 starky  staff       736 Oct 31 19:14 Desktop</span><br><span class="line">drwx------+ 21 starky  staff       672 Oct 31 19:15 Documents</span><br><span class="line">drwx------+ 37 starky  staff      1184 Oct 30 20:18 Downloads</span><br><span class="line">drwx------+ 72 starky  staff      2304 Oct 27 01:38 Library</span><br><span class="line">drwx------+  6 starky  staff       192 Oct 29 10:34 Movies</span><br><span class="line">drwx------+  3 starky  staff        96 Sep 27 13:13 Music</span><br><span class="line">...</span><br><span class="line">$ cat directory.txt</span><br><span class="line">/Users/starky</span><br><span class="line">$ ls -l &lt; directory.txt</span><br><span class="line">total 49864</span><br><span class="line">drwx------@  3 starky  staff        96 Oct 13 18:00 Applications</span><br><span class="line">drwx------+ 23 starky  staff       736 Oct 31 19:14 Desktop</span><br><span class="line">drwx------+ 21 starky  staff       672 Oct 31 19:15 Documents</span><br><span class="line">drwx------+ 37 starky  staff      1184 Oct 30 20:18 Downloads</span><br><span class="line">drwx------+ 72 starky  staff      2304 Oct 27 01:38 Library</span><br><span class="line">drwx------+  6 starky  staff       192 Oct 29 10:34 Movies</span><br><span class="line">drwx------+  3 starky  staff        96 Sep 27 13:13 Music</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h5 id="3-管道"><a href="#3-管道" class="headerlink" title="3. 管道"></a>3. 管道</h5><p>有些时候，需要将某个命令的<strong>输出</strong>内容作为另一个命令的<strong>输入</strong>。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ ls -al &gt; tmp_file</span><br><span class="line">$ grep vim &lt; tmp_file</span><br><span class="line">drwxr-xr-x    3 starky  staff        96 Oct 20 15:45 .vim</span><br><span class="line">-rw-------    1 starky  staff     23799 Nov  1 01:40 .viminfo</span><br><span class="line">-rw-r--r--    1 starky  staff      3935 Oct 21 01:31 .vimrc</span><br><span class="line">-rw-r--r--    1 starky  staff  24849808 Oct 25 21:02 vim.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令先将当前目录下的文件列表（<code>ls -al</code>）保存在 <code>tmp_file</code> 中，再使用 <code>grep</code> 命令读取 tmp_file 的内容，筛选文件名中包含 vim 的文件。</p>
+<p>其实可以通过<strong>管道</strong>（<code>|</code>）的使用，将前面命令的输出，定向给后面的命令作为输入。</p>
+<p>格式：<code>command1 | command2</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ls -al | grep vim</span><br><span class="line">drwxr-xr-x    3 starky  staff        96 Oct 20 15:45 .vim</span><br><span class="line">-rw-------    1 starky  staff     23799 Nov  1 01:40 .viminfo</span><br><span class="line">-rw-r--r--    1 starky  staff      3935 Oct 21 01:31 .vimrc</span><br><span class="line">-rw-r--r--    1 starky  staff  24849808 Oct 25 21:02 vim.tar.gz</span><br></pre></td></tr></table></figure>
+<h4 id="五、数学运算"><a href="#五、数学运算" class="headerlink" title="五、数学运算"></a>五、数学运算</h4><p>操作数学运算对于任何编程语言来说，都是一个很重要的特性。但是 Shell 脚本并不能直接完成算术运算的操作，只能通过以下两种方式来实现。</p>
+<h5 id="1-expr-命令"><a href="#1-expr-命令" class="headerlink" title="1. expr 命令"></a>1. expr 命令</h5><p>Shell 提供了一个特殊的命令（<code>expr</code>）用来处理数学算式，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ expr 1 + 2</span><br><span class="line">3</span><br></pre></td></tr></table></figure></p>
+<p><strong>PS</strong>：注意算式中 <code>+</code> 号两边的<strong>空格</strong><br>expr 命令支持的<strong>算术操作符</strong>如下：</p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ARG1 双管道符 ARG2</td>
+<td>如果两个参数值都不为 null 或 0，返回 ARG1，否则返回 ARG2</td>
+</tr>
+<tr>
+<td>ARG1 &amp;&amp; ARG2</td>
+<td>如果两个参数值都不为 null 或 0，返回 ARG1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 &lt; ARG2</td>
+<td>如果 ARG1 小于 ARG2，返回 1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 &gt; ARG2</td>
+<td>如果 ARG1 大于 ARG2，返回 1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 = ARG2</td>
+<td>如果 ARG1 等于 ARG2，返回 1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 &gt;= ARG2</td>
+<td>如果 ARG1 大于或等于 ARG2，返回 1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 &lt;= ARG2</td>
+<td>如果 ARG1 小于或等于 ARG2，返回 1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 != ARG2</td>
+<td>如果 ARG1 不等于 ARG2，返回 1，否则返回 0</td>
+</tr>
+<tr>
+<td>ARG1 + ARG2</td>
+<td>返回 ARG1 与 ARG2 的数字加和</td>
+</tr>
+<tr>
+<td>ARG1 - ARG2</td>
+<td>求 ARG1 减去 ARG2 的数字差</td>
+</tr>
+<tr>
+<td>ARG1 * ARG2</td>
+<td>返回 ARG1 与 ARG2 的数字乘积</td>
+</tr>
+<tr>
+<td>ARG1 / ARG2</td>
+<td>求 ARG1 除以 ARG2 的数字商（结果为整数）</td>
+</tr>
+<tr>
+<td>ARG1 % ARG2</td>
+<td>对 ARG1 和 ARG2 进行求余操作</td>
+</tr>
+</tbody>
+</table>
+<p>数学运算示例（<code>divide.sh</code>）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">var1=10</span><br><span class="line">var2=20</span><br><span class="line">var3=`expr $var2 / $var1`</span><br><span class="line"></span><br><span class="line">echo $var2 divided by $var1 equals $var3</span><br></pre></td></tr></table></figure>
+<p>运行效果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x divide.sh</span><br><span class="line">$ ./divide.sh</span><br><span class="line">20 divided by 10 equals 2</span><br></pre></td></tr></table></figure></p>
+<h5 id="2-使用中括号"><a href="#2-使用中括号" class="headerlink" title="2. 使用中括号"></a>2. 使用中括号</h5><p>Bash Shell 中的 <code>expr</code> 命令主要是为了保持和 Bourne Shell 的兼容性，它其实还提供了一种更简单的方式用来处理数学运算。即使用这样的形式：<br><code>$[ operation ]</code></p>
+<p>如下面的脚本（<code>compute.sh</code>）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">var1=100</span><br><span class="line">var2=50</span><br><span class="line">var3=45</span><br><span class="line"></span><br><span class="line">result=$[$var1 * ($var2 - $var3)]</span><br><span class="line">echo The final result is $result</span><br></pre></td></tr></table></figure></p>
+<p>运行效果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x compute.sh</span><br><span class="line">$ ./compute.sh</span><br><span class="line">The final result is 500</span><br></pre></td></tr></table></figure></p>
+<p>但是在进行除法运算时，上面的方式只支持整数。如两个数相除结果为小数，则该结果会舍去小数部分只保留整数。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ var1=10</span><br><span class="line">$ var2=3</span><br><span class="line">$ result=$[$var1 / $var2]</span><br><span class="line">$ echo The result is $result</span><br><span class="line">The result is 3</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-浮点数运算"><a href="#3-浮点数运算" class="headerlink" title="3. 浮点数运算"></a>3. 浮点数运算</h5><p>有很多种方案可以克服 bash 的整数限制，最常用的一种就是使用系统内置的 <strong>bash calculator</strong>，即 <code>bc</code> 程序。<br><strong>bash calculator</strong> 其实是一种支持浮点数运算的编程语言，可以识别以下几种类型的数据：</p>
+<ul>
+<li>数字（整数和<strong>浮点数</strong>）</li>
+<li>变量（简单变量和<strong>数组</strong>）</li>
+<li>注释（单行注释 <code>#</code> 和多行注释 <code>/* */</code>）</li>
+<li>表达式</li>
+<li>编程语句（如 <code>if-then</code> 语句）</li>
+<li>函数</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ bc</span><br><span class="line">bc 1.06</span><br><span class="line">Copyright 1991-1994, 1997, 1998, 2000 Free Software Foundation, Inc.</span><br><span class="line">This is free software with ABSOLUTELY NO WARRANTY.</span><br><span class="line">For details type `warranty&apos;.</span><br><span class="line">12 * 5.4</span><br><span class="line">64.8</span><br><span class="line">3.156 * (3 + 5)</span><br><span class="line">25.248</span><br><span class="line">quit</span><br></pre></td></tr></table></figure>
+<p>计算结果精确到的小数位数是通过一个内建的 <code>scale</code> 变量定义的，默认的 scale 数值为 0（即默认舍去商的小数位数）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ bc -q</span><br><span class="line">3.44 / 5</span><br><span class="line">0</span><br><span class="line">scale=4</span><br><span class="line">3.44 / 5</span><br><span class="line">.6880</span><br><span class="line">quit</span><br></pre></td></tr></table></figure></p>
+<p><code>bc</code> 程序也支持自定义变量：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ bc -q</span><br><span class="line">var1=10</span><br><span class="line">var1 * 4</span><br><span class="line">40</span><br><span class="line">var2=var1 / 5</span><br><span class="line">print var2</span><br><span class="line">2</span><br><span class="line">quit</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-在脚本中使用-bc"><a href="#4-在脚本中使用-bc" class="headerlink" title="4. 在脚本中使用 bc"></a>4. 在脚本中使用 bc</h5><p>可以通过<strong>管道</strong>将数学表达式传递给 <code>bc</code> 程序，再将计算得出的结果通过赋值语句赋值给某个变量：<br><code>variable=$(echo &quot;options; expression&quot; | bc)</code></p>
+<p>其中 <code>variable=$(...)</code> 用于提取命令的输出并赋值给一个变量（参考第三章<strong>命令替换</strong>）</p>
+<p>如下面的脚本（<code>bc1.sh</code>）:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">var1=100</span><br><span class="line">var2=45</span><br><span class="line">var3=$(echo &quot;scale=4; $var1 / $var2&quot; | bc)</span><br><span class="line"></span><br><span class="line">echo The answer for this is $var3</span><br></pre></td></tr></table></figure></p>
+<p>运行效果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x bc1.sh</span><br><span class="line">$ ./bc1.sh</span><br><span class="line">The answer for this is 2.2222</span><br></pre></td></tr></table></figure></p>
+<h6 id="更复杂的形式"><a href="#更复杂的形式" class="headerlink" title="更复杂的形式"></a>更复杂的形式</h6><p>在脚本中使用 <code>bc</code> 还可以通过如下的形式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">variable=$(bc &lt;&lt; EOF</span><br><span class="line">options</span><br><span class="line">statements</span><br><span class="line">expressions</span><br><span class="line">EOF</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>示例程序如下（<code>bc2.sh</code>）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">var1=10.46</span><br><span class="line">var2=43.67</span><br><span class="line">var3=33.2</span><br><span class="line">var4=71</span><br><span class="line"></span><br><span class="line">var5=$(bc &lt;&lt; EOF</span><br><span class="line">scale = 4</span><br><span class="line">a1=$var1 * $var2</span><br><span class="line">b1=$var3 * $var4</span><br><span class="line">a1 + b1</span><br><span class="line">EOF</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">echo The final answer for this mess is $var5</span><br></pre></td></tr></table></figure>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x bc2.sh</span><br><span class="line">$ ./bc2.sh</span><br><span class="line">The final answer for this mess is 2813.9882</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://a.co/d/dLeNg5O" target="_blank" rel="noopener">Linux Command Line and Shell Scripting Bible 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Shell/" rel="tag"># Shell</a>
+          
+            <a href="/tags/Programming/" rel="tag"># Programming</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/15/shell-script-programming-medium/" rel="next" title="Shell 脚本编程（中级篇）">
+                <i class="fa fa-chevron-left"></i> Shell 脚本编程（中级篇）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/03/shell-script-programming-professional/" rel="prev" title="Shell 脚本编程（高级篇）">
+                Shell 脚本编程（高级篇） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础篇"><span class="nav-number">1.</span> <span class="nav-text">基础篇</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、输出信息"><span class="nav-number">1.1.</span> <span class="nav-text">一、输出信息</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#脚本的执行权限"><span class="nav-number">1.1.1.</span> <span class="nav-text">脚本的执行权限</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、变量"><span class="nav-number">1.2.</span> <span class="nav-text">二、变量</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-系统环境变量"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 系统环境变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-用户自定义变量"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 用户自定义变量</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、命令替换"><span class="nav-number">1.3.</span> <span class="nav-text">三、命令替换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、重定向输入和输出"><span class="nav-number">1.4.</span> <span class="nav-text">四、重定向输入和输出</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-输出重定向"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. 输出重定向</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-输入重定向"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. 输入重定向</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-管道"><span class="nav-number">1.4.3.</span> <span class="nav-text">3. 管道</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、数学运算"><span class="nav-number">1.5.</span> <span class="nav-text">五、数学运算</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-expr-命令"><span class="nav-number">1.5.1.</span> <span class="nav-text">1. expr 命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-使用中括号"><span class="nav-number">1.5.2.</span> <span class="nav-text">2. 使用中括号</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-浮点数运算"><span class="nav-number">1.5.3.</span> <span class="nav-text">3. 浮点数运算</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-在脚本中使用-bc"><span class="nav-number">1.5.4.</span> <span class="nav-text">4. 在脚本中使用 bc</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#更复杂的形式"><span class="nav-number">1.5.4.1.</span> <span class="nav-text">更复杂的形式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">1.6.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

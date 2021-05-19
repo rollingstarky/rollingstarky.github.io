@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,DataStructure,Algorithm,Advanced,Program,Graph," />
+
+
+<meta name="description" content="图（Graph）是一种用来对某些现实问题进行建模的抽象的数学结构，这些问题从逻辑上可以被划分成一系列相互连接的节点。其中的节点称为顶点（vertex），顶点之间的连接称为边（edge）。比如地铁线路就可以看作由图表示成的运输网络。每一个顶点都代表一个地铁站，而顶点之间的边则表示两个地铁站之间的路径。如果想知道某个站点到另一个站点的最短路径，图算法就能发挥作用。实际上，图算法可以被应用到任何类型的网">
+<meta name="keywords" content="Python,DataStructure,Algorithm,Advanced,Program,Graph">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基本算法问题的 Python 解法——图（Graph）问题">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/02/20/classic-compute-problems-with-python-graph-problems/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="图（Graph）是一种用来对某些现实问题进行建模的抽象的数学结构，这些问题从逻辑上可以被划分成一系列相互连接的节点。其中的节点称为顶点（vertex），顶点之间的连接称为边（edge）。比如地铁线路就可以看作由图表示成的运输网络。每一个顶点都代表一个地铁站，而顶点之间的边则表示两个地铁站之间的路径。如果想知道某个站点到另一个站点的最短路径，图算法就能发挥作用。实际上，图算法可以被应用到任何类型的网">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8255210fc341b4ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-9f88ead301ab7f25.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-5aca5a560c6a0105.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-dc49ed8f5b35b7fb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2021-02-20T12:35:08.593Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基本算法问题的 Python 解法——图（Graph）问题">
+<meta name="twitter:description" content="图（Graph）是一种用来对某些现实问题进行建模的抽象的数学结构，这些问题从逻辑上可以被划分成一系列相互连接的节点。其中的节点称为顶点（vertex），顶点之间的连接称为边（edge）。比如地铁线路就可以看作由图表示成的运输网络。每一个顶点都代表一个地铁站，而顶点之间的边则表示两个地铁站之间的路径。如果想知道某个站点到另一个站点的最短路径，图算法就能发挥作用。实际上，图算法可以被应用到任何类型的网">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-8255210fc341b4ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/02/20/classic-compute-problems-with-python-graph-problems/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>基本算法问题的 Python 解法——图（Graph）问题 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/02/20/classic-compute-problems-with-python-graph-problems/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">基本算法问题的 Python 解法——图（Graph）问题</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-02-20T00:00:00+08:00">2021-02-20</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/02/20/classic-compute-problems-with-python-graph-problems/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/02/20/classic-compute-problems-with-python-graph-problems/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/02/20/classic-compute-problems-with-python-graph-problems/" class="leancloud_visitors" data-flag-title="基本算法问题的 Python 解法——图（Graph）问题">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">24k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:24</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>图（Graph）</strong>是一种用来对某些现实问题进行建模的抽象的数学结构，这些问题从逻辑上可以被划分成一系列相互连接的<strong>节点</strong>。其中的节点称为<strong>顶点</strong>（<em>vertex</em>），顶点之间的连接称为<strong>边</strong>（<em>edge</em>）。<br>比如地铁线路就可以看作由图表示成的运输网络。每一个顶点都代表一个地铁站，而顶点之间的边则表示两个地铁站之间的路径。如果想知道某个站点到另一个站点的最短路径，图算法就能发挥作用。实际上，图算法可以被应用到任何类型的网络问题中。</p>
+<h4 id="map-as-graph"><a href="#map-as-graph" class="headerlink" title="map as graph"></a>map as graph</h4><p><img src="https://upload-images.jianshu.io/upload_images/6875152-8255210fc341b4ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="美国最大的15个 MSA 的地图"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-9f88ead301ab7f25.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="美国最大的15个 MSA 的 graph 表示"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># edge.py</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> annotations</span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Edge</span>:</span></span><br><span class="line">    u: int  <span class="comment"># the "from" vertex</span></span><br><span class="line">    v: int  <span class="comment"># the "to" vertex</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reversed</span><span class="params">(self)</span> -&gt; Edge:</span></span><br><span class="line">        <span class="keyword">return</span> Edge(self.v, self.u)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span> -&gt; str:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f"<span class="subst">&#123;self.u&#125;</span> -&gt; <span class="subst">&#123;self.v&#125;</span>"</span></span><br></pre></td></tr></table></figure>
+<p>上面代码中的 <code>Edge</code> 类表示两个顶点之间的连接（即“边”），每个顶点都由整数索引表示。其中 <code>u</code> 用来表示第一个顶点，<code>v</code> 表示第二个顶点。<br>这里只关注非方向性的 graph，edge 是双向的。而在<strong>有向图（digraph）</strong>中，edge 可以是单向的。<code>reversed()</code> 方法用来返回当前 edge 的逆向形式。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># graph.py</span></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypeVar, Generic, List, Optional</span><br><span class="line"><span class="keyword">from</span> edge <span class="keyword">import</span> Edge</span><br><span class="line"></span><br><span class="line">V = TypeVar(<span class="string">'V'</span>)  <span class="comment"># type of the vertices in the graph</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Graph</span><span class="params">(Generic[V])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, vertices: List[V] = [])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self._vertices: List[V] = vertices</span><br><span class="line">        self._edges: List[List[Edge]] = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> vertices]</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">vertex_count</span><span class="params">(self)</span> -&gt; int:</span></span><br><span class="line">        <span class="keyword">return</span> len(self._vertices)  <span class="comment"># Number of vertices</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">edge_count</span><span class="params">(self)</span> -&gt; int:</span></span><br><span class="line">        <span class="keyword">return</span> sum(map(len, self._edges))  <span class="comment"># Number of edges</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Add a vertex to the graph and return its index</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_vertex</span><span class="params">(self, vertex: V)</span> -&gt; int:</span></span><br><span class="line">        self._vertices.append(vertex)</span><br><span class="line">        self._edges.append([])  <span class="comment"># Add empty list for containing edges</span></span><br><span class="line">        <span class="keyword">return</span> self.vertex_count - <span class="number">1</span>  <span class="comment"># Return index of added vertex</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># This is an undirected graph,</span></span><br><span class="line">    <span class="comment"># so we always add edges in both directions</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_edge</span><span class="params">(self, edge: Edge)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self._edges[edge.u].append(edge)</span><br><span class="line">        self._edges[edge.v].append(edge.reversed())</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Add an edge using vertex indices (convenience method)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_edge_by_indices</span><span class="params">(self, u: int, v: int)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        edge: Edge = Edge(u, v)</span><br><span class="line">        self.add_edge(edge)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Add an edge by looking up vertex indices (convenience method)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_edge_by_vertices</span><span class="params">(self, first: V, second: V)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        u: int = self._vertices.index(first)</span><br><span class="line">        v: int = self._vertices.index(second)</span><br><span class="line">        self.add_edge_by_indices(u, v)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Find the vertex at a specific index</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">vertex_at</span><span class="params">(self, index: int)</span> -&gt; V:</span></span><br><span class="line">        <span class="keyword">return</span> self._vertices[index]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Find the index of a vertex in the graph</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">index_of</span><span class="params">(self, vertex: V)</span> -&gt; int:</span></span><br><span class="line">        <span class="keyword">return</span> self._vertices.index(vertex)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Find the vertices that a vertex at some index is connected to</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">neighbors_for_index</span><span class="params">(self, index: int)</span> -&gt; List[V]:</span></span><br><span class="line">        <span class="keyword">return</span> list(map(self.vertex_at, [e.v <span class="keyword">for</span> e <span class="keyword">in</span> self._edges[index]]))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Look up a vertice's index and find its neighbors (convenience method)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">neighbors_for_vertex</span><span class="params">(self, vertex: V)</span> -&gt; List[V]:</span></span><br><span class="line">        <span class="keyword">return</span> self.neighbors_for_index(self.index_of(vertex))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Return all of the edges associated with a vertex at some index</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">edges_for_index</span><span class="params">(self, index: int)</span> -&gt; List[Edge]:</span></span><br><span class="line">        <span class="keyword">return</span> self._edges[index]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Look up the index of a vertex and return its edges (convenience method)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">edges_for_vertex</span><span class="params">(self, vertex: V)</span> -&gt; List[Edge]:</span></span><br><span class="line">        <span class="keyword">return</span> self.edges_for_index(self.index_of(vertex))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Make it easy to pretty-print a Graph</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span> -&gt; str:</span></span><br><span class="line">        desc: str = <span class="string">""</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(self.vertex_count):</span><br><span class="line">            desc += <span class="string">f"<span class="subst">&#123;self.vertex_at(i)&#125;</span> -&gt; <span class="subst">&#123;self.neighbors_for_index(i)&#125;</span>\n"</span></span><br><span class="line">        <span class="keyword">return</span> desc</span><br></pre></td></tr></table></figure>
+<p><code>Graph</code> 类聚焦于 graph 的核心角色，即将顶点用边连接起来。<br><code>_vertices</code> 列表是 Graph 类的核心，每个顶点都会被存储在该列表中。但是之后在实际引用时会使用顶点在列表中的索引。顶点本身有可能会是非常复杂的数据类型，但其索引一定会是 int 类型，相对而言更加方便使用。<br>graph 数据类型可以使用 <strong>adjacency lists</strong> 方式实现，每个顶点都拥有一个列表，里面包含了这个顶点连接的其他顶点。这里使用了由 edge 组成的列表再组成的列表（<code>_edges</code>），每个顶点都拥有一个由 edge 组成的列表，这些 edge 表示该顶点与其他顶点的连接关系。</p>
+<p><code>Graph</code> 类中实现的方法的简单介绍：</p>
+<ul>
+<li><code>vertex_count</code> 属性：获取 graph 中顶点的数量</li>
+<li><code>edge_count</code> 属性：获取 graph 中边的数量</li>
+<li><code>add_vertex</code> 方法：添加一个新的孤立的顶点并返回其索引</li>
+<li><code>add_edge</code> 方法：添加一条边（双向，参数是 Edge 对象）</li>
+<li><code>add_edge_by_indices</code> 方法：通过顶点索引添加新的边（参数是边的两个顶点的索引 u、v）</li>
+<li><code>add_edge_by_vertices</code> 方法：通过顶点添加新的边（参数是边的两个顶点（Vertex）对象）</li>
+<li><code>vertex_at</code> 方法：通过特定的索引查询顶点</li>
+<li><code>index_of</code> 方法：根据顶点返回其索引</li>
+<li><code>neighbors_for_index</code> 方法：根据某个顶点的索引获取其临近的顶点（参数为顶点索引）</li>
+<li><code>neighbors_for_vertex</code> 方法：根据某个顶点获取其临近的顶点（参数为顶点对象）</li>
+<li><code>edges_for_index</code> 方法：根据某个顶点的索引获取与其连接的边（参数为顶点索引）</li>
+<li><code>edges_for_vertex</code> 方法：根据某个顶点获取与其连接的边（参数为顶点对象）</li>
+<li><code>__str__</code> 方法：友好的方式输出整个 graph</li>
+</ul>
+<p>补充测试代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># graph.py continued</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># test basic Graph construction</span></span><br><span class="line">    city_graph: Graph[str] = Graph([<span class="string">"Seattle"</span>, <span class="string">"San Francisco"</span>, <span class="string">"Los Angeles"</span>, <span class="string">"Riverside"</span>, <span class="string">"Phoenix"</span>, <span class="string">"Chicago"</span>, <span class="string">"Boston"</span>, <span class="string">"New York"</span>,</span><br><span class="line">                                    <span class="string">"Atlanta"</span>, <span class="string">"Miami"</span>, <span class="string">"Dallas"</span>, <span class="string">"Houston"</span>, <span class="string">"Detroit"</span>, <span class="string">"Philadelphia"</span>, <span class="string">"Washington"</span>])</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Seattle"</span>, <span class="string">"Chicago"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Seattle"</span>, <span class="string">"San Francisco"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"San Francisco"</span>, <span class="string">"Riverside"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"San Francisco"</span>, <span class="string">"Los Angeles"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Los Angeles"</span>, <span class="string">"Riverside"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Los Angeles"</span>, <span class="string">"Phoenix"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Riverside"</span>, <span class="string">"Phoenix"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Riverside"</span>, <span class="string">"Chicago"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Phoenix"</span>, <span class="string">"Dallas"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Phoenix"</span>, <span class="string">"Houston"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Chicago"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Atlanta"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Houston"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Houston"</span>, <span class="string">"Atlanta"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Houston"</span>, <span class="string">"Miami"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Chicago"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Washington"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Miami"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Miami"</span>, <span class="string">"Washington"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Chicago"</span>, <span class="string">"Detroit"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"Boston"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"Washington"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"New York"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Boston"</span>, <span class="string">"New York"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"New York"</span>, <span class="string">"Philadelphia"</span>)</span><br><span class="line">    city_graph.add_edge_by_vertices(<span class="string">"Philadelphia"</span>, <span class="string">"Washington"</span>)</span><br><span class="line">    print(city_graph)</span><br></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Seattle -&gt; ['Chicago', 'San Francisco']</span><br><span class="line">San Francisco -&gt; ['Seattle', 'Riverside', 'Los Angeles']</span><br><span class="line">Los Angeles -&gt; ['San Francisco', 'Riverside', 'Phoenix']</span><br><span class="line">Riverside -&gt; ['San Francisco', 'Los Angeles', 'Phoenix', 'Chicago']</span><br><span class="line">Phoenix -&gt; ['Los Angeles', 'Riverside', 'Dallas', 'Houston']</span><br><span class="line">Chicago -&gt; ['Seattle', 'Riverside', 'Dallas', 'Atlanta', 'Detroit']</span><br><span class="line">Boston -&gt; ['Detroit', 'New York']</span><br><span class="line">New York -&gt; ['Detroit', 'Boston', 'Philadelphia']</span><br><span class="line">Atlanta -&gt; ['Dallas', 'Houston', 'Chicago', 'Washington', 'Miami']</span><br><span class="line">Miami -&gt; ['Houston', 'Atlanta', 'Washington']</span><br><span class="line">Dallas -&gt; ['Phoenix', 'Chicago', 'Atlanta', 'Houston']</span><br><span class="line">Houston -&gt; ['Phoenix', 'Dallas', 'Atlanta', 'Miami']</span><br><span class="line">Detroit -&gt; ['Chicago', 'Boston', 'Washington', 'New York']</span><br><span class="line">Philadelphia -&gt; ['New York', 'Washington']</span><br><span class="line">Washington -&gt; ['Atlanta', 'Miami', 'Detroit', 'Philadelphia']</span><br></pre></td></tr></table></figure></p>
+<h4 id="寻找最短路径"><a href="#寻找最短路径" class="headerlink" title="寻找最短路径"></a>寻找最短路径</h4><p>在 graph 理论中，任意两个顶点之间的所有连线（边）称为路径。即从一个顶点到达另一个顶点需要走过的所有路径。<br>在一个未加权的 graph 中（即不考虑边的长度），寻找最短的路径意味着从起始顶点到目标顶点之间经过的边最少。可以使用<strong>宽度优先搜索（breadth-first search, BFS）</strong>算法查找两个顶点之间的最短路径。（BFS 算法的具体实现可参考 <a href="https://www.jianshu.com/p/34e392141d30" target="_blank" rel="noopener">基本算法问题的 Python 解法（递归与搜索）</a>中的迷宫问题）。</p>
+<p>BFS 部分代码如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># generic_search.py</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> annotations</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypeVar, Generic, List, Callable, Deque, Set, Optional</span><br><span class="line"></span><br><span class="line">T = TypeVar(<span class="string">'T'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span><span class="params">(Generic[T])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, state: T, parent: Optional[Node])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.state: T = state</span><br><span class="line">        self.parent: Optional[Node] = parent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Queue</span><span class="params">(Generic[T])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self._container: Deque[T] = Deque()</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">empty</span><span class="params">(self)</span> -&gt; bool:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">not</span> self._container  <span class="comment"># not is true for empty container</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">push</span><span class="params">(self, item: T)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self._container.append(item)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pop</span><span class="params">(self)</span> -&gt; T:</span></span><br><span class="line">        <span class="keyword">return</span> self._container.popleft()  <span class="comment"># FIFO</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span> -&gt; str:</span></span><br><span class="line">        <span class="keyword">return</span> repr(self._container)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bfs</span><span class="params">(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]])</span> -&gt; Optional[Node[T]]:</span></span><br><span class="line">    <span class="comment"># frontier is where we've yet to go</span></span><br><span class="line">    frontier: Queue[Node[T]] = Queue()</span><br><span class="line">    frontier.push(Node(initial, <span class="keyword">None</span>))</span><br><span class="line">    <span class="comment"># explored is where we've been</span></span><br><span class="line">    explored: Set[T] = &#123;initial&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># keep going while there is more to explore</span></span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">not</span> frontier.empty:</span><br><span class="line">        current_node: Node[T] = frontier.pop()</span><br><span class="line">        current_state: T = current_node.state</span><br><span class="line">        <span class="comment"># if we found the goal, we're done</span></span><br><span class="line">        <span class="keyword">if</span> goal_test(current_state):</span><br><span class="line">            <span class="keyword">return</span> current_node</span><br><span class="line">        <span class="comment"># check where we can go next and haven't explored</span></span><br><span class="line">        <span class="keyword">for</span> child <span class="keyword">in</span> successors(current_state):</span><br><span class="line">            <span class="keyword">if</span> child <span class="keyword">in</span> explored:  <span class="comment"># skip children we already explored</span></span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            explored.add(child)</span><br><span class="line">            frontier.push(Node(child, current_node))</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">None</span>  <span class="comment"># went through everything and never found goal</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">node_to_path</span><span class="params">(node: Node[T])</span> -&gt; List[T]:</span></span><br><span class="line">    path: List[T] = [node.state]</span><br><span class="line">    <span class="comment"># work backwards from end to front</span></span><br><span class="line">    <span class="keyword">while</span> node.parent <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">        node = node.parent</span><br><span class="line">        path.append(node.state)</span><br><span class="line">    path.reverse()</span><br><span class="line">    <span class="keyword">return</span> path</span><br></pre></td></tr></table></figure></p>
+<p>继续补充 <code>graph.py</code> 代码如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># graph.py continued</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line">    <span class="keyword">from</span> generic_search <span class="keyword">import</span> bfs, Node, node_to_path</span><br><span class="line">    bfs_result: Optional[Node[V]] = bfs(<span class="string">"Boston"</span>, <span class="keyword">lambda</span> x: x == <span class="string">"Miami"</span>,</span><br><span class="line">                                        city_graph.neighbors_for_vertex)</span><br><span class="line">    <span class="keyword">if</span> bfs_result <span class="keyword">is</span> <span class="keyword">None</span>:</span><br><span class="line">        print(<span class="string">"No solution found using breadth-first search!"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        path: List[V] = node_to_path(bfs_result)</span><br><span class="line">        print(<span class="string">"Path from Boston to Miami:"</span>)</span><br><span class="line">        print(path)</span><br></pre></td></tr></table></figure></p>
+<p><code>bfs()</code> 函数接受三个参数：初始状态、用于检测当前状态是否符合目标状态的 Callable（可调用对象）、用于寻找达成目标状态的路径的 Callable。<br>若需要寻找 Boston 到 Miami 的最短路径（不考虑加权的情况），则初始状态为顶点 “Boston”，用于状态检测的 Callable 则判断当前顶点是否为 “Miami”。</p>
+<p>运行效果：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Path</span> from Boston to Miami:</span><br><span class="line">['Boston', 'Detroit', 'Washington', 'Miami']</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-5aca5a560c6a0105.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BFS"></p>
+<h4 id="加权图"><a href="#加权图" class="headerlink" title="加权图"></a>加权图</h4><p>之前的计算中，最短路径只考虑经过的站点最少，而未将站点之间的路程计算在内。若需要将路程包含进去，则可以为 edge 加上<strong>权重</strong>来表示该 edge 对应的距离。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-dc49ed8f5b35b7fb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="weight"></p>
+<p>为了实现加权的 graph，需要实现 Edge 的子类 WeightedEdge 以及 Graph 的子类 WeightedGraph。每一个 WeightedEdge 对象都有一个关联的 float 类型的属性用来表示权重。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># weighted_edge.py</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> annotations</span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> edge <span class="keyword">import</span> Edge</span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WeightedEdge</span><span class="params">(Edge)</span>:</span></span><br><span class="line">    weight: float</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reversed</span><span class="params">(self)</span> -&gt; WeightedEdge:</span></span><br><span class="line">        <span class="keyword">return</span> WeightedEdge(self.v, self.u, self.weight)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># so that we can order edges by weight to find the minimum weight edge</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__lt__</span><span class="params">(self, other: WeightedEdge)</span> -&gt; bool:</span></span><br><span class="line">        <span class="keyword">return</span> self.weight &lt; other.weight</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span> -&gt; str:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f"<span class="subst">&#123;self.u&#125;</span> <span class="subst">&#123;self.weight&#125;</span>&gt; <span class="subst">&#123;self.v&#125;</span>"</span></span><br></pre></td></tr></table></figure></p>
+<p>WeightedEdge 子类添加了一个 <code>weight</code> 属性，通过 <code>__lt__()</code> 方法实现了 <code>&lt;</code> 操作符，令 WeightedEdge 对象成为可比较的，使得返回 weight 最小的 edge 成为可能。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># weighted_graph.py</span></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypeVar, Generic, List, Tuple</span><br><span class="line"><span class="keyword">from</span> graph <span class="keyword">import</span> Graph</span><br><span class="line"><span class="keyword">from</span> weighted_edge <span class="keyword">import</span> WeightedEdge</span><br><span class="line"></span><br><span class="line">V = TypeVar(<span class="string">'V'</span>)  <span class="comment"># type of the vertices in the graph</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WeightedGraph</span><span class="params">(Generic[V], Graph[V])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, vertices: List[V] = [])</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self._vertices: List[V] = vertices</span><br><span class="line">        self._edges: List[List[WeightedEdge]] = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> vertices]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_edge_by_indices</span><span class="params">(self, u: int, v: int, weight: float)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        edge: WeightedEdge = WeightedEdge(u, v, weight)</span><br><span class="line">        self.add_edge(edge)  <span class="comment"># call superclass version</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_edge_by_vertices</span><span class="params">(self, first: V, second: V, weight: float)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        u: int = self._vertices.index(first)</span><br><span class="line">        v: int = self._vertices.index(second)</span><br><span class="line">        self.add_edge_by_indices(u, v, weight)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">neighbors_for_index_with_weights</span><span class="params">(self, index: int)</span> -&gt; List[Tuple[V, float]]:</span></span><br><span class="line">        distance_tuples: List[Tuple[V, float]] = []</span><br><span class="line">        <span class="keyword">for</span> edge <span class="keyword">in</span> self.edges_for_index(index):</span><br><span class="line">            distance_tuples.append((self.vertex_at(edge.v), edge.weight))</span><br><span class="line">        <span class="keyword">return</span> distance_tuples</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span> -&gt; str:</span></span><br><span class="line">        desc: str = <span class="string">""</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(self.vertex_count):</span><br><span class="line">            desc += <span class="string">f"<span class="subst">&#123;self.vertex_at(i)&#125;</span> -&gt; <span class="subst">&#123;self.neighbors_for_index_with_weights(i)&#125;</span>\n"</span></span><br><span class="line">        <span class="keyword">return</span> desc</span><br></pre></td></tr></table></figure>
+<p>WeightedGraph 类继承自 Graph，在原来的基础上对某些需要适应 weight 属性的方法做了对应的修改。</p>
+<p>补充 <code>weighted_graph.py</code> 代码，测试运行效果：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># weighted_graph.py continued</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    city_graph2: WeightedGraph[str] = WeightedGraph([<span class="string">"Seattle"</span>, <span class="string">"San Francisco"</span>,</span><br><span class="line">                                                     <span class="string">"Los Angeles"</span>, <span class="string">"Riverside"</span>,</span><br><span class="line">                                                     <span class="string">"Phoenix"</span>, <span class="string">"Chicago"</span>, <span class="string">"Boston"</span>,</span><br><span class="line">                                                     <span class="string">"New York"</span>, <span class="string">"Atlanta"</span>, <span class="string">"Miami"</span>,</span><br><span class="line">                                                     <span class="string">"Dallas"</span>, <span class="string">"Houston"</span>, <span class="string">"Detroit"</span>,</span><br><span class="line">                                                     <span class="string">"Philadelphia"</span>, <span class="string">"Washington"</span>])</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Seattle"</span>, <span class="string">"Chicago"</span>, <span class="number">1737</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Seattle"</span>, <span class="string">"San Francisco"</span>, <span class="number">678</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"San Francisco"</span>, <span class="string">"Riverside"</span>, <span class="number">386</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"San Francisco"</span>, <span class="string">"Los Angeles"</span>, <span class="number">348</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Los Angeles"</span>, <span class="string">"Riverside"</span>, <span class="number">50</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Los Angeles"</span>, <span class="string">"Phoenix"</span>, <span class="number">357</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Riverside"</span>, <span class="string">"Phoenix"</span>, <span class="number">307</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Riverside"</span>, <span class="string">"Chicago"</span>, <span class="number">1704</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Phoenix"</span>, <span class="string">"Dallas"</span>, <span class="number">887</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Phoenix"</span>, <span class="string">"Houston"</span>, <span class="number">1015</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Chicago"</span>, <span class="number">805</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Atlanta"</span>, <span class="number">721</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Houston"</span>, <span class="number">225</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Houston"</span>, <span class="string">"Atlanta"</span>, <span class="number">702</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Houston"</span>, <span class="string">"Miami"</span>, <span class="number">968</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Chicago"</span>, <span class="number">588</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Washington"</span>, <span class="number">543</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Miami"</span>, <span class="number">604</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Miami"</span>, <span class="string">"Washington"</span>, <span class="number">923</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Chicago"</span>, <span class="string">"Detroit"</span>, <span class="number">238</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"Boston"</span>, <span class="number">613</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"Washington"</span>, <span class="number">396</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"New York"</span>, <span class="number">482</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Boston"</span>, <span class="string">"New York"</span>, <span class="number">190</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"New York"</span>, <span class="string">"Philadelphia"</span>, <span class="number">81</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Philadelphia"</span>, <span class="string">"Washington"</span>, <span class="number">123</span>)</span><br><span class="line"></span><br><span class="line">    print(city_graph2)</span><br></pre></td></tr></table></figure></p>
+<p>运行效果：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Seattle -&gt; [('Chicago', <span class="number">1737</span>), ('San Francisco', <span class="number">678</span>)]</span><br><span class="line">San Francisco -&gt; [('Seattle', <span class="number">678</span>), ('Riverside', <span class="number">386</span>), ('Los Angeles', <span class="number">348</span>)]</span><br><span class="line">Los Angeles -&gt; [('San Francisco', <span class="number">348</span>), ('Riverside', <span class="number">50</span>), ('Phoenix', <span class="number">357</span>)]</span><br><span class="line">Riverside -&gt; [('San Francisco', <span class="number">386</span>), ('Los Angeles', <span class="number">50</span>), ('Phoenix', <span class="number">307</span>), ('Chicago', <span class="number">1704</span>)]</span><br><span class="line">Phoenix -&gt; [('Los Angeles', <span class="number">357</span>), ('Riverside', <span class="number">307</span>), ('Dallas', <span class="number">887</span>), ('Houston', <span class="number">1015</span>)]</span><br><span class="line">Chicago -&gt; [('Seattle', <span class="number">1737</span>), ('Riverside', <span class="number">1704</span>), ('Dallas', <span class="number">805</span>), ('Atlanta', <span class="number">588</span>), ('Detroit', <span class="number">238</span>)]</span><br><span class="line">Boston -&gt; [('Detroit', <span class="number">613</span>), ('New York', <span class="number">190</span>)]</span><br><span class="line">New York -&gt; [('Detroit', <span class="number">482</span>), ('Boston', <span class="number">190</span>), ('Philadelphia', <span class="number">81</span>)]</span><br><span class="line">Atlanta -&gt; [('Dallas', <span class="number">721</span>), ('Houston', <span class="number">702</span>), ('Chicago', <span class="number">588</span>), ('Washington', <span class="number">543</span>), ('Miami', <span class="number">604</span>)]</span><br><span class="line">Miami -&gt; [('Houston', <span class="number">968</span>), ('Atlanta', <span class="number">604</span>), ('Washington', <span class="number">923</span>)]</span><br><span class="line">Dallas -&gt; [('Phoenix', <span class="number">887</span>), ('Chicago', <span class="number">805</span>), ('Atlanta', <span class="number">721</span>), ('Houston', <span class="number">225</span>)]</span><br><span class="line">Houston -&gt; [('Phoenix', <span class="number">1015</span>), ('Dallas', <span class="number">225</span>), ('Atlanta', <span class="number">702</span>), ('Miami', <span class="number">968</span>)]</span><br><span class="line">Detroit -&gt; [('Chicago', <span class="number">238</span>), ('Boston', <span class="number">613</span>), ('Washington', <span class="number">396</span>), ('New York', <span class="number">482</span>)]</span><br><span class="line">Philadelphia -&gt; [('New York', <span class="number">81</span>), ('Washington', <span class="number">123</span>)]</span><br><span class="line">Washington -&gt; [('Atlanta', <span class="number">543</span>), ('Miami', <span class="number">923</span>), ('Detroit', <span class="number">396</span>), ('Philadelphia', <span class="number">123</span>)]</span><br></pre></td></tr></table></figure></p>
+<h4 id="在加权图中搜索最短路径"><a href="#在加权图中搜索最短路径" class="headerlink" title="在加权图中搜索最短路径"></a>在加权图中搜索最短路径</h4><p>寻找某个起点城市到另一个城市的所有路线中花费最小的一条，属于单源头最短路径（single-source shortest path）问题，即从加权图中的某个顶点到任意的另外一个顶点的最短路径。</p>
+<p><strong>Dijkstra 算法</strong> 可以用来解决单源头最短路径问题。该算法从某个起始顶点开始，可以找出加权图中所有其他顶点到起始顶点的最短路径。从某个顶点开始按照远近关系依次遍历完所有顶点并记录其总的花费（从起始顶点到当前顶点），若重复出现的顶点花费更小，则令其替换已有的记录。</p>
+<p>具体步骤如下：</p>
+<ul>
+<li>将起始顶点加入到优先级队列中</li>
+<li>从优先级队列中弹出一个顶点（一开始就是起始顶点）作为当前顶点</li>
+<li>查看与当前顶点临近的所有顶点，若某一个之前没有被记录到，或某个顶点按照当前路径的花费低于已有的最小记录，则记录其到起始顶点的距离（作为新的最小记录）及生成该距离的最后一条边（记录路径），并将该顶点 push 到优先级队列中（令其作为之后的“当前”顶点）</li>
+<li>重复前面两步直到优先级队列为空</li>
+<li>返回所有顶点到起始顶点的最小距离及路径</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># priority_queue.py</span></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypeVar, Generic, List</span><br><span class="line"><span class="keyword">from</span> heapq <span class="keyword">import</span> heappush, heappop</span><br><span class="line"></span><br><span class="line">T = TypeVar(<span class="string">'T'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PriorityQueue</span><span class="params">(Generic[T])</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self._container: List[T] = []</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">empty</span><span class="params">(self)</span> -&gt; bool:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">not</span> self._container</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">push</span><span class="params">(self, item: T)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        heappush(self._container, item)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pop</span><span class="params">(self)</span> -&gt; T:</span></span><br><span class="line">        <span class="keyword">return</span> heappop(self._container)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span> -&gt; str:</span></span><br><span class="line">        <span class="keyword">return</span> repr(self._container)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># dijkstra.py</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> annotations</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypeVar, List, Optional, Tuple, Dict</span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> mst <span class="keyword">import</span> WeightedPath, print_weighted_path</span><br><span class="line"><span class="keyword">from</span> weighted_graph <span class="keyword">import</span> WeightedGraph</span><br><span class="line"><span class="keyword">from</span> weighted_edge <span class="keyword">import</span> WeightedEdge</span><br><span class="line"><span class="keyword">from</span> priority_queue <span class="keyword">import</span> PriorityQueue</span><br><span class="line"></span><br><span class="line">V = TypeVar(<span class="string">'V'</span>)  <span class="comment"># type of the vertices in the graph</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DijkstraNode</span>:</span></span><br><span class="line">    vertex: int</span><br><span class="line">    distance: float</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__lt__</span><span class="params">(self, other: DijkstraNode)</span> -&gt; bool:</span></span><br><span class="line">        <span class="keyword">return</span> self.distance &lt; other.distance</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__eq__</span><span class="params">(self, other: DijkstraNode)</span> -&gt; bool:</span></span><br><span class="line">        <span class="keyword">return</span> self.distance == other.distance</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dijkstra</span><span class="params">(wg: WeightedGraph[V], root: V)</span> -&gt; Tuple[List[Optional[float]],</span></span><br><span class="line"><span class="function">                                                     Dict[int, WeightedEdge]]:</span></span><br><span class="line">    first: int = wg.index_of(root)</span><br><span class="line">    <span class="comment"># distances are unknown at first</span></span><br><span class="line">    distances: List[Optional[float]] = [<span class="keyword">None</span>] * wg.vertex_count</span><br><span class="line">    distances[first] = <span class="number">0</span>  <span class="comment"># the root is 0 away from the root</span></span><br><span class="line">    path_dict: Dict[int, WeightedEdge] = &#123;&#125;  <span class="comment"># how we got to each vertex</span></span><br><span class="line">    pq: PriorityQueue[DijkstraNode] = PriorityQueue()</span><br><span class="line">    pq.push(DijkstraNode(first, <span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">not</span> pq.empty:</span><br><span class="line">        u: int = pq.pop().vertex  <span class="comment"># explore the next closest vertex</span></span><br><span class="line">        dist_u: float = distances[u]  <span class="comment"># should already have seen it</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># look at every edge/vertex from current vertex</span></span><br><span class="line">        <span class="keyword">for</span> we <span class="keyword">in</span> wg.edges_for_index(u):</span><br><span class="line">            <span class="comment"># the old distance from starting vertex to this vertex</span></span><br><span class="line">            dist_v: float = distances[we.v]</span><br><span class="line">            <span class="comment"># no old distance or found shorter path</span></span><br><span class="line">            <span class="keyword">if</span> dist_v <span class="keyword">is</span> <span class="keyword">None</span> <span class="keyword">or</span> dist_v &gt; we.weight + dist_u:</span><br><span class="line">                <span class="comment"># update distance to this vertex</span></span><br><span class="line">                distances[we.v] = we.weight + dist_u</span><br><span class="line">                <span class="comment"># update the edge on the shortest path to this vertex</span></span><br><span class="line">                path_dict[we.v] = we</span><br><span class="line">                <span class="comment"># explore this vertex soon</span></span><br><span class="line">                pq.push(DijkstraNode(we.v, we.weight + dist_u))</span><br><span class="line">    <span class="keyword">return</span> distances, path_dict</span><br><span class="line"></span><br><span class="line"><span class="comment"># Helper function to get easier access to dijkstra results</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">distance_array_to_vertex_dict</span><span class="params">(wg: WeightedGraph[V], distances:</span></span></span><br><span class="line"><span class="function"><span class="params">                                  List[Optional[float]])</span> -&gt; Dict[V, Optional[float]]:</span></span><br><span class="line">    distance_dict: Dict[V, Optional[float]] = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(distances)):</span><br><span class="line">        distance_dict[wg.vertex_at(i)] = distances[i]</span><br><span class="line">    <span class="keyword">return</span> distance_dict</span><br><span class="line"></span><br><span class="line"><span class="comment"># Takes a dictionary of edges to reach each node and returns a list of</span></span><br><span class="line"><span class="comment"># edges that goes from `start` ot `end`</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">path_dict_to_path</span><span class="params">(start: int, end: int, path_dict: Dict[int,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                            WeightedEdge])</span> -&gt; WeightedPath:</span></span><br><span class="line">    <span class="keyword">if</span> len(path_dict) == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line">    edge_path: WeightedPath = []</span><br><span class="line">    e: WeightedEdge = path_dict[end]</span><br><span class="line">    edge_path.append(e)</span><br><span class="line">    <span class="keyword">while</span> e.u != start:</span><br><span class="line">        e = path_dict[e.u]</span><br><span class="line">        edge_path.append(e)</span><br><span class="line">    <span class="keyword">return</span> list(reversed(edge_path))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    city_graph2: WeightedGraph[str] = WeightedGraph([<span class="string">"Seattle"</span>, <span class="string">"San Francisco"</span>,</span><br><span class="line">                                                     <span class="string">"Los Angeles"</span>, <span class="string">"Riverside"</span>,</span><br><span class="line">                                                     <span class="string">"Phoenix"</span>, <span class="string">"Chicago"</span>, <span class="string">"Boston"</span>,</span><br><span class="line">                                                     <span class="string">"New York"</span>, <span class="string">"Atlanta"</span>, <span class="string">"Miami"</span>,</span><br><span class="line">                                                     <span class="string">"Dallas"</span>, <span class="string">"Houston"</span>, <span class="string">"Detroit"</span>,</span><br><span class="line">                                                     <span class="string">"Philadelphia"</span>, <span class="string">"Washington"</span>])</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Seattle"</span>, <span class="string">"Chicago"</span>, <span class="number">1737</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Seattle"</span>, <span class="string">"San Francisco"</span>, <span class="number">678</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"San Francisco"</span>, <span class="string">"Riverside"</span>, <span class="number">386</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"San Francisco"</span>, <span class="string">"Los Angeles"</span>, <span class="number">348</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Los Angeles"</span>, <span class="string">"Riverside"</span>, <span class="number">50</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Los Angeles"</span>, <span class="string">"Phoenix"</span>, <span class="number">357</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Riverside"</span>, <span class="string">"Phoenix"</span>, <span class="number">307</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Riverside"</span>, <span class="string">"Chicago"</span>, <span class="number">1704</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Phoenix"</span>, <span class="string">"Dallas"</span>, <span class="number">887</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Phoenix"</span>, <span class="string">"Houston"</span>, <span class="number">1015</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Chicago"</span>, <span class="number">805</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Atlanta"</span>, <span class="number">721</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Dallas"</span>, <span class="string">"Houston"</span>, <span class="number">225</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Houston"</span>, <span class="string">"Atlanta"</span>, <span class="number">702</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Houston"</span>, <span class="string">"Miami"</span>, <span class="number">968</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Chicago"</span>, <span class="number">588</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Washington"</span>, <span class="number">543</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Atlanta"</span>, <span class="string">"Miami"</span>, <span class="number">604</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Miami"</span>, <span class="string">"Washington"</span>, <span class="number">923</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Chicago"</span>, <span class="string">"Detroit"</span>, <span class="number">238</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"Boston"</span>, <span class="number">613</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"Washington"</span>, <span class="number">396</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Detroit"</span>, <span class="string">"New York"</span>, <span class="number">482</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Boston"</span>, <span class="string">"New York"</span>, <span class="number">190</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"New York"</span>, <span class="string">"Philadelphia"</span>, <span class="number">81</span>)</span><br><span class="line">    city_graph2.add_edge_by_vertices(<span class="string">"Philadelphia"</span>, <span class="string">"Washington"</span>, <span class="number">123</span>)</span><br><span class="line">    distances, path_dict = dijkstra(city_graph2, <span class="string">"Los Angeles"</span>)</span><br><span class="line">    name_distance: Dict[str, Optional[int]] = distance_array_to_vertex_dict(city_graph2, distances)</span><br><span class="line">    print(<span class="string">"Distances from Los Angeles:"</span>)</span><br><span class="line">    <span class="keyword">for</span> key, value <span class="keyword">in</span> name_distance.items():</span><br><span class="line">        print(<span class="string">f"<span class="subst">&#123;key&#125;</span> : <span class="subst">&#123;value&#125;</span>"</span>)</span><br><span class="line">    print(<span class="string">""</span>)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">"Shortest path from Los Angelges to Boston:"</span>)</span><br><span class="line">    path: WeightedPath = path_dict_to_path(city_graph2.index_of(<span class="string">"Los Angeles"</span>),</span><br><span class="line">                                           city_graph2.index_of(<span class="string">"Boston"</span>), path_dict)</span><br><span class="line">    print_weighted_path(city_graph2, path)</span><br></pre></td></tr></table></figure>
+<p>运行结果：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Distances from Los Angeles:</span><br><span class="line">Seattle : <span class="number">1026</span></span><br><span class="line">San Francisco : <span class="number">348</span></span><br><span class="line">Los Angeles : <span class="number">0</span></span><br><span class="line">Riverside : <span class="number">50</span></span><br><span class="line">Phoenix : <span class="number">357</span></span><br><span class="line">Chicago : <span class="number">1754</span></span><br><span class="line">Boston : <span class="number">2605</span></span><br><span class="line">New York : <span class="number">2474</span></span><br><span class="line">Atlanta : <span class="number">1965</span></span><br><span class="line">Miami : <span class="number">2340</span></span><br><span class="line">Dallas : <span class="number">1244</span></span><br><span class="line">Houston : <span class="number">1372</span></span><br><span class="line">Detroit : <span class="number">1992</span></span><br><span class="line">Philadelphia : <span class="number">2511</span></span><br><span class="line">Washington : <span class="number">2388</span></span><br><span class="line"></span><br><span class="line">Shortest <span class="built_in">path</span> from Los Angelges to Boston:</span><br><span class="line">Los Angeles <span class="number">50</span>&gt; Riverside</span><br><span class="line">Riverside <span class="number">1704</span>&gt; Chicago</span><br><span class="line">Chicago <span class="number">238</span>&gt; Detroit</span><br><span class="line">Detroit <span class="number">613</span>&gt; Boston</span><br><span class="line">Total Weight: <span class="number">2605</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/classic-computer-science-problems-in-python" target="_blank" rel="noopener">Classic Computer Science Problems in Python</a><br><a href="https://github.com/davecom/ClassicComputerScienceProblemsInPython" target="_blank" rel="noopener">davecom/ClassicComputerScienceProblemsInPython</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/DataStructure/" rel="tag"># DataStructure</a>
+          
+            <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+          
+            <a href="/tags/Advanced/" rel="tag"># Advanced</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Graph/" rel="tag"># Graph</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/02/03/classic-compute-problems-with-python-constraint-satisfaction-problems/" rel="next" title="基本算法问题的 Python 解法——约束满足问题（CSP）">
+                <i class="fa fa-chevron-left"></i> 基本算法问题的 Python 解法——约束满足问题（CSP）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/03/13/django-drf-and-vue-element-file-upload-and-download/" rel="prev" title="Django（drf）配合 Vue Element 实现文件上传下载功能">
+                Django（drf）配合 Vue Element 实现文件上传下载功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#map-as-graph"><span class="nav-number">1.</span> <span class="nav-text">map as graph</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#寻找最短路径"><span class="nav-number">2.</span> <span class="nav-text">寻找最短路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加权图"><span class="nav-number">3.</span> <span class="nav-text">加权图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在加权图中搜索最短路径"><span class="nav-number">4.</span> <span class="nav-text">在加权图中搜索最短路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

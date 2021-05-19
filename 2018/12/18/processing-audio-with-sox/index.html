@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Tools,Software,Media,Audio," />
+
+
+<meta name="description" content="SoX（即 Sound eXchange）是一个跨平台（Windows，Linux，MacOS 等）的命令行实用程序，可以将各种格式的音频文件转换为需要的其他格式。SoX 还可以对输入的音频文件应用各种效果，也支持在大多数平台上播放和录制音频文件。  一、简介SoX 可以读取和写入常见格式的音频文件，并在此过程中选择性的加入一些声音效果。它可以组合多个输入源及合成音效，在许多系统上也可以作为音频">
+<meta name="keywords" content="Linux,Tools,Software,Media,Audio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SoX — 音频处理工具里的瑞士军刀">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/12/18/processing-audio-with-sox/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="SoX（即 Sound eXchange）是一个跨平台（Windows，Linux，MacOS 等）的命令行实用程序，可以将各种格式的音频文件转换为需要的其他格式。SoX 还可以对输入的音频文件应用各种效果，也支持在大多数平台上播放和录制音频文件。  一、简介SoX 可以读取和写入常见格式的音频文件，并在此过程中选择性的加入一些声音效果。它可以组合多个输入源及合成音效，在许多系统上也可以作为音频">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-01-05T19:42:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SoX — 音频处理工具里的瑞士军刀">
+<meta name="twitter:description" content="SoX（即 Sound eXchange）是一个跨平台（Windows，Linux，MacOS 等）的命令行实用程序，可以将各种格式的音频文件转换为需要的其他格式。SoX 还可以对输入的音频文件应用各种效果，也支持在大多数平台上播放和录制音频文件。  一、简介SoX 可以读取和写入常见格式的音频文件，并在此过程中选择性的加入一些声音效果。它可以组合多个输入源及合成音效，在许多系统上也可以作为音频">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/12/18/processing-audio-with-sox/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>SoX — 音频处理工具里的瑞士军刀 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/12/18/processing-audio-with-sox/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SoX — 音频处理工具里的瑞士军刀</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-18T00:00:00+08:00">2018-12-18</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tools/" itemprop="url" rel="index"><span itemprop="name">Tools</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/12/18/processing-audio-with-sox/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/12/18/processing-audio-with-sox/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/12/18/processing-audio-with-sox/" class="leancloud_visitors" data-flag-title="SoX — 音频处理工具里的瑞士军刀">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">8.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:09</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><a href="http://sox.sourceforge.net/Main/HomePage" target="_blank" rel="noopener">SoX</a>（即 Sound eXchange）是一个跨平台（Windows，Linux，MacOS 等）的命令行实用程序，可以将各种格式的音频文件转换为需要的其他格式。<br>SoX 还可以对输入的音频文件应用各种<strong>效果</strong>，也支持在大多数平台上<strong>播放</strong>和<strong>录制</strong>音频文件。</p>
+</blockquote>
+<h4 id="一、简介"><a href="#一、简介" class="headerlink" title="一、简介"></a>一、简介</h4><p>SoX 可以<strong>读取</strong>和<strong>写入</strong>常见格式的音频文件，并在此过程中选择性的加入一些声音效果。<br>它可以组合多个输入源及合成音效，在许多系统上也可以作为<strong>音频播放器</strong>或<strong>多轨录音机</strong>使用。<br>SoX 工具在大部分 Linux 系统上都可以直接通过软件包管理器安装（如 <code>sudo apt-get install sox</code>），Mac 系统上则可以使用 <code>brew install sox</code> 命令。</p>
+<p>SoX 处理音频的基本流程如下：<br><code>Input(s) -&gt; Combiner -&gt; Effects -&gt; Output(s)</code></p>
+<p>SoX 工具的所有功能都可以通过一个简单的 <code>sox</code> 命令及相应的选项实现。但它同时提供了 <code>play</code> 命令用于播放音频文件，<code>rec</code> 命令用于录制音频，以及 <code>soxi</code> 命令用于获取音频的文件头中包含的信息。</p>
+<p>上述几个命令的基本格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">SYNOPSIS</span><br><span class="line">       sox [global-options] [format-options] infile1</span><br><span class="line">            [[format-options] infile2] ... [format-options] outfile</span><br><span class="line">            [effect [effect-options]] ...</span><br><span class="line"></span><br><span class="line">       play [global-options] [format-options] infile1</span><br><span class="line">            [[format-options] infile2] ... [format-options]</span><br><span class="line">            [effect [effect-options]] ...</span><br><span class="line"></span><br><span class="line">       rec [global-options] [format-options] outfile</span><br><span class="line">            [effect [effect-options]] ...</span><br><span class="line">       </span><br><span class="line">       soxi [-V[level]] [-T] [-t|-r|-c|-s|-d|-D|-b|-B|-p|-e|-a] infile1 ...</span><br></pre></td></tr></table></figure></p>
+<h4 id="二、基本使用"><a href="#二、基本使用" class="headerlink" title="二、基本使用"></a>二、基本使用</h4><h5 id="1-获取音频文件的元数据"><a href="#1-获取音频文件的元数据" class="headerlink" title="1. 获取音频文件的元数据"></a>1. 获取音频文件的元数据</h5><p><code>soxi</code> 或 <code>sox --i</code> 命令可以通过分析音频文件的文件头，获取其元数据（如<strong>通道数</strong>、<strong>采样率</strong>、<strong>编码</strong>等）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ soxi Faded.wav</span><br><span class="line"></span><br><span class="line">Input File     : &apos;Faded.wav&apos;</span><br><span class="line">Channels       : 2</span><br><span class="line">Sample Rate    : 44100</span><br><span class="line">Precision      : 16-bit</span><br><span class="line">Duration       : 00:03:32.63 = 9376836 samples = 15947 CDDA sectors</span><br><span class="line">File Size      : 37.5M</span><br><span class="line">Bit Rate       : 1.41M</span><br><span class="line">Sample Encoding: 16-bit Signed Integer PCM</span><br></pre></td></tr></table></figure></p>
+<p>soxi 命令跟上某个特定的选项可以只获取该选项对应的信息，如只显示某音频文件 <code>Faded.wav</code> 的<strong>比特率</strong>（Bit Rate）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ soxi -B Faded.wav</span><br><span class="line">1.41M</span><br></pre></td></tr></table></figure></p>
+<p>soxi 命令支持的所有选项及其含义如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ soxi</span><br><span class="line">Usage: soxi [-V[level]] [-T] [-t|-r|-c|-s|-d|-D|-b|-B|-p|-e|-a] infile1 ...</span><br><span class="line"></span><br><span class="line">-t  Show detected file-type</span><br><span class="line">-r  Show sample-rate</span><br><span class="line">-c  Show number of channels</span><br><span class="line">-s  Show number of samples (0 if unavailable)</span><br><span class="line">-d  Show duration in hours, minutes and seconds (0 if unavailable)</span><br><span class="line">-D  Show duration in seconds (0 if unavailable)</span><br><span class="line">-b  Show number of bits per sample (0 if not applicable)</span><br><span class="line">-B  Show the bitrate averaged over the whole file (0 if unavailable)</span><br><span class="line">-p  Show estimated sample precision in bits</span><br><span class="line">-e  Show the name of the audio encoding</span><br><span class="line">-a  Show file comments (annotations) if available</span><br><span class="line"></span><br><span class="line">With no options, as much information as is available is shown for</span><br><span class="line">each given file.</span><br></pre></td></tr></table></figure></p>
+<h5 id="2-获取音频的统计信息"><a href="#2-获取音频的统计信息" class="headerlink" title="2. 获取音频的统计信息"></a>2. 获取音频的统计信息</h5><p>可以使用 <code>sox &lt;inputfile&gt; -n stat</code> 命令获取某音频文件的统计信息。示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$  sox Faded.wav -n stat</span><br><span class="line">Samples read:          18753672</span><br><span class="line">Length (seconds):    212.626667</span><br><span class="line">Scaled by:         2147483647.0</span><br><span class="line">Maximum amplitude:     0.977417</span><br><span class="line">Minimum amplitude:    -0.977478</span><br><span class="line">Midline amplitude:    -0.000031</span><br><span class="line">Mean    norm:          0.229415</span><br><span class="line">Mean    amplitude:    -0.000006</span><br><span class="line">RMS     amplitude:     0.302594</span><br><span class="line">Maximum delta:         1.765564</span><br><span class="line">Minimum delta:         0.000000</span><br><span class="line">Mean    delta:         0.202369</span><br><span class="line">RMS     delta:         0.273320</span><br><span class="line">Rough   frequency:         6339</span><br><span class="line">Volume adjustment:        1.023</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-播放与录制"><a href="#3-播放与录制" class="headerlink" title="3. 播放与录制"></a>3. 播放与录制</h5><p><code>play</code> 和 <code>rec</code> 命令提供了最基本的播放和录制功能。<br>播放：<code>$ play existing-file.wav</code><br>录制：<code>$ rec new-file.wav</code></p>
+<p>上述命令等同于 sox 命令的如下形式：<br><code>$ sox existing-file.wav −d</code>（播放）和 <code>sox −d new-file.wav</code>（录制）<br>其中 <code>-d</code> 选项用于指定播放或录制时使用的音频设备，不指定时则表示使用默认设备。</p>
+<p><strong>可以这样理解</strong>：</p>
+<ul>
+<li><code>sox existing-file.wav -d</code> 就是从 <code>existing-file.wav</code> 文件中读取其包含的音频数据，再输出到 <code>-d</code> （默认音频设备，扬声器）进行播放；</li>
+<li><code>sox -d new-file.wav</code> 就是从 <code>-d</code> （默认音频设备，麦克风）中读取音频数据，再输出（录制）到 <code>new-file.wav</code> 文件中。</li>
+</ul>
+<p>其实都遵循了一个基本的格式，即 <code>sox &lt;input&gt; &lt;output&gt;</code> 。而其中的 <code>&lt;input&gt;</code> 和 <code>&lt;output&gt;</code> 根据需要既可以为某个具体的<strong>音频文件</strong>，也可以是某个具体的<strong>音频设备</strong>。</p>
+<hr>
+<p>播放或录制的同时，也可以对音频文件应用指定的编辑操作或效果选项，因此在对音频数据应用某效果前，可以先使用 <strong>play 命令</strong>进行“预览”。</p>
+<p>如 <code>trim</code> 效果可以从音频文件中裁剪提取指定的片段到输出文件。play 命令通过该效果可以直接播放指定片段：<br><code>$ play foo.wav trim 10.0 5.0</code> 或 <code>$ play foo.wav trim 10.0 =15.0</code><br>播放 <code>foo.wav</code> 文件中 10-15s 之间的音频片段</p>
+<p>使用 <code>echo</code> 效果播放 <code>Faded.wav</code> 文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ play Faded.wav echo 0.8 0.88 200.0 0.4</span><br><span class="line"></span><br><span class="line">Faded.wav:</span><br><span class="line"></span><br><span class="line"> File Size: 37.5M     Bit Rate: 1.41M</span><br><span class="line">  Encoding: Signed PCM</span><br><span class="line">  Channels: 2 @ 16-bit</span><br><span class="line">Samplerate: 44100Hz</span><br><span class="line">Replaygain: off</span><br><span class="line">  Duration: 00:03:32.63</span><br><span class="line"></span><br><span class="line">In:12.1% 00:00:25.82 [00:03:06.81] Out:1.14M [-=====|=====-] Hd:2.7 Clip:0</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-音频格式转换"><a href="#4-音频格式转换" class="headerlink" title="4. 音频格式转换"></a>4. 音频格式转换</h5><h6 id="文件格式类型"><a href="#文件格式类型" class="headerlink" title="文件格式类型"></a>文件格式类型</h6><p>对于音频数据格式的描述，主要通过以下 4 种属性：</p>
+<ul>
+<li><p>采样率（sample rate）：指声音由模拟信号转换成数字信号的过程中，每秒从<strong>连续信号</strong>中提取的用于组成<strong>离散信号</strong>的样本个数。<br>音频CD所用的采样率为 44100 Hz，数字音频磁带和许多计算机系统使用 48000 Hz，专业级音频系统通常使用 96000 Hz。</p>
+</li>
+<li><p>采样大小（sample size 或 Precision）：音频采样时用于存储每个样本的数据位数（bits）。如今 16 bit 的采样大小已被广泛使用，24 bit 主要用于专业音频领域。</p>
+</li>
+<li><p>编码格式（data encoding）：即每个音频样本的表示（即“编码”）方式。常用的编码类型包括 floating-point、μ-law、ADPCM、singed-integer PCM、MP3 和 FLAC 等。</p>
+</li>
+<li><p>通道（channel）：即文件中包含的音频通道的数量。其中单声道（<strong>mono</strong>）和双声道（<strong>stereo</strong>）是最常见的两种，“环绕声”音频（<strong>Surround sound</strong>）通常包含六个或更多声道。</p>
+</li>
+</ul>
+<p>此外，音频文件还使用<strong>比特率</strong>（Bit Rate）表示一个单位时间内编码音频信号占用的存储空间大小， 它的数值一般取决于所有的上述四个参数。<br>MP3 编码的立体声音乐通常具有 128-196kbps 的比特率， FLAC 编码的立体声音乐通常具有 550-760kbps 的比特率。</p>
+<p>我个人是这样想的，，，可以将一段音频数据看成很长很长的一排苹果树，从头走到尾，每隔一段距离停下，摘下满满一筐苹果。。。<br>筐的大小就是采样大小，停下来采摘的次数就是采样频率，比特率就是把一定数量的苹果“榨成汁”（以特定的格式对音频编码）以后的重量，当然有些榨汁方法会造成一定的损失。</p>
+<h6 id="格式转换"><a href="#格式转换" class="headerlink" title="格式转换"></a>格式转换</h6><p>形式最简单的 sox 命令即使用两个文件名作为参数，如：<br><code>$ sox Faded.wav Faded.mp3</code> ：将 <code>Faded.wav</code> 文件的格式由 <strong>wav</strong> 转为 <strong>mp3</strong></p>
+<p>上述命令执行时，SoX 会先从 <code>Faded.wav</code> 文件中读取音频数据，再将其输出到 <code>Faded.mp3</code> 文件中。而 SoX 程序会根据参数中文件名的<strong>后缀</strong>推断出相应的格式，并在复制音频数据的过程中自动进行转码。</p>
+<p>SoX 可以处理 <strong>self-describing</strong> 和 <strong>raw</strong> 格式的音频文件。<br><strong>self-describing</strong> 格式（如 WAV、FLAC、MP3）的文件包含一个用于描述信号和编码属性的<strong>文件头</strong>，而 <strong>raw</strong> 或 <strong>headless</strong> 格式的音频则不包含这些信息。</p>
+<p>所以当 <strong>raw</strong> 格式的音频作为输入文件时，需要在 sox 命令的格式选项里指定其信号和编码属性。</p>
+<p>常用的音频格式选项：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+<td>每个编码样本占用的数据位数</td>
+</tr>
+<tr>
+<td>c</td>
+<td>音频文件包含的通道数</td>
+</tr>
+<tr>
+<td>e</td>
+<td>音频文件的编码类型</td>
+</tr>
+<tr>
+<td>r</td>
+<td>音频文件的采样率</td>
+</tr>
+<tr>
+<td>t</td>
+<td>音频文件的文件类型</td>
+</tr>
+</tbody>
+</table>
+<p>上述选项适用于输入或输出文件，主要用于说明 <strong>raw</strong>（或 <strong>headless</strong>）文件作为输入时的格式信息，或格式转换时指定输出文件的具体参数。</p>
+<p><code>$ sox −r 48k −e float −b 32 −c 2 input.raw output.wav</code><br>将某个特定的 <strong>raw</strong> 格式的音频文件转换为 <strong>wav</strong> 格式</p>
+<p><code>$ sox Faded.wav Faded.raw</code><br>将音频文件 <code>Faded.wav</code> 转为 <strong>raw</strong> 格式</p>
+<p><code>$ play -r 44800 -b 16 -e signed-integer -c 2 Faded.raw</code><br>播放 <strong>raw</strong> 格式的音频文件</p>
+<p><code>$ sox Faded.wav -c 1 Faded-mono.wav</code><br>将 <code>Faded.wav</code> 文件转换成单声道（<code>-c 1</code>）后输出</p>
+<h4 id="三、音频效果"><a href="#三、音频效果" class="headerlink" title="三、音频效果"></a>三、音频效果</h4><p>SoX 工具可以在音频处理的过程中，对输入的音频数据应用众多的<strong>效果</strong>。<br>可以使用如下命令查看所有效果的帮助信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ sox --help-effect all | less</span><br><span class="line">sox:      SoX v</span><br><span class="line"></span><br><span class="line">Effect usage:</span><br><span class="line"></span><br><span class="line">allpass frequency width[h|k|q|o]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">band [-n] center [width[h|k|q|o]]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">bandpass [-c] frequency width[h|k|q|o]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">bandreject frequency width[h|k|q|o]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">bass gain [frequency(100) [width[s|h|k|q|o]](0.5s)]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">bend [-f frame-rate(25)] [-o over-sample(16)] &#123;start,cents,end&#125;</span><br><span class="line"></span><br><span class="line">:</span><br></pre></td></tr></table></figure></p>
+<p>也可以直接查看具体某个音频效果的使用方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$  sox --help-effect echo</span><br><span class="line">sox:      SoX v</span><br><span class="line"></span><br><span class="line">Effect usage:</span><br><span class="line"></span><br><span class="line">echo gain-in gain-out delay decay [ delay decay ... ]</span><br></pre></td></tr></table></figure></p>
+<p>以下是一些简单的应用场景。</p>
+<h5 id="1-更改声道数"><a href="#1-更改声道数" class="headerlink" title="1. 更改声道数"></a>1. 更改声道数</h5><p>sox 命令可以更改音频文件中声道的数目，如将单声道音频转换成双声道：<br><code>$ sox foo.wav foostereo.wav channels 2</code> 或 <code>$ sox foo.wav -c 2 foostereo.wav</code></p>
+<p>但是上述命令并没有创建一个“真实”的双声道音频，而是将单声道音频复制成完全一致的两个声道再合并到输出文件中。</p>
+<p>可以通过 sox 命令的 <code>-M</code> 选项将左右两个声道的单声道音频合并成一个双声道文件：<br><code>$ sox -M left.wav right.wav stereo.wav</code></p>
+<p>当然，也可以通过对双声道文件中两个声道的均一化处理，将其输出为单声道音频：<br><code>$ sox original.wav mono.wav channels 1</code> 或 <code>$ sox original.wav -c 1 mono.wav</code></p>
+<h6 id="remix"><a href="#remix" class="headerlink" title="remix"></a>remix</h6><p>通过 sox 命令的 <code>remix</code> 效果也可以完成对声道数据的提取或融合。</p>
+<p><strong>提取</strong>双声道音频文件中单个声道的数据并作为单声道音频输出：<br><code>$ sox stereo.wav left.wav remix 1</code> （提取左声道音频）<br><code>$ sox stereo.wav right.wav remix 2</code> （提取右声道音频）</p>
+<p><strong>融合</strong>双声道文件中两个声道的音频数据并作为单声道音频输出：<br><code>$ sox stereo.wav mono.wav remix 1,2</code> 或<br><code>$ sox stereo.wav mono.wav remix 1-2</code></p>
+<p>此外，<code>remix</code> 还可以将输入文件中的多个声道数据分别进行融合。<br>如使用 <code>-M</code> 选项将两个双声道音频合并，再通过 <code>remix</code> 将合并得到的四个声道两两融合，生成一个只包含两个声道的输出文件。<br><code>$ sox -M stereo1.wav stereo2.wav output.wav remix 1,3 2,4</code></p>
+<h5 id="2-改变音量"><a href="#2-改变音量" class="headerlink" title="2. 改变音量"></a>2. 改变音量</h5><p>sox 命令的 <code>-v</code> 选项可以用来（成倍地）改变音量的大小：<br><code>$ sox -v 0.5 foo.wav bar.wav</code><br>上述命令将 <code>foo.wav</code> 音频放大 0.5 倍音量后输出至 <code>bar.wav</code> 文件</p>
+<p>可以将音量放大功能与 <code>stat</code> 效果结合。<br>以 <code>sox foo.wav -n stat -v</code> 命令返回的数字作为放大倍数，将最大化 <code>foo.wav</code> 的音量而不至于出现<strong>削波</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sox foo.wav -n stat -v 2&gt; vc</span><br><span class="line">$ sox -v `cat vc` foo.wav foo-maxed.wav</span><br></pre></td></tr></table></figure></p>
+<p>此外，还有一个选项 <code>--norm</code> 用来<strong>归一化</strong>音频响度。为了最大化音频的声音强度，可以在处理输入音频时将该选项设置为 -1：<br><code>sox --norm=-1 &lt;inputfile&gt; &lt;outputfile&gt;</code></p>
+<h5 id="3-提取文件的某个部分"><a href="#3-提取文件的某个部分" class="headerlink" title="3. 提取文件的某个部分"></a>3. 提取文件的某个部分</h5><p>sox 命令的 <code>trim</code> 效果可以将输入音频的某一段裁剪出来并提取到输出文件中。</p>
+<p><code>trim</code> 接收两个参数，一个作为裁剪片段的起始位置，另一个作为该片段持续的时间。<br>可以使用<code>整数+s</code>格式的参数以样本个数作为计量单位，也可以直接使用 <code>((hh:)mm:)ss(.fs)</code> 形式的时间参数。当参数为纯整数时，单位为秒。</p>
+<p><code>$ sox Input.wav Half1.wav trim 0 30:00</code> 截取输入文件中前 30 分钟的音频<br><code>$ sox Input.wav Half2.wav trim 30:00 30:00</code> 截取输入文件中从第 30 分钟开始到第 60 分钟的音频</p>
+<h5 id="4-拼接文件"><a href="#4-拼接文件" class="headerlink" title="4. 拼接文件"></a>4. 拼接文件</h5><p>与前面裁剪提取的操作相反，sox 命令还可以实现对两个或多个音频文件的拼接。</p>
+<p><code>$ sox Half1.wav Half2.wav Full.wav</code><br>将 <code>Half1.wav</code> 和 <code>Half2.wav</code> 合并至 <code>Full.wav</code> 文件。注意合并前的音频文件需保持一致的类型和采样率等。</p>
+<h5 id="5-合成音频"><a href="#5-合成音频" class="headerlink" title="5. 合成音频"></a>5. 合成音频</h5><p>sox 命令可以通过 <code>synth</code> 效果合成许多标准波形和噪声类型。</p>
+<p><code>$ sox -n sine.wav synth 1.0 sine 1000.0</code><br>合成频率为 1000 Hz 长度为 1 秒的正弦波，保存至 <code>sine.wav</code> 文件中。</p>
+<p><code>synth</code> 支持合成的声音类型包括 <strong>sine</strong>、<strong>square</strong>、<strong>triangle</strong>、<strong>sawtooth</strong>、<strong>trapetz (trapezoidal)</strong>、<strong>exp (exponential)</strong>、<strong>whitenoise</strong>、<strong>pinknoise</strong> 和 <strong>brownnoise</strong>。</p>
+<h5 id="6-静音效果"><a href="#6-静音效果" class="headerlink" title="6. 静音效果"></a>6. 静音效果</h5><p>sox 命令可以创建静音状态的音频片段，使用 <code>-n</code> 选项表示没有输入，通过 <code>trim</code> 效果指定需要静音的片段。</p>
+<p><code>$ sox -n -r 48000 silence.wav trim 0.0 0.250</code><br>在 <code>slience.wav</code> 文件中创建一段长度为 250ms 采样率为 48000Hz 的静音片段。</p>
+<h5 id="7-混合音频"><a href="#7-混合音频" class="headerlink" title="7. 混合音频"></a>7. 混合音频</h5><p>sox 命令的 <code>-m</code> 选项可以将两个音频文件<strong>混合</strong>以后生成输出文件。</p>
+<p><code>$ sox -m sine100.wav sine250.wav sine100-250.wav</code><br>将 <code>sine100.wav</code> 和 <code>sine250.wav</code> 两个音频文件融合以后作为 <code>sine100-250.wav</code> 文件的音频数据。</p>
+<p><code>$ sox -m -v0.5 music.mp3 -v2 speech.wav presentation.wav</code><br>将背景音乐（<code>music.mp3</code>）音量降低一半后与放大 2 倍音量的人声数据（<code>speech.wav</code>）融合。 </p>
+<p>如果不确定融合效果，可以先通过 <code>play</code> 命令使用相同的参数对结果进行“预览”：<br><code>$ play -m -v0.5 music.mp3 -v2 speech.wav</code></p>
+<p><strong>PS</strong>：<br>与前面的 <code>-M</code> 选项不同，<code>-m</code> 选项倾向于对<strong>声道数据</strong>的混合，即两个单声道文件通过 <code>-m</code> 混合以后输出仍是单声道数据。输出文件中的单个声道包含了输入的两个声道的特征。</p>
+<p>而 <code>-M</code> 选项更倾向于对音频文件的合并，默认不对声道数据进行混合。所以两个单声道文件通过 <code>-M</code> 合并以后默认输出双声道音频。输出文件中的两个声道<strong>分别对应</strong>于输入的两个声道（数据没有混合）。除非通过 <code>-c</code> 选项手动指定输出文件的声道数量。</p>
+<h5 id="8-改变播放速度"><a href="#8-改变播放速度" class="headerlink" title="8. 改变播放速度"></a>8. 改变播放速度</h5><p>可以通过 <code>stretch</code> 效果改变音频文件的播放速度，同时不会导致音高的变化。</p>
+<p>如以 2x 倍速播放 <code>Faded.wav</code> 文件：<br><code>$ play Faded.wav stretch 0.5</code></p>
+<p>也可以通过 <code>speed</code> 效果调节播放速度（相应地音高也会发生变化）：<br><code>$ play Faded.wav speed 2</code></p>
+<p>此外，可以使用 <code>pitch</code> 效果调节音频片段的音高，以<a href="https://zh.wikipedia.org/wiki/%E9%9F%B3%E5%88%86" target="_blank" rel="noopener">音分</a>（cents）为单位。</p>
+<p><code>$ play Faded.wav pitch 200</code><br>将 <code>Faded.wav</code> 文件中的音频提高 200 音分，即提高 2 个半音的音程（每一个半音的音程等于 100 音分）。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://sox.sourceforge.net/sox.html" target="_blank" rel="noopener">SoX</a><br><a href="http://billposer.org/Linguistics/Computation/SoxTutorial.html" target="_blank" rel="noopener">Using Sox</a><br><a href="https://www.yesik.it/blog/2018-sox" target="_blank" rel="noopener">How to process audio files from the command line with SoX</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Software/" rel="tag"># Software</a>
+          
+            <a href="/tags/Media/" rel="tag"># Media</a>
+          
+            <a href="/tags/Audio/" rel="tag"># Audio</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/14/make-schedule-using-crontab/" rel="next" title="Linux 使用 crontab 创建定时任务">
+                <i class="fa fa-chevron-left"></i> Linux 使用 crontab 创建定时任务
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/28/programming-esp8266-with-micropython/" rel="prev" title="NodeMCU 开发板刷入 MicroPython 固件并通过 Atom 进行编程">
+                NodeMCU 开发板刷入 MicroPython 固件并通过 Atom 进行编程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、简介"><span class="nav-number">1.</span> <span class="nav-text">一、简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、基本使用"><span class="nav-number">2.</span> <span class="nav-text">二、基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-获取音频文件的元数据"><span class="nav-number">2.1.</span> <span class="nav-text">1. 获取音频文件的元数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-获取音频的统计信息"><span class="nav-number">2.2.</span> <span class="nav-text">2. 获取音频的统计信息</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-播放与录制"><span class="nav-number">2.3.</span> <span class="nav-text">3. 播放与录制</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-音频格式转换"><span class="nav-number">2.4.</span> <span class="nav-text">4. 音频格式转换</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#文件格式类型"><span class="nav-number">2.4.1.</span> <span class="nav-text">文件格式类型</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#格式转换"><span class="nav-number">2.4.2.</span> <span class="nav-text">格式转换</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、音频效果"><span class="nav-number">3.</span> <span class="nav-text">三、音频效果</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-更改声道数"><span class="nav-number">3.1.</span> <span class="nav-text">1. 更改声道数</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#remix"><span class="nav-number">3.1.1.</span> <span class="nav-text">remix</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-改变音量"><span class="nav-number">3.2.</span> <span class="nav-text">2. 改变音量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-提取文件的某个部分"><span class="nav-number">3.3.</span> <span class="nav-text">3. 提取文件的某个部分</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-拼接文件"><span class="nav-number">3.4.</span> <span class="nav-text">4. 拼接文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-合成音频"><span class="nav-number">3.5.</span> <span class="nav-text">5. 合成音频</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-静音效果"><span class="nav-number">3.6.</span> <span class="nav-text">6. 静音效果</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#7-混合音频"><span class="nav-number">3.7.</span> <span class="nav-text">7. 混合音频</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#8-改变播放速度"><span class="nav-number">3.8.</span> <span class="nav-text">8. 改变播放速度</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

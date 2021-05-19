@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Program,Class,OOP,Inherit,JavaScript,Object,ECMAScript6," />
+
+
+<meta name="description" content="一、prototypesPrototype 是一个对象，其中定义的属性和功能可以自动被其他对象访问。Prototype 可以发挥类似于传统的 OO 语言中类的作用，事实上 JavaScript 中的 prototype 主要用途就是编写 OO 形式的代码。 在 JavaScript 中，对象表示一系列已命名的属性及其属性值的合集。12345let obj = &amp;#123;  prop1: 1,">
+<meta name="keywords" content="Program,Class,OOP,Inherit,JavaScript,Object,ECMAScript6">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaScript 解密 —— 理解对象">
+<meta property="og:url" content="https://rollingstarky.github.io/2020/08/06/secrets-of-javascript-understanding-objects/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="一、prototypesPrototype 是一个对象，其中定义的属性和功能可以自动被其他对象访问。Prototype 可以发挥类似于传统的 OO 语言中类的作用，事实上 JavaScript 中的 prototype 主要用途就是编写 OO 形式的代码。 在 JavaScript 中，对象表示一系列已命名的属性及其属性值的合集。12345let obj = &amp;#123;  prop1: 1,">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-27204da7c76ae4a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-e38c297290c5663b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-f3a767b7c60c3c74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a24b52adeca9732f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-47ac4887f71db065.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-fe449c7095870a93.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2020-08-06T11:35:29.223Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JavaScript 解密 —— 理解对象">
+<meta name="twitter:description" content="一、prototypesPrototype 是一个对象，其中定义的属性和功能可以自动被其他对象访问。Prototype 可以发挥类似于传统的 OO 语言中类的作用，事实上 JavaScript 中的 prototype 主要用途就是编写 OO 形式的代码。 在 JavaScript 中，对象表示一系列已命名的属性及其属性值的合集。12345let obj = &amp;#123;  prop1: 1,">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-27204da7c76ae4a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2020/08/06/secrets-of-javascript-understanding-objects/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>JavaScript 解密 —— 理解对象 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2020/08/06/secrets-of-javascript-understanding-objects/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">JavaScript 解密 —— 理解对象</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-06T00:00:00+08:00">2020-08-06</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/08/06/secrets-of-javascript-understanding-objects/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2020/08/06/secrets-of-javascript-understanding-objects/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2020/08/06/secrets-of-javascript-understanding-objects/" class="leancloud_visitors" data-flag-title="JavaScript 解密 —— 理解对象">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:08</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、prototypes"><a href="#一、prototypes" class="headerlink" title="一、prototypes"></a>一、prototypes</h4><p><em>Prototype</em> 是一个对象，其中定义的属性和功能可以自动被其他对象访问。Prototype 可以发挥类似于传统的 OO 语言中<strong>类</strong>的作用，事实上 JavaScript 中的 prototype 主要用途就是编写 OO 形式的代码。</p>
+<p>在 JavaScript 中，<strong>对象</strong>表示一系列已命名的属性及其属性值的合集。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  prop1: <span class="number">1</span>,               <span class="comment">// 属性值为基本类型</span></span><br><span class="line">  prop2: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;&#125;,  <span class="comment">// 属性值为函数</span></span><br><span class="line">  prop3: &#123;&#125;               <span class="comment">// 属性值为另一个对象</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>关联到某个对象上的属性可以很容易地被修改或删除。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  prop1: <span class="number">1</span>,               <span class="comment">// 属性值为基本类型</span></span><br><span class="line">  prop2: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;&#125;,  <span class="comment">// 属性值为函数</span></span><br><span class="line">  prop3: &#123;&#125;               <span class="comment">// 属性值为另一个对象</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">obj.prop1 = []            <span class="comment">// 将 prop1 属性的值改为其他类型</span></span><br><span class="line"><span class="keyword">delete</span> obj.prop2          <span class="comment">// 删除某个属性</span></span><br><span class="line">obj.prop4 = <span class="string">"Hello"</span>       <span class="comment">// 添加一个新的属性</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(obj)</span><br><span class="line"><span class="comment">// &#123; prop1: [], prop3: &#123;&#125;, prop4: 'Hello' &#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>每个对象都可以拥有一个 prototype 的引用，在对象本身不包含某个属性时，可以由 prototype 对象去寻找该属性。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> yoshi = &#123; <span class="attr">skulk</span>: <span class="literal">true</span> &#125;</span><br><span class="line"><span class="keyword">const</span> hattori = &#123; <span class="attr">sneak</span>: <span class="literal">true</span> &#125;</span><br><span class="line"><span class="keyword">const</span> kuma = &#123; <span class="attr">creep</span>: <span class="literal">true</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"skulk"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"sneak"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// false</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"creep"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过 setPrototypeOf 方法将 hattori 设置为</span></span><br><span class="line"><span class="comment">// yoshi 对象的 prototype，yoshi 此时可以访问 sneak 属性</span></span><br><span class="line"><span class="built_in">Object</span>.setPrototypeOf(yoshi, hattori)</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"sneak"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"creep"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 将 kuma 设置为 hattori 对象的 prototype，</span></span><br><span class="line"><span class="comment">// yoshi 此时可以访问 creep 属性</span></span><br><span class="line"><span class="built_in">Object</span>.setPrototypeOf(hattori, kuma)</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"sneak"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"creep"</span> <span class="keyword">in</span> yoshi)  <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-27204da7c76ae4a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="prototype1"><br><img src="https://upload-images.jianshu.io/upload_images/6875152-e38c297290c5663b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="prototype2"></p>
+<h5 id="prototype-与对象构建"><a href="#prototype-与对象构建" class="headerlink" title="prototype 与对象构建"></a>prototype 与对象构建</h5><p>JavaScript 中，最简单的创建新对象的语法如下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> warrior = &#123;&#125;</span><br><span class="line">warrior.name = <span class="string">'Saito'</span></span><br><span class="line">warrior.occupation = <span class="string">'marksman'</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(warrior)</span><br><span class="line"><span class="comment">// &#123; name: 'Saito', occupation: 'marksman' &#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>对于有面向对象编程背景的人来说，上述方式看上去缺少了很多东西，比如没有一个用来初始化对象的类构造器。<br>此外如果需要同时创建多个相同类型的对象，手动地一个一个为对象关联属性则工作量太大且容易出问题。</p>
+<p>和其他常见的 OO 语言类似，JavaScript 也是使用 <code>new</code> 关键字通过构造器初始化对象。只不过该过程中被未出现类的定义，<code>new</code> 关键字实际上调用的是构造器函数。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="comment">// 每个函数都包含一个内置的 prototype 对象，可以被随意修改</span></span><br><span class="line">Ninja.prototype.swingSword = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 作为函数调用 Ninja()，不会创建任何对象</span></span><br><span class="line"><span class="keyword">const</span> ninja1 = Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(ninja1)               <span class="comment">// undefined</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 作为构造器调用，一个新的对象被创建且作为构造器函数的上下文（this），</span></span><br><span class="line"><span class="comment">// 构造器函数的 prototype 成为新创建对象的 prototype</span></span><br><span class="line"><span class="keyword">const</span> ninja2 = <span class="keyword">new</span> Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(ninja2)               <span class="comment">// Ninja &#123;&#125;</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja2.swingSword())  <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-f3a767b7c60c3c74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="prototype3"></p>
+<p>当某个函数作为构造器函数使用时，构造器函数的 prototype 将成为新创建对象的 prototype。<br>在上面的例子中，用 <code>swingSword</code> 方法扩展了 <code>Ninja.prototype</code>，当 <code>ninja2</code> 对象被创建后，其 prototype 就被设置成 Ninja 的 prototype。<br>因此，当后面我们访问 <code>ninja2</code> 对象的 <code>swingSword</code> 属性时，对于属性值的搜索最终传递给 <code>Ninja</code> 的 prototype 对象。<br>此外，所有通过 <code>Ninja</code> 构造器创建的对象都可以访问 <code>swingSword</code> 方法。</p>
+<h5 id="实例属性"><a href="#实例属性" class="headerlink" title="实例属性"></a>实例属性</h5><p>当函数通过 <code>new</code> 关键字作为构造器调用时，其本身即成为新创建对象的上下文。除了通过 prototype 暴露属性外，还可以使用 <code>this</code> 关键字在构造器函数中初始化对象实例。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.swung = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// instance method</span></span><br><span class="line">  <span class="keyword">this</span>.swingSword = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !<span class="keyword">this</span>.swung</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// prototype method</span></span><br><span class="line">Ninja.prototype.swingSword = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.swung</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ninja = <span class="keyword">new</span> Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(ninja.swingSword())  <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<p>上面代码的执行结果表明，实例方法会覆盖同名的 prototype 方法。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-a24b52adeca9732f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="instance method"><br>在构造器函数中，<code>this</code> 关键字指向通过 <code>new</code> 创建的对象。因此构造器中添加的属性会直接在新的 <code>ninja</code> 对象中创建。<br>当我们需要访问 <code>ninja</code> 对象的 <code>swingSword</code> 属性时，本就没有必要再从 prototype 中搜索。<code>ninja</code> 对象本身已经有了通过构造器创建的同名的实例属性。</p>
+<p>简单来说，每个对象都包含自己版本的通过构造器创建的属性，同时也都能够访问 prototype 的属性（名字相同时实例属性优先）。</p>
+<h5 id="Side-effects"><a href="#Side-effects" class="headerlink" title="Side effects"></a>Side effects</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义一个构造器函数，具有 swung 属性</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.swung = <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过 new 调用构造器函数，创建一个 Ninja 的实例</span></span><br><span class="line"><span class="keyword">const</span> ninja1 = <span class="keyword">new</span> Ninja()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在 ninja1 实例创建之后，为 prototype 添加 swingSword 方法</span></span><br><span class="line">Ninja.prototype.swingSword = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.swung</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 即便 swingSword 方法是后面添加到 prototype 的，ninja1 实例仍能访问</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja1.swingSword())  <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 完全覆盖 Ninja 的 prototype</span></span><br><span class="line">Ninja.prototype = &#123;</span><br><span class="line">  pierce: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Ninja 的 prototype 被完全替换后，ninja1 实例仍能访问 swingSword 方法</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja1.swingSword())  <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 再次新建 ninja2 实例，此时该实例不能访问 swingSword 但可以访问 pierce 方法</span></span><br><span class="line"><span class="keyword">const</span> ninja2 = <span class="keyword">new</span> Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(ninja2.pierce())      <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja2.swingSword)    <span class="comment">// undefined</span></span><br></pre></td></tr></table></figure>
+<p>从上面代码中可以看出，构造器函数的 prototype 可以随意被替换，但之前已经生成的对象实例仍指向旧的 prototype。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-47ac4887f71db065.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="prototype"></p>
+<h5 id="Object-typing"><a href="#Object-typing" class="headerlink" title="Object typing"></a>Object typing</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ninja = <span class="keyword">new</span> Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(<span class="keyword">typeof</span> ninja)                 <span class="comment">// object</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Ninja)       <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.constructor === Ninja)  <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ninja2 = <span class="keyword">new</span> ninja.constructor()</span><br><span class="line"><span class="built_in">console</span>.log(ninja2 <span class="keyword">instanceof</span> Ninja)      <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p><code>instanceof</code> 操作符可以帮助我们确定某个对象实例是否由某个特定的构造器创建。此外，还可以借助能够被所有实例访问的 <code>constructor</code> 属性，因为该属性一定指向原始的构造器函数。<br>又因为 <code>constructor</code> 属性是对原始构造器的引用，它因此也可以用来实例化新的对象。</p>
+<h4 id="二、继承"><a href="#二、继承" class="headerlink" title="二、继承"></a>二、继承</h4><h5 id="通过-prototype-实现继承"><a href="#通过-prototype-实现继承" class="headerlink" title="通过 prototype 实现继承"></a>通过 prototype 实现继承</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Person</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">Person.prototype.dance = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">Ninja.prototype = <span class="keyword">new</span> Person()</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ninja = <span class="keyword">new</span> Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Ninja)   <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Person)  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="keyword">typeof</span> ninja.dance)       <span class="comment">// function</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-fe449c7095870a93.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="inheritance"></p>
+<p>当我们通过 <code>ninja</code> 对象访问 <code>dance</code> 方法时，JavaScript 运行时首先试着检查 <code>ninja</code> 对象本身。<code>ninja</code> 本身并不包含 <code>dance</code> 属性，因此 <code>ninja</code> 对象的 prototype（即 <code>person</code> 对象）继续被搜索。<code>person</code> 对象也不包含 <code>dance</code> 属性，最终 <code>person</code> 对象的 prototype 被搜索检查，<code>dance</code> 方法被找到。<br>这就是 JavaScript 中实现继承的方式。</p>
+<h5 id="覆盖-constructor-属性引发的问题"><a href="#覆盖-constructor-属性引发的问题" class="headerlink" title="覆盖 constructor 属性引发的问题"></a>覆盖 constructor 属性引发的问题</h5><p>在上面的代码中，通过创建一个新的 <code>Person</code> 对象作为 <code>Ninja</code> 构造器的 prototype，令 <code>Ninja</code> 成为 <code>Person</code> 的子类。这种方式会导致原始的 Ninja prototype 被替换，即丢失 <code>constructor</code> 属性。<br>而 constructor 属性对于判断对象的起源非常重要。针对这个问题，可以使用 <code>Object.defineProperty</code> 方法为新的 <code>Ninja.prototype</code> 添加 <code>constructor</code> 属性，将其值设置为 <code>Ninja</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Person</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">Person.prototype.dance = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">Ninja.prototype = <span class="keyword">new</span> Person()</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.defineProperty(Ninja.prototype, <span class="string">"constructor"</span>, &#123;</span><br><span class="line">  enumerable: <span class="literal">false</span>,</span><br><span class="line">  value: Ninja,</span><br><span class="line">  writable: <span class="literal">true</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ninja = <span class="keyword">new</span> Ninja()</span><br><span class="line"><span class="built_in">console</span>.log(ninja.constructor === Ninja)  <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="三、ES6-中的-class"><a href="#三、ES6-中的-class" class="headerlink" title="三、ES6 中的 class"></a>三、ES6 中的 class</h4><p>ES6 中引入了一个新的 <code>class</code> 关键字，为创建对象、实现继承提供了一种更为优雅的方式，不必再自己通过 prototype 手动实现。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ninja</span></span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(name) &#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name</span><br><span class="line">  &#125;</span><br><span class="line">  swingSword() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ninja = <span class="keyword">new</span> Ninja(<span class="string">"Yoshi"</span>)</span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Ninja)  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.name)              <span class="comment">// Yoshi</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.swingSword())      <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<p><code>class</code> 关键字实际上是一种语法糖，上述代码等同于 ES5 中的如下代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.name = name</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Ninja.prototype.swingSword = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ninja = <span class="keyword">new</span> Ninja(<span class="string">'Yoshi'</span>)</span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Ninja)  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.name)              <span class="comment">// Yoshi</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.swingSword())      <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<h5 id="static-methods"><a href="#static-methods" class="headerlink" title="static methods"></a>static methods</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ninja</span></span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(name, level) &#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name</span><br><span class="line">    <span class="keyword">this</span>.level = level</span><br><span class="line">  &#125;</span><br><span class="line">  swingSword() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">static</span> compare(ninja1, ninja2) &#123;</span><br><span class="line">    <span class="keyword">return</span> ninja1.level - ninja2.level</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ninja1 = <span class="keyword">new</span> Ninja(<span class="string">"Yoshi"</span>, <span class="number">4</span>)</span><br><span class="line"><span class="keyword">var</span> ninja2 = <span class="keyword">new</span> Ninja(<span class="string">"Hattori"</span>, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"compare"</span> <span class="keyword">in</span> ninja1 || <span class="string">"compare"</span> <span class="keyword">in</span> ninja2)  <span class="comment">// false</span></span><br><span class="line"><span class="built_in">console</span>.log(Ninja.compare(ninja1, ninja2) &gt; <span class="number">0</span>)           <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"swingSword"</span> <span class="keyword">in</span> Ninja)                       <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p><code>compare</code> 这种 static methods 是类级别的代码，在 ES6 之前的代码中，可以这样实现：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Ninja</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">Ninja.compare = <span class="function"><span class="keyword">function</span>(<span class="params">ninja1, ninja2</span>) </span>&#123; ... &#125;</span><br></pre></td></tr></table></figure></p>
+<h5 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(name) &#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name</span><br><span class="line">  &#125;</span><br><span class="line">  dance() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ninja</span> <span class="keyword">extends</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(name, weapon) &#123;</span><br><span class="line">    <span class="keyword">super</span>(name)</span><br><span class="line">    <span class="keyword">this</span>.weapon = weapon</span><br><span class="line">  &#125;</span><br><span class="line">  wieldWeapon() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> person = <span class="keyword">new</span> Person(<span class="string">"Bob"</span>)</span><br><span class="line"><span class="built_in">console</span>.log(person <span class="keyword">instanceof</span> Person)        <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(person.dance())                  <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(person.name)                     <span class="comment">// Bob</span></span><br><span class="line"><span class="built_in">console</span>.log(person <span class="keyword">instanceof</span> Ninja)         <span class="comment">// false</span></span><br><span class="line"><span class="built_in">console</span>.log(person.wieldWeapon)              <span class="comment">// undefined</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ninja = <span class="keyword">new</span> Ninja(<span class="string">"Yoshi"</span>, <span class="string">"Wakizashi"</span>)</span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Ninja)          <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.wieldWeapon())             <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja <span class="keyword">instanceof</span> Person)         <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.name)                      <span class="comment">// Yoshi</span></span><br><span class="line"><span class="built_in">console</span>.log(ninja.dance())                   <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/secrets-of-the-javascript-ninja-second-edition" target="_blank" rel="noopener">Secrets of the JavaScript Ninja, Second Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Class/" rel="tag"># Class</a>
+          
+            <a href="/tags/OOP/" rel="tag"># OOP</a>
+          
+            <a href="/tags/Inherit/" rel="tag"># Inherit</a>
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+            <a href="/tags/Object/" rel="tag"># Object</a>
+          
+            <a href="/tags/ECMAScript6/" rel="tag"># ECMAScript6</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/08/05/python-cryptography-caesar-cipher/" rel="next" title="Python 密码学实践 —— 凯撒密码">
+                <i class="fa fa-chevron-left"></i> Python 密码学实践 —— 凯撒密码
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/08/19/django-add-ldap-authentication-backend-with-ldap3/" rel="prev" title="Django 借助 ldap3 自定义支持 LDAP 域账号的认证后端">
+                Django 借助 ldap3 自定义支持 LDAP 域账号的认证后端 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、prototypes"><span class="nav-number">1.</span> <span class="nav-text">一、prototypes</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#prototype-与对象构建"><span class="nav-number">1.1.</span> <span class="nav-text">prototype 与对象构建</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实例属性"><span class="nav-number">1.2.</span> <span class="nav-text">实例属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Side-effects"><span class="nav-number">1.3.</span> <span class="nav-text">Side effects</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Object-typing"><span class="nav-number">1.4.</span> <span class="nav-text">Object typing</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、继承"><span class="nav-number">2.</span> <span class="nav-text">二、继承</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#通过-prototype-实现继承"><span class="nav-number">2.1.</span> <span class="nav-text">通过 prototype 实现继承</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#覆盖-constructor-属性引发的问题"><span class="nav-number">2.2.</span> <span class="nav-text">覆盖 constructor 属性引发的问题</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、ES6-中的-class"><span class="nav-number">3.</span> <span class="nav-text">三、ES6 中的 class</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#static-methods"><span class="nav-number">3.1.</span> <span class="nav-text">static methods</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#继承"><span class="nav-number">3.2.</span> <span class="nav-text">继承</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

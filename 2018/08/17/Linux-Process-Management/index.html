@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,System,Tools,Trick," />
+
+
+<meta name="description" content="进程 是 Unix 和 Linux 系统中对正在运行中的应用程序的抽象，通过它可以管理和监视程序对内存、处理器时间和 I / O 资源的使用。  一、进程的组成一个进程包含内核中的一部分地址空间和一系列数据结构。其中地址空间是内核标记的一部分内存以供进程使用，而数据结构则用来纪录每个进程的具体信息。 最主要的进程信息包括：  进程的地址空间图 进程当前的状态（ sleeping、stopped、">
+<meta name="keywords" content="Linux,Admin,System,Tools,Trick">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 进程管理详解">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/08/17/Linux-Process-Management/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="进程 是 Unix 和 Linux 系统中对正在运行中的应用程序的抽象，通过它可以管理和监视程序对内存、处理器时间和 I / O 资源的使用。  一、进程的组成一个进程包含内核中的一部分地址空间和一系列数据结构。其中地址空间是内核标记的一部分内存以供进程使用，而数据结构则用来纪录每个进程的具体信息。 最主要的进程信息包括：  进程的地址空间图 进程当前的状态（ sleeping、stopped、">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-9e372387f5062bf6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-08-20T06:00:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux 进程管理详解">
+<meta name="twitter:description" content="进程 是 Unix 和 Linux 系统中对正在运行中的应用程序的抽象，通过它可以管理和监视程序对内存、处理器时间和 I / O 资源的使用。  一、进程的组成一个进程包含内核中的一部分地址空间和一系列数据结构。其中地址空间是内核标记的一部分内存以供进程使用，而数据结构则用来纪录每个进程的具体信息。 最主要的进程信息包括：  进程的地址空间图 进程当前的状态（ sleeping、stopped、">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-9e372387f5062bf6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/08/17/Linux-Process-Management/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Linux 进程管理详解 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/08/17/Linux-Process-Management/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux 进程管理详解</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-17T00:00:00+08:00">2018-08-17</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/08/17/Linux-Process-Management/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/08/17/Linux-Process-Management/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/08/17/Linux-Process-Management/" class="leancloud_visitors" data-flag-title="Linux 进程管理详解">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:11</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>进程</strong> 是 Unix 和 Linux 系统中对正在<strong>运行中</strong>的应用程序的抽象，通过它可以管理和监视程序对内存、处理器时间和 I / O 资源的使用。</p>
+</blockquote>
+<h4 id="一、进程的组成"><a href="#一、进程的组成" class="headerlink" title="一、进程的组成"></a>一、进程的组成</h4><p>一个进程包含<strong>内核</strong>中的一部分地址空间和一系列数据结构。其中<strong>地址空间</strong>是内核标记的一部分内存以供进程使用，而数据结构则用来纪录每个进程的具体信息。</p>
+<p>最主要的进程信息包括：</p>
+<ul>
+<li>进程的地址空间图</li>
+<li>进程当前的状态（ sleeping、stopped、runnable 等）</li>
+<li>进程的执行优先级</li>
+<li>进程调用的资源信息</li>
+<li>进程打开的文件和网络端口信息</li>
+<li>进程的<strong>信号掩码</strong>（指明哪种信号被屏蔽）</li>
+<li>进程的属主</li>
+</ul>
+<h5 id="PID-：进程-ID"><a href="#PID-：进程-ID" class="headerlink" title="PID ：进程 ID"></a>PID ：进程 ID</h5><p>每个进程都会从内核获取一个唯一的 ID 值。绝大多数用来操作进程的命令和系统调用，都需要用 PID 指定操作的进程对象。</p>
+<h5 id="PPID-：父进程-ID"><a href="#PPID-：父进程-ID" class="headerlink" title="PPID ：父进程 ID"></a>PPID ：父进程 ID</h5><p>在 Unix 和 Linux 系统中，一个已经存在的进程必须“克隆”它自身来创建一个新的进程。当新的进程克隆后，最初的进程便作为父进程存在。</p>
+<h5 id="UID-amp-EUID：真实用户-ID-和有效用户-ID"><a href="#UID-amp-EUID：真实用户-ID-和有效用户-ID" class="headerlink" title="UID &amp; EUID：真实用户 ID 和有效用户 ID"></a>UID &amp; EUID：真实用户 ID 和有效用户 ID</h5><p>一个进程的 UID 是其创建者的身份标志（也是对其父进程 UID 的复制）。通常只有进程的创建者和<strong>超级用户</strong>才有操作该进程的权限。<br>EUID 是一个额外的 UID，用来决定在任意一个特定时间点，一个进程有权限访问的文件和资源。对绝大多数进程而言，UID 和 EUID 是相同的（特殊情况即 setuid）</p>
+<h5 id="Niceness"><a href="#Niceness" class="headerlink" title="Niceness"></a>Niceness</h5><p>一个进程的计划优先级决定了它能获取到的 CPU 时间。内核有一个动态的算法来计算优先级，同时也会关注一个 Niceness 值，来决定程序运行的优先顺序。</p>
+<h4 id="二、信号"><a href="#二、信号" class="headerlink" title="二、信号"></a>二、信号</h4><p><strong>信号</strong>属于进程级别的<strong>中断请求</strong>。它们可以作为进程间通信的手段，或者由终端发送以杀死、中断、挂起某个进程。</p>
+<p>常见信号列表：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>name</th>
+<th>Description</th>
+<th>Default</th>
+<th>Can catch?</th>
+<th>Can block?</th>
+<th>Dump core?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>HUP</td>
+<td>Hangup</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>2</td>
+<td>INT</td>
+<td>Interrupt（Ctrl + C）</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Quit</td>
+<td>Quit（Ctrl + \）</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>9</td>
+<td>KILL</td>
+<td>Kill</td>
+<td>Terminate</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td></td>
+<td>BUS</td>
+<td>Bus error</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>11</td>
+<td>SEGV</td>
+<td>Segmentation fault</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>15</td>
+<td>TERM</td>
+<td>Software terminatation</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td></td>
+<td>STOP</td>
+<td>Stop（Ctrl + Z）</td>
+<td>Stop</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td></td>
+<td>TSTP</td>
+<td>Keyboard stop</td>
+<td>Stop</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td></td>
+<td>CONT</td>
+<td>Continue after stop</td>
+<td>Ignore</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h4 id="三、Kill-命令"><a href="#三、Kill-命令" class="headerlink" title="三、Kill 命令"></a>三、Kill 命令</h4><p>kill 命令常用来终止某个进程，它可以向进程传递任意信号（默认为 TERM）。<br><code>kill [-signal] pid</code><br>不带任何数字（信号）选项的 <strong>kill</strong> 命令并不能保证指定进程被杀死，因为 kill 命令默认发送 TERM 信号，而 TERM 是可以被捕获、屏蔽或忽略的。<br>可以使用 <code>kill -9 pid</code> 命令强制杀死进程（<code>9</code> 代表 KILL 信号，不可被捕获、屏蔽或忽略）。</p>
+<p><strong>kill</strong> 命令需要指定进程的 PID 号。<br><strong>pgrep</strong> 命令可以通过程序名称（或其他属性如 UID）筛选进程号，<strong>pkill</strong> 命令可以直接发送指定信号给筛选结果。<br>如 <code>sudo pkill -u ben</code><br>该命令将发送 TERM 信号给所有属于用户 ben 的进程。</p>
+<p><strong>killall</strong> 命令可以通过程序名称杀死指定进程的<strong>所有实例</strong>。如：<br><code>sudo killall apache2</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ pgrep postgres  # 筛选 postgres 进程的 PID 号 </span><br><span class="line">25874</span><br><span class="line">25876</span><br><span class="line">25877</span><br><span class="line">25878</span><br><span class="line">25879</span><br><span class="line">25880</span><br><span class="line">25881</span><br><span class="line">$ pgrep -a postgres  # 筛选 postgres 进程的 PID 号，并输出详细信息</span><br><span class="line">25874 /usr/lib/postgresql/10/bin/postgres -D /var/lib/postgresql/10/main -c config_file=/etc/postgresql/10/main/postgresql.conf</span><br><span class="line">25876 postgres: 10/main: checkpointer process</span><br><span class="line">25877 postgres: 10/main: writer process</span><br><span class="line">25878 postgres: 10/main: wal writer process</span><br><span class="line">25879 postgres: 10/main: autovacuum launcher process</span><br><span class="line">25880 postgres: 10/main: stats collector process</span><br><span class="line">25881 postgres: 10/main: bgworker: logical replication launcher</span><br><span class="line"></span><br><span class="line">$ sudo kill -9 `pgrep postgres`  # 杀死 postgres 进程</span><br><span class="line">$ sudo pkill postgres  # 同上一条命令</span><br><span class="line">$ sudo killall postgres  # 杀死 postgres 进程的所有实例</span><br><span class="line">$ sudo pkill -9 -u postgres  # 杀死属于 postgres 用户的所有进程</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>根据进程 PID 号查找进程可以使用 <code>ps -p &lt;pid&gt; -o comm=</code> 命令</p>
+</blockquote>
+<h4 id="四、进程状态"><a href="#四、进程状态" class="headerlink" title="四、进程状态"></a>四、进程状态</h4><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runnable</td>
+<td>该进程正在（正准备）执行</td>
+</tr>
+<tr>
+<td>Sleeping</td>
+<td>该进程正等待某些资源</td>
+</tr>
+<tr>
+<td>Zombie</td>
+<td>该进程正努力尝试结束</td>
+</tr>
+<tr>
+<td>Stopped</td>
+<td>该进程已挂起（不允许执行）</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Runnable 表示进程已经获取到了运行所需的所有资源，只是等待相应的 CPU 时间来处理数据。</li>
+<li>Sleeping 表示进程处于等待特定事件发生的状态。交互式 Shell 和系统守护进程的大部分时间都是 Sleeping 状态，等待用户输入或网络连接。</li>
+<li>Zombies 表示进程已经结束执行，但是还没有收集完所有的状态，在进程表中仍有纪录。</li>
+<li>Stopped 表示进程已停止运行，通常是收到了某种停止信号。</li>
+</ul>
+<h4 id="五、PS-命令：监控资源"><a href="#五、PS-命令：监控资源" class="headerlink" title="五、PS 命令：监控资源"></a>五、PS 命令：监控资源</h4><p>ps 命令是系统管理员监控进程的主要工具。该命令可以显示进程的 PID、UID、优先级和控制终端，以及进程占用的内存、消耗的 CPU 时间和当前的状态等信息。</p>
+<p>常用的 <strong>PS</strong> 命令选项组合：</p>
+<h5 id="1-ps-aux"><a href="#1-ps-aux" class="headerlink" title="1. ps aux"></a>1. ps aux</h5><p><strong>a</strong> 选项表示显示所有进程，<strong>x</strong> 选项表示同时显示没有<strong>控制终端</strong>的进程（TTY 显示为 ?），<strong>u</strong> 选项表示使用基于用户的信息输出格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ ps aux</span><br><span class="line">USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND</span><br><span class="line">root         1  0.0  0.1 225428  9548 ?        Ss   7月30   0:30 /lib/systemd/systemd --system --deserialize 19</span><br><span class="line">root         2  0.0  0.0      0     0 ?        S    7月30   0:00 [kthreadd]</span><br><span class="line">root         4  0.0  0.0      0     0 ?        I&lt;   7月30   0:00 [kworker/0:0H]</span><br><span class="line">root         6  0.0  0.0      0     0 ?        I&lt;   7月30   0:00 [mm_percpu_wq]</span><br><span class="line">root         7  0.0  0.0      0     0 ?        S    7月30   0:03 [ksoftirqd/0]</span><br><span class="line">root         8  0.0  0.0      0     0 ?        I    7月30  14:49 [rcu_sched]</span><br><span class="line">...</span><br><span class="line">starky    6874  0.0  0.1  33016  8556 pts/2    Ss   8月07   0:00 bash</span><br><span class="line">starky    7150  0.0  0.0  33016  6044 pts/2    S+   8月07   0:00 bash</span><br><span class="line">starky    7151  3.1 16.1 4763784 1227932 pts/2 Sl+  8月07 272:54 java -Xmx1024M -Xms512M -jar minecraft_server.1.12.2.jar nogui</span><br><span class="line">...</span><br><span class="line">root     18447  0.0  0.0 107984  7116 ?        Ss   13:55   0:00 sshd: starky [priv]</span><br><span class="line">starky   18535  0.0  0.0 108092  4268 ?        S    13:55   0:00 sshd: starky@pts/1</span><br><span class="line">starky   18536  0.0  0.1  33096  8336 pts/1    Ss   13:55   0:00 -bash</span><br><span class="line">root     18761  0.0  0.0      0     0 ?        I    13:55   0:00 [kworker/u8:0]</span><br><span class="line">root     18799  0.0  0.0      0     0 ?        I    14:01   0:00 [kworker/u8:1]</span><br><span class="line">root     18805  0.0  0.0      0     0 ?        I    14:05   0:00 [kworker/0:2]</span><br><span class="line">starky   18874  0.0  0.0  46780  3568 pts/1    R+   14:10   0:00 ps -aux</span><br><span class="line">redis    19235  0.2  0.0  58548  3736 ?        Ssl  8月04  30:03 /usr/bin/redis-server 127.0.0.1:6379</span><br><span class="line">root     20799  0.0  0.0 107548  7504 ?        Ss   8月05   0:00 /usr/sbin/cupsd -l</span><br><span class="line">root     28342  0.0  0.4 535068 36940 ?        Ss   8月10   0:16 /usr/sbin/apache2 -k start</span><br></pre></td></tr></table></figure></p>
+<p>其中带中括号的命令（如 [kthreadd]）并不是真正的命令而是内核线程。</p>
+<p><code>ps aux</code> 命令输出的各列信息含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>USER</td>
+<td>进程属主的用户名</td>
+</tr>
+<tr>
+<td>PID</td>
+<td>进程 ID</td>
+</tr>
+<tr>
+<td>%CPU</td>
+<td>进程占用的 CPU 百分比</td>
+</tr>
+<tr>
+<td>%MEM</td>
+<td>进程使用的内存百分比</td>
+</tr>
+<tr>
+<td>VSZ</td>
+<td>进程的虚拟大小</td>
+</tr>
+<tr>
+<td>RSS</td>
+<td>驻留内存大小（内存中的页数）</td>
+</tr>
+<tr>
+<td>TTY</td>
+<td>控制终端 ID</td>
+</tr>
+<tr>
+<td>STAT</td>
+<td>进程当前的状态：<br><br>R = Runnable<br>D = In uninterruptible sleep<br>S = Sleeping(&lt;20s)<br>T = Traced or stopped<br>Z = Zombie<br><br>额外标记：<br><br>W = Process is swapped out<br>&lt; = 进程有相对于平时更高的优先级<br>N = 进程有相对于平时更低的优先级<br>L = Some pages are locked in core<br>s = Process is a session leader</td>
+</tr>
+<tr>
+<td>TIME</td>
+<td>进程已经消耗的 CPU 时间</td>
+</tr>
+<tr>
+<td>COMMAND</td>
+<td>进程的命令和命令选项</td>
+</tr>
+</tbody>
+</table>
+<h5 id="2-ps-lax"><a href="#2-ps-lax" class="headerlink" title="2. ps lax"></a>2. ps lax</h5><p><strong>l</strong> 选项表示以详细的格式输出进程信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ ps lax</span><br><span class="line">F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND</span><br><span class="line">4     0     1     0  20   0 225428  9548 -      Ss   ?          0:30 /lib/systemd/systemd --system --deserialize 19</span><br><span class="line">1     0     2     0  20   0      0     0 -      S    ?          0:00 [kthreadd]</span><br><span class="line">1     0     4     2   0 -20      0     0 -      I&lt;   ?          0:00 [kworker/0:0H]</span><br><span class="line">1     0     6     2   0 -20      0     0 -      I&lt;   ?          0:00 [mm_percpu_wq]</span><br><span class="line">1     0     7     2  20   0      0     0 -      S    ?          0:03 [ksoftirqd/0]</span><br><span class="line">1     0     8     2  20   0      0     0 -      I    ?         14:58 [rcu_sched]</span><br><span class="line">...</span><br><span class="line">0  1000  6874  6871  20   0  33016  8556 wait   Ss   pts/2      0:00 bash</span><br><span class="line">1  1000  7150  6874  20   0  33016  6044 wait   S+   pts/2      0:00 bash</span><br><span class="line">0  1000  7151  7150  20   0 4763784 1227932 futex_ Sl+ pts/2  275:03 java -Xmx1024M -Xms512M -jar minecraft_server.1.12.2.jar nogui</span><br><span class="line">...</span><br><span class="line">4     0 18447   619  20   0 107984  7116 -      Ss   ?          0:00 sshd: starky [priv]</span><br><span class="line">5  1000 18535 18447  20   0 108092  4268 -      S    ?          0:00 sshd: starky@pts/1</span><br><span class="line">0  1000 18536 18535  20   0  33096  8336 wait   Ss   pts/1      0:00 -bash</span><br><span class="line">1     0 19051     2  20   0      0     0 -      I    ?          0:00 [kworker/3:0]</span><br><span class="line">1     0 19141     2  20   0      0     0 -      I    ?          0:00 [kworker/2:3]</span><br><span class="line">1   115 19235     1  20   0  58548  3736 -      Ssl  ?         30:22 /usr/bin/redis-server 127.0.0.1:6379</span><br><span class="line">1     0 19246     2  20   0      0     0 -      I    ?          0:00 [kworker/2:0]</span><br><span class="line">1     0 19291     2  20   0      0     0 -      I    ?          0:00 [kworker/u8:0]</span><br><span class="line">1     0 19312     2  20   0      0     0 -      I    ?          0:00 [kworker/0:2]</span><br><span class="line">1     0 19405     2  20   0      0     0 -      I    ?          0:00 [kworker/u8:1]</span><br><span class="line">0  1000 19417 18536  20   0  36024  1596 -      R+   pts/1      0:00 ps -lax</span><br><span class="line">4     0 20799     1  20   0 107548  7504 -      Ss   ?          0:00 /usr/sbin/cupsd -l</span><br><span class="line">5     0 28342     1  20   0 535068 36940 -      Ss   ?          0:16 /usr/sbin/apache2 -k start</span><br></pre></td></tr></table></figure></p>
+<p><code>ps lax</code> 命令的输出包含了父进程 ID（PPID）、nice 值（NI）还有进程正在等待的资源类型（WCHAN）等。</p>
+<h5 id="3-ps-axjf"><a href="#3-ps-axjf" class="headerlink" title="3. ps axjf"></a>3. ps axjf</h5><p><code>ps axjf</code> 命令能够以树状结构显示各进程间的层级关系<br><strong>f</strong> 选项表示用 ASCII 字符显示树状结构，表达程序间的相互关系。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ ps axjf</span><br><span class="line"> PPID   PID  PGID   SID TTY      TPGID STAT   UID   TIME COMMAND</span><br><span class="line">    0     2     0     0 ?           -1 S        0   0:00 [kthreadd]</span><br><span class="line">    2     4     0     0 ?           -1 I&lt;       0   0:00  \_ [kworker/0:0H]</span><br><span class="line">    2     6     0     0 ?           -1 I&lt;       0   0:00  \_ [mm_percpu_wq]</span><br><span class="line">    2     7     0     0 ?           -1 S        0   0:02  \_ [ksoftirqd/0]</span><br><span class="line">    2     8     0     0 ?           -1 I        0   4:26  \_ [rcu_sched]</span><br><span class="line">...</span><br><span class="line">    1   672   672   672 ?           -1 Ss       0   0:00 /usr/sbin/sshd -D</span><br><span class="line">  672 27078 27078 27078 ?           -1 Ss       0   0:00  \_ sshd: starky [priv]</span><br><span class="line">27078 27166 27078 27078 ?           -1 S     1000   0:00      \_ sshd: starky@pts/1</span><br><span class="line">27166 27167 27167 27167 pts/1    27438 Ss    1000   0:00          \_ -bash</span><br><span class="line">27167 27438 27438 27167 pts/1    27438 R+    1000   0:00              \_ ps axjf</span><br><span class="line">    1   681   681   681 ?           -1 Ssl    115   9:40 /usr/bin/redis-server 127.0.0.1:6379</span><br><span class="line">    1   700   700   700 tty1       700 Ss+      0   0:00 /sbin/agetty -o -p -- \u --noclear tty1 linux</span><br><span class="line">    1   710   710   710 ?           -1 Ss       0   0:14 /usr/sbin/apache2 -k start</span><br><span class="line">  710 25651   710   710 ?           -1 S       33   0:00  \_ /usr/sbin/apache2 -k start</span><br><span class="line">  710 25652   710   710 ?           -1 S       33   0:00  \_ /usr/sbin/apache2 -k start</span><br><span class="line">  710 25653   710   710 ?           -1 S       33   0:00  \_ /usr/sbin/apache2 -k start</span><br><span class="line">  710 25654   710   710 ?           -1 S       33   0:00  \_ /usr/sbin/apache2 -k start</span><br><span class="line">  710 25655   710   710 ?           -1 S       33   0:00  \_ /usr/sbin/apache2 -k start</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-ps-o"><a href="#4-ps-o" class="headerlink" title="4. ps o"></a>4. ps o</h5><p><code>ps o</code> 命令加上选项可以指定信息的输出格式，同时加上 <code>--sort</code> 选项可指定排序依据<br>如：<code>ps axo pid,ppid,%mem,%cpu,cmd --sort=-%mem</code><br>上面的命令表示输出进程的 PID、PPID、内存占用、CPU占用和命令选项。并以内存占用大小排序。（<code>--sort=-%mem</code> 中的 <code>-</code> 表示逆向排序，即由大到小排序）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ ps axo pid,ppid,%mem,%cpu,cmd --sort=-%mem | head</span><br><span class="line">  PID  PPID %MEM %CPU CMD</span><br><span class="line"> 1790  1789 14.1  3.8 java -Xmx1024M -Xms512M -jar minecraft_server.1.12.2.jar nogui</span><br><span class="line"> 1357     1  2.6  0.1 /usr/sbin/mysqld --daemonize --pid-file=/run/mysqld/mysqld.pid</span><br><span class="line"> 9343     1  2.0  0.0 /usr/bin/python3 /usr/bin/update-manager --no-update --no-focus-on-map</span><br><span class="line"> 1244     1  1.5  0.0 sogou-qimpanel %U</span><br><span class="line"> 1024     1  1.0  0.0 /usr/bin/fcitx</span><br><span class="line"> 1454     1  0.9  0.0 fcitx-qimpanel</span><br><span class="line"> 7401  1067  0.7  0.0 lxterminal</span><br><span class="line">  248     1  0.6  0.0 /lib/systemd/systemd-journald</span><br><span class="line"> 1119     1  0.6  0.0 nm-applet</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>可以尝试不同的命令选项组合来获取相应的信息，具体可参考 <code>man ps</code></p>
+</blockquote>
+<h4 id="六、使用-TOP-命令动态监控进程"><a href="#六、使用-TOP-命令动态监控进程" class="headerlink" title="六、使用 TOP 命令动态监控进程"></a>六、使用 TOP 命令动态监控进程</h4><p><strong>top</strong> 命令可以实时显示系统当前活跃进程的总体信息及其占用的资源。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-9e372387f5062bf6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="top"><br><strong>top</strong> 命令的 <code>-d</code> 选项可以指定信息刷新的时间间隔。同时还有一些常用的交互命令</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>h</td>
+<td>显示帮助信息</td>
+</tr>
+<tr>
+<td>k</td>
+<td>终止某个进程</td>
+</tr>
+<tr>
+<td>i</td>
+<td>忽略闲置和僵死进程（这是一个开关式命令）</td>
+</tr>
+<tr>
+<td>q</td>
+<td>退出 top 程序</td>
+</tr>
+<tr>
+<td>r</td>
+<td>重新设置某个进程的优先级</td>
+</tr>
+<tr>
+<td>s</td>
+<td>改变两次刷新之间的延迟时间（单位为s）</td>
+</tr>
+<tr>
+<td>f 或 F</td>
+<td>从当前显示中添加或者删除项目</td>
+</tr>
+<tr>
+<td>l</td>
+<td>切换显示平均负载和启动时间信息</td>
+</tr>
+<tr>
+<td>m</td>
+<td>切换显示内存信息</td>
+</tr>
+<tr>
+<td>t</td>
+<td>切换显示进程和CPU状态信息</td>
+</tr>
+<tr>
+<td>c</td>
+<td>切换显示命令名称和完整命令</td>
+</tr>
+<tr>
+<td>M</td>
+<td>根据驻留内存大小进行排序</td>
+</tr>
+<tr>
+<td>P</td>
+<td>根据CPU使用百分比大小进行排序</td>
+</tr>
+<tr>
+<td>T</td>
+<td>根据时间/累计时间进行排序</td>
+</tr>
+<tr>
+<td>w</td>
+<td>将当前设置写入 ~/.toprc 文件中</td>
+</tr>
+</tbody>
+</table>
+<h4 id="七、前台-后台进程"><a href="#七、前台-后台进程" class="headerlink" title="七、前台/后台进程"></a>七、前台/后台进程</h4><ul>
+<li>前台进程（也称作交互式进程）：由某个终端会话创建和控制的进程。即需要用户控制而不能作为系统服务自动启动。</li>
+<li>后台进程（也称作非交互式进程）：不和终端绑定的进程，不等待用户输入。</li>
+</ul>
+<p>可以在命令后带上 <strong>&amp;</strong> 符号，在后台启用一个 Linux 进程执行该命令。并通过 <code>jobs</code> 命令查看当前的任务。<br>使用 <code>fg</code> 命令将后台执行的进程调到前台执行<br>使用 <code>Ctrl + Z</code> 组合键（发送 SIGSTOP 信号）挂起当前进程（前台），并使用 <code>bg</code> 命令令其在后台继续执行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ python -m SimpleHTTPServer &amp;  # 后台启动 python 进程</span><br><span class="line">[1] 28036</span><br><span class="line">$ Serving HTTP on 0.0.0.0 port 8000 ...</span><br><span class="line"></span><br><span class="line">$ jobs                          # 使用 jobs 命令查看后台进行的任务</span><br><span class="line">[1]+  运行中               python -m SimpleHTTPServer &amp;</span><br><span class="line">$ fg %1                         # 将后台执行的第一个任务调到前台执行（fg %1）</span><br><span class="line">python -m SimpleHTTPServer</span><br><span class="line">^Z                              # 使用 Ctrl + Z 组合键（发送 STOP 信号）停止当前进程</span><br><span class="line">[1]+  已停止               python -m SimpleHTTPServer</span><br><span class="line">$ bg                            # 使用 bg 命令将进程调至后台继续执行</span><br><span class="line">[1]+ python -m SimpleHTTPServer &amp;</span><br><span class="line">$ fg %1</span><br><span class="line">python -m SimpleHTTPServer</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://a.co/6qnnvRI" target="_blank" rel="noopener">UNIX and Linux System Administration Handbook, 4th Edition</a><br><a href="https://www.tecmint.com/linux-process-management/" target="_blank" rel="noopener">All You Need To Know About Processes in Linux </a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/System/" rel="tag"># System</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Trick/" rel="tag"># Trick</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/03/Linux-text-manipulation/" rel="next" title="Linux 文本处理命令详解（tr cut sort uniq）">
+                <i class="fa fa-chevron-left"></i> Linux 文本处理命令详解（tr cut sort uniq）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/24/use-glances-monitor-system/" rel="prev" title="Glances - Linux 上的实时系统监控工具">
+                Glances - Linux 上的实时系统监控工具 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、进程的组成"><span class="nav-number">1.</span> <span class="nav-text">一、进程的组成</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#PID-：进程-ID"><span class="nav-number">1.1.</span> <span class="nav-text">PID ：进程 ID</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#PPID-：父进程-ID"><span class="nav-number">1.2.</span> <span class="nav-text">PPID ：父进程 ID</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#UID-amp-EUID：真实用户-ID-和有效用户-ID"><span class="nav-number">1.3.</span> <span class="nav-text">UID &amp; EUID：真实用户 ID 和有效用户 ID</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Niceness"><span class="nav-number">1.4.</span> <span class="nav-text">Niceness</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、信号"><span class="nav-number">2.</span> <span class="nav-text">二、信号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、Kill-命令"><span class="nav-number">3.</span> <span class="nav-text">三、Kill 命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、进程状态"><span class="nav-number">4.</span> <span class="nav-text">四、进程状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、PS-命令：监控资源"><span class="nav-number">5.</span> <span class="nav-text">五、PS 命令：监控资源</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-ps-aux"><span class="nav-number">5.1.</span> <span class="nav-text">1. ps aux</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-ps-lax"><span class="nav-number">5.2.</span> <span class="nav-text">2. ps lax</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-ps-axjf"><span class="nav-number">5.3.</span> <span class="nav-text">3. ps axjf</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-ps-o"><span class="nav-number">5.4.</span> <span class="nav-text">4. ps o</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#六、使用-TOP-命令动态监控进程"><span class="nav-number">6.</span> <span class="nav-text">六、使用 TOP 命令动态监控进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#七、前台-后台进程"><span class="nav-number">7.</span> <span class="nav-text">七、前台/后台进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

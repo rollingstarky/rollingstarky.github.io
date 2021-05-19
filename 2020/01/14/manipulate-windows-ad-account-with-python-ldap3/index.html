@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,Program,LDAP,ActiveDirectory,Practical," />
+
+
+<meta name="description" content="ldap3 是一个严格遵守 RFC 4510 规范，完全由纯 Python 代码实现的 LDAPv3 客户端。ldap3 只依赖于 Python 标准库和 pyasn1，无需使用 C 编译器编译或者安装其他二进制程序，直接使用 pip 命令安装即可（pip install ldap3）。  一、连接服务器12345&amp;gt;&amp;gt;&amp;gt; from ldap3 import Server, Co">
+<meta name="keywords" content="Python,Program,LDAP,ActiveDirectory,Practical">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 通过 ldap3 操作 Windows 域账号">
+<meta property="og:url" content="https://rollingstarky.github.io/2020/01/14/manipulate-windows-ad-account-with-python-ldap3/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="ldap3 是一个严格遵守 RFC 4510 规范，完全由纯 Python 代码实现的 LDAPv3 客户端。ldap3 只依赖于 Python 标准库和 pyasn1，无需使用 C 编译器编译或者安装其他二进制程序，直接使用 pip 命令安装即可（pip install ldap3）。  一、连接服务器12345&amp;gt;&amp;gt;&amp;gt; from ldap3 import Server, Co">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-01-14T15:07:09.794Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 通过 ldap3 操作 Windows 域账号">
+<meta name="twitter:description" content="ldap3 是一个严格遵守 RFC 4510 规范，完全由纯 Python 代码实现的 LDAPv3 客户端。ldap3 只依赖于 Python 标准库和 pyasn1，无需使用 C 编译器编译或者安装其他二进制程序，直接使用 pip 命令安装即可（pip install ldap3）。  一、连接服务器12345&amp;gt;&amp;gt;&amp;gt; from ldap3 import Server, Co">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2020/01/14/manipulate-windows-ad-account-with-python-ldap3/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Python 通过 ldap3 操作 Windows 域账号 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2020/01/14/manipulate-windows-ad-account-with-python-ldap3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Python 通过 ldap3 操作 Windows 域账号</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-14T00:00:00+08:00">2020-01-14</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/01/14/manipulate-windows-ad-account-with-python-ldap3/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2020/01/14/manipulate-windows-ad-account-with-python-ldap3/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2020/01/14/manipulate-windows-ad-account-with-python-ldap3/" class="leancloud_visitors" data-flag-title="Python 通过 ldap3 操作 Windows 域账号">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:09</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><a href="https://github.com/cannatag/ldap3" target="_blank" rel="noopener">ldap3</a> 是一个严格遵守 <a href="https://datatracker.ietf.org/doc/rfc4510/" target="_blank" rel="noopener">RFC 4510</a> 规范，完全由纯 Python 代码实现的 LDAPv3 客户端。<br>ldap3 只依赖于 Python 标准库和 <code>pyasn1</code>，无需使用 C 编译器编译或者安装其他二进制程序，直接使用 <code>pip</code> 命令安装即可（<code>pip install ldap3</code>）。</p>
+</blockquote>
+<h4 id="一、连接服务器"><a href="#一、连接服务器" class="headerlink" title="一、连接服务器"></a>一、连接服务器</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> ldap3 <span class="keyword">import</span> Server, Connection, ALL</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>server = Server(<span class="string">'&lt;hostname_or_ip&gt;'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn = Connection(server)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.bind()</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure>
+<p>或者也可以使用更简短的形式：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn = Connection(<span class="string">'&lt;hostname_or_ip&gt;'</span>, auto_bind=<span class="keyword">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn</span><br><span class="line">Connection(server=Server(host=<span class="string">'xx.xx.xx.xx'</span>, port=<span class="number">389</span>, use_ssl=<span class="keyword">False</span>, allowed_referral_hosts=[(<span class="string">'*'</span>, <span class="keyword">True</span>)], get_info=<span class="string">'SCHEMA'</span>, mode=<span class="string">'IP_V6_PREFERRED'</span>), auto_bind=<span class="string">'NO_TLS'</span>, version=<span class="number">3</span>, authentication=<span class="string">'ANONYMOUS'</span>, client_strategy=<span class="string">'SYNC'</span>, auto_referrals=<span class="keyword">True</span>, check_names=<span class="keyword">True</span>, read_only=<span class="keyword">False</span>, lazy=<span class="keyword">False</span>, raise_exceptions=<span class="keyword">False</span>, fast_decoder=<span class="keyword">True</span>, auto_range=<span class="keyword">True</span>, return_empty_attributes=<span class="keyword">True</span>, auto_encode=<span class="keyword">True</span>, auto_escape=<span class="keyword">True</span>, use_referral_cache=<span class="keyword">False</span>)</span><br></pre></td></tr></table></figure></p>
+<p>获取服务器信息：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>server = Server(<span class="string">'&lt;hostname_or_ip&gt;'</span>, get_info=ALL)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn = Connection(server, auto_bind=<span class="keyword">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>server.info</span><br><span class="line">DSA info (<span class="keyword">from</span> DSE):</span><br><span class="line">  Supported LDAP versions: <span class="number">3</span>, <span class="number">2</span></span><br><span class="line">  Naming contexts:</span><br><span class="line">    DC=example,DC=com</span><br><span class="line">    CN=Configuration,DC=example,DC=com</span><br><span class="line">    CN=Schema,CN=Configuration,DC=example,DC=com</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<h5 id="用户绑定"><a href="#用户绑定" class="headerlink" title="用户绑定"></a>用户绑定</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> ldap3 <span class="keyword">import</span> Server, Connection, ALL</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>server = Server(<span class="string">'&lt;hostname_or_ip&gt;'</span>, get_info=ALL)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn = Connection(server, user=<span class="string">'admin@example.com'</span>, password=<span class="string">'admin@123'</span>, auto_bind=<span class="keyword">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.extend.standard.who_am_i()</span><br><span class="line"><span class="string">'u:EXAMPLE\\admin'</span></span><br></pre></td></tr></table></figure>
+<p><strong>PS</strong>：通常在对域账号进行修改等操作时，需要启用 SSL 连接以符合安全规范。在构造 <code>Server</code> 对象时传入 <code>use_ssl=True</code> 即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server = Server(&apos;&lt;hostname_or_ip&gt;&apos;, port=636, use_ssl=True, get_info=ALL)</span><br></pre></td></tr></table></figure></p>
+<p>如有需要，TLS 的启用可以参考官方文档 <a href="https://ldap3.readthedocs.io/ssltls.html" target="_blank" rel="noopener">https://ldap3.readthedocs.io/ssltls.html</a></p>
+<h4 id="二、对象检索"><a href="#二、对象检索" class="headerlink" title="二、对象检索"></a>二、对象检索</h4><p>使用 <a href="https://www.freeipa.org/page/Main_Page" target="_blank" rel="noopener">FreeIPA</a> 开放的 LDAP 示例服务测试搜索操作：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> ldap3 <span class="keyword">import</span> Server, Connection, ALL</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>server = Server(<span class="string">'ipa.demo1.freeipa.org'</span>, get_info=ALL)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn = Connection(server, <span class="string">'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'Secret123'</span>, auto_bind=<span class="keyword">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(<span class="string">'dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'(objectclass=person)'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.entries</span><br><span class="line">[DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T18:<span class="number">57</span>:<span class="number">39.837356</span></span><br><span class="line">, DN: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T18:<span class="number">57</span>:<span class="number">39.837594</span></span><br><span class="line">, DN: uid=employee,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T18:<span class="number">57</span>:<span class="number">39.837722</span></span><br><span class="line">, DN: uid=helpdesk,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T18:<span class="number">57</span>:<span class="number">39.837845</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<p><code>search</code> 方法有两个参数是必需的：</p>
+<ul>
+<li><code>search_base</code> 用于指定搜索的起始位置</li>
+<li><code>search_filter</code> 用于指定搜索的筛选条件</li>
+</ul>
+<p><code>filter</code> 的定义语法支持 <code>=</code>、<code>&lt;=</code>、<code>&gt;=</code> 等比较运算符和 <code>&amp;</code>、<code>|</code>、<code>!</code> 等逻辑运算符。如：<br><code>(&amp;(givenName=John)(mail=*@example.com))</code> 表示寻找名字为 <code>John</code> 且邮箱以 <a href="mailto:``@example.com" target="_blank" rel="noopener">``@example.com</a><code></code> 结尾的域账号。</p>
+<p>以下搜索条件则表示寻找名字为 <code>Fred</code> 或 <code>John</code>，并且邮箱以 <a href="mailto:``@example.com" target="_blank" rel="noopener">``@example.com</a><code></code> 结尾的域账号：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(&amp;</span><br><span class="line">    (|</span><br><span class="line">        (givenName=Fred)</span><br><span class="line">        (givenName=John)</span><br><span class="line">    )</span><br><span class="line">    (mail=*@example.com)</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<h5 id="attributes"><a href="#attributes" class="headerlink" title="attributes"></a>attributes</h5><p>参考如下代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(<span class="string">'dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'(&amp;(objectclass=person)(uid=admin))'</span>, attributes=[<span class="string">'sn'</span>, <span class="string">'krbLastPwdChange'</span>, <span class="string">'objectclass'</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.entries[<span class="number">0</span>]</span><br><span class="line">DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T19:<span class="number">14</span>:<span class="number">20.657761</span></span><br><span class="line">    krbLastPwdChange: <span class="number">2019</span><span class="number">-01</span><span class="number">-25</span> <span class="number">15</span>:<span class="number">16</span>:<span class="number">11</span>+<span class="number">00</span>:<span class="number">00</span></span><br><span class="line">    objectclass: top</span><br><span class="line">                 person</span><br><span class="line">                 posixaccount</span><br><span class="line">                 krbprincipalaux</span><br><span class="line">                 krbticketpolicyaux</span><br><span class="line">                 inetuser</span><br><span class="line">                 ipaobject</span><br><span class="line">                 ipasshuser</span><br><span class="line">                 ipaSshGroupOfPubKeys</span><br><span class="line">                 ipaNTUserAttrs</span><br><span class="line">    sn: Administrator</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>(&amp;(objectclass=person)(uid=admin)</code> 用于指定查找对象类型为 <code>person</code> 且 <code>uid</code> 为 <code>admin</code> 的用户账号； <code>attributes</code> 参数则用于指定搜索结果中额外包含该账户的 <code>sn</code>、<code>krbLastPwdChange</code> 和 <code>objectclass</code> 属性。</p>
+<p><strong>PS</strong>：设置 <code>attributes = [&#39;*&#39;]</code> 可以在搜索结果中显示对象的所有属性。</p>
+<p>可以使用 <code>Entry</code> 对象的 <code>entry_to_json</code> 方法将该对象的所有属性以 JSON 格式输出：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(conn.entries[<span class="number">0</span>].entry_to_json())</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">"attributes"</span>: &#123;</span><br><span class="line">        <span class="string">"krbLastPwdChange"</span>: [</span><br><span class="line">            <span class="string">"2019-01-25 15:16:11+00:00"</span></span><br><span class="line">        ],</span><br><span class="line">        <span class="string">"objectclass"</span>: [</span><br><span class="line">            <span class="string">"top"</span>,</span><br><span class="line">            <span class="string">"person"</span>,</span><br><span class="line">            <span class="string">"posixaccount"</span>,</span><br><span class="line">            <span class="string">"krbprincipalaux"</span>,</span><br><span class="line">            <span class="string">"krbticketpolicyaux"</span>,</span><br><span class="line">            <span class="string">"inetuser"</span>,</span><br><span class="line">            <span class="string">"ipaobject"</span>,</span><br><span class="line">            <span class="string">"ipasshuser"</span>,</span><br><span class="line">            <span class="string">"ipaSshGroupOfPubKeys"</span>,</span><br><span class="line">            <span class="string">"ipaNTUserAttrs"</span></span><br><span class="line">        ],</span><br><span class="line">        <span class="string">"sn"</span>: [</span><br><span class="line">            <span class="string">"Administrator"</span></span><br><span class="line">        ]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"dn"</span>: <span class="string">"uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此外还可以使用 <code>paged_size</code> 参数控制每页显示的结果数量。综合实例如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>searchParameters = &#123;<span class="string">'search_base'</span>: <span class="string">'dc=demo1,dc=freeipa,dc=org'</span>,</span><br><span class="line"><span class="meta">... </span>                    <span class="string">'search_filter'</span>: <span class="string">'(objectClass=Person)'</span>,</span><br><span class="line"><span class="meta">... </span>                    <span class="string">'attributes'</span>: [<span class="string">'cn'</span>, <span class="string">'givenName'</span>],</span><br><span class="line"><span class="meta">... </span>                    <span class="string">'paged_size'</span>: <span class="number">3</span>&#125;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(**searchParameters)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.entries</span><br><span class="line">[DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T19:<span class="number">23</span>:<span class="number">50.396926</span></span><br><span class="line">    cn: Administrator</span><br><span class="line">, DN: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T19:<span class="number">23</span>:<span class="number">50.397214</span></span><br><span class="line">    cn: Test Manager</span><br><span class="line">    givenName: Test</span><br><span class="line">, DN: uid=employee,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-13</span>T19:<span class="number">23</span>:<span class="number">50.397509</span></span><br><span class="line">    cn: Test Employee</span><br><span class="line">    givenName: Test</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<h4 id="三、数据库操作"><a href="#三、数据库操作" class="headerlink" title="三、数据库操作"></a>三、数据库操作</h4><h5 id="创建条目"><a href="#创建条目" class="headerlink" title="创建条目"></a>创建条目</h5><p>新建 OU：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.add(<span class="string">'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'organizationalUnit'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure></p>
+<p>新建用户：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.add(<span class="string">'cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'inetOrgPerson'</span>, &#123;<span class="string">'givenName'</span>: <span class="string">'Beatrix'</span>, <span class="string">'sn'</span>: <span class="string">'Young'</span>, <span class="string">'departmentNumber'</span>: <span class="string">'DEV'</span>, <span class="string">'telephoneNumber'</span>: <span class="number">1111</span>&#125;)</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure></p>
+<p>查看 objectClass 结构：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>server.schema.object_classes[<span class="string">'person'</span>]</span><br><span class="line">Object <span class="class"><span class="keyword">class</span>:</span> <span class="number">2.5</span><span class="number">.6</span><span class="number">.6</span></span><br><span class="line">  Short name: person</span><br><span class="line">  Type: Structural</span><br><span class="line">  Superior: top</span><br><span class="line">  Must contain attributes: sn, cn</span><br><span class="line">  May contain attributes: userPassword, telephoneNumber, seeAlso, description</span><br><span class="line">  Extensions:</span><br><span class="line">    X-ORIGIN: RFC <span class="number">4519</span></span><br><span class="line">  OidInfo: (<span class="string">'2.5.6.6'</span>, <span class="string">'OBJECT_CLASS'</span>, <span class="string">'person'</span>, <span class="string">'RFC4519'</span>)</span><br></pre></td></tr></table></figure></p>
+<h5 id="重命名条目"><a href="#重命名条目" class="headerlink" title="重命名条目"></a>重命名条目</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.modify_dn(<span class="string">'cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'cn=b.smith'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure>
+<h5 id="移动条目"><a href="#移动条目" class="headerlink" title="移动条目"></a>移动条目</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.add(<span class="string">'ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>,<span class="string">'organizationalUnit'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.modify_dn(<span class="string">'cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'cn=b.smith'</span>, new_superior=<span class="string">'ou=moved, ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure>
+<h5 id="更新条目"><a href="#更新条目" class="headerlink" title="更新条目"></a>更新条目</h5><p>添加属性值：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> ldap3 <span class="keyword">import</span> MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.modify(<span class="string">'cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, &#123;<span class="string">'sn'</span>: [(MODIFY_ADD, [<span class="string">'Smyth'</span>])]&#125;)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(<span class="string">'ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'(cn=b.smith)'</span>, attributes=[<span class="string">'cn'</span>, <span class="string">'sn'</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.entries[<span class="number">0</span>]</span><br><span class="line">DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-14</span>T13:<span class="number">50</span>:<span class="number">45.461241</span></span><br><span class="line">    cn: b.smith</span><br><span class="line">    sn: Young</span><br><span class="line">        Smyth</span><br></pre></td></tr></table></figure></p>
+<p>移除属性值：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.modify(<span class="string">'cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, &#123;<span class="string">'sn'</span>: [(MODIFY_DELETE, [<span class="string">'Young'</span>])]&#125;)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(<span class="string">'ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'(cn=b.smith)'</span>, attributes=[<span class="string">'cn'</span>, <span class="string">'sn'</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.entries[<span class="number">0</span>]</span><br><span class="line">DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-14</span>T13:<span class="number">52</span>:<span class="number">43.586339</span></span><br><span class="line">    cn: b.smith</span><br><span class="line">    sn: Smyth</span><br></pre></td></tr></table></figure></p>
+<p>替换属性值：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.modify(<span class="string">'cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, &#123;<span class="string">'sn'</span>: [(MODIFY_REPLACE, [<span class="string">'Smith'</span>])]&#125;)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(<span class="string">'ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'(cn=b.smith)'</span>, attributes=[<span class="string">'cn'</span>, <span class="string">'sn'</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.entries[<span class="number">0</span>]</span><br><span class="line">DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: <span class="number">2020</span><span class="number">-01</span><span class="number">-14</span>T13:<span class="number">53</span>:<span class="number">28.834019</span></span><br><span class="line">    cn: b.smith</span><br><span class="line">    sn: Smith</span><br></pre></td></tr></table></figure></p>
+<p>判断属性是否为某个特定值：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.compare(<span class="string">'cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'departmentNumber'</span>, <span class="string">'DEV'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.compare(<span class="string">'cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'</span>, <span class="string">'departmentNumber'</span>, <span class="string">'QA'</span>)</span><br><span class="line"><span class="keyword">False</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="四、域账号操作"><a href="#四、域账号操作" class="headerlink" title="四、域账号操作"></a>四、域账号操作</h4><p>修改账户密码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> ldap3 <span class="keyword">import</span> Server, Connection</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>server = Server(<span class="string">'&lt;hostname_or_ip'</span>, use_ssl=<span class="keyword">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn = Connection(server, user=<span class="string">'admin@example.com'</span>, password=<span class="string">'admin@123'</span>, auto_bind=<span class="keyword">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.search(<span class="string">'ou=Domain Users,dc=example,dc=com'</span>, <span class="string">'(&amp;(objectClass=person)(sAMAccountName=admin))'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>dn = conn.entries[<span class="number">0</span>].entry_dn</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>dn</span><br><span class="line"><span class="string">'CN=admin,OU=Domain Users,DC=example,DC=com'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.extend.microsoft.modify_password(dn, <span class="string">'new_password'</span>)</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure></p>
+<p>解锁账户：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>conn.extend.microsoft.unlock_account(dn)</span><br><span class="line"><span class="keyword">True</span></span><br></pre></td></tr></table></figure></p>
+<p>此外该模块下还有 <code>addMembersToGroups</code> 和 <code>removeMembersFromGroups</code> 等函数。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://ldap3.readthedocs.io/index.html" target="_blank" rel="noopener">ldap3 官方文档</a><br><a href="https://github.com/cannatag/ldap3" target="_blank" rel="noopener">ldap3 项目主页</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/LDAP/" rel="tag"># LDAP</a>
+          
+            <a href="/tags/ActiveDirectory/" rel="tag"># ActiveDirectory</a>
+          
+            <a href="/tags/Practical/" rel="tag"># Practical</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/08/sample-plots-in-matplotlib/" rel="next" title="Python 绘图库 Matplotlib 代码示例">
+                <i class="fa fa-chevron-left"></i> Python 绘图库 Matplotlib 代码示例
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/14/string-format-in-python3/" rel="prev" title="Python3 中的字符串格式化语法">
+                Python3 中的字符串格式化语法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、连接服务器"><span class="nav-number">1.</span> <span class="nav-text">一、连接服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用户绑定"><span class="nav-number">1.1.</span> <span class="nav-text">用户绑定</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、对象检索"><span class="nav-number">2.</span> <span class="nav-text">二、对象检索</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#attributes"><span class="nav-number">2.1.</span> <span class="nav-text">attributes</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、数据库操作"><span class="nav-number">3.</span> <span class="nav-text">三、数据库操作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建条目"><span class="nav-number">3.1.</span> <span class="nav-text">创建条目</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#重命名条目"><span class="nav-number">3.2.</span> <span class="nav-text">重命名条目</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#移动条目"><span class="nav-number">3.3.</span> <span class="nav-text">移动条目</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#更新条目"><span class="nav-number">3.4.</span> <span class="nav-text">更新条目</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、域账号操作"><span class="nav-number">4.</span> <span class="nav-text">四、域账号操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

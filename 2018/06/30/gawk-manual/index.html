@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Tools,Text,Programming," />
+
+
+<meta name="description" content="gawk 是最初 Unix 系统上 awk 程序的 GNU 版本。相对于作为流式编辑器的 sed 而言，它提供了更为强大的编程语言特性。  其功能与特性包括：  定义变量来存储数据 通过代数运算符和字符串操作符来处理数据 使用结构化编程语句如 if-then 和循环等 从数据文件中提取出有价值的字段再重新组合以生成结构化的报表  基本语法gawk options program file 构成">
+<meta name="keywords" content="Linux,Admin,Tools,Text,Programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gawk 使用方法简介">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/06/30/gawk-manual/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="gawk 是最初 Unix 系统上 awk 程序的 GNU 版本。相对于作为流式编辑器的 sed 而言，它提供了更为强大的编程语言特性。  其功能与特性包括：  定义变量来存储数据 通过代数运算符和字符串操作符来处理数据 使用结构化编程语句如 if-then 和循环等 从数据文件中提取出有价值的字段再重新组合以生成结构化的报表  基本语法gawk options program file 构成">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-06-30T14:19:24.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="gawk 使用方法简介">
+<meta name="twitter:description" content="gawk 是最初 Unix 系统上 awk 程序的 GNU 版本。相对于作为流式编辑器的 sed 而言，它提供了更为强大的编程语言特性。  其功能与特性包括：  定义变量来存储数据 通过代数运算符和字符串操作符来处理数据 使用结构化编程语句如 if-then 和循环等 从数据文件中提取出有价值的字段再重新组合以生成结构化的报表  基本语法gawk options program file 构成">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/06/30/gawk-manual/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>gawk 使用方法简介 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/06/30/gawk-manual/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">gawk 使用方法简介</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-30T00:00:00+08:00">2018-06-30</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Programming/" itemprop="url" rel="index"><span itemprop="name">Programming</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/06/30/gawk-manual/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/06/30/gawk-manual/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/06/30/gawk-manual/" class="leancloud_visitors" data-flag-title="gawk 使用方法简介">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:11</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>gawk 是最初 Unix 系统上 awk 程序的 GNU 版本。相对于作为<strong>流式编辑器</strong>的 sed 而言，它提供了更为强大的<strong>编程语言</strong>特性。</p>
+</blockquote>
+<p>其功能与特性包括：</p>
+<ul>
+<li>定义<strong>变量</strong>来存储数据</li>
+<li>通过代数运算符和字符串操作符来处理数据</li>
+<li>使用<strong>结构化编程</strong>语句如 <strong>if-then</strong> 和<strong>循环</strong>等</li>
+<li>从数据文件中提取出有价值的字段再重新组合以生成结构化的报表</li>
+</ul>
+<h4 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h4><p><code>gawk options program file</code></p>
+<p>构成 gawk 脚本的语句须包含在一对<strong>大括号</strong>（ {} ）中，而作为命令选项的整个脚本需要包含在一对<strong>引号</strong>中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat test.txt</span><br><span class="line">Hello World!</span><br><span class="line">$ gawk &apos;&#123;print $0&#125;&apos; test.txt</span><br><span class="line">Hello World!</span><br></pre></td></tr></table></figure></p>
+<h5 id="1-使用字段变量"><a href="#1-使用字段变量" class="headerlink" title="1. 使用字段变量"></a>1. 使用字段变量</h5><p>gawk 会自动地将每行文本中的每个<strong>数据字段</strong>赋值给一个指定的变量，默认情况下，预先定义的变量为：</p>
+<ul>
+<li>$0 表示一整行文本</li>
+<li>$1 表示该行文本的第一个字段</li>
+<li>$2 表示该行文本的第二个字段</li>
+<li>$n 表示该行文本的第 n 个字段</li>
+</ul>
+<p>文本行中的数据字段是通过预先定义的<strong>字段分隔符</strong>来分隔开的，默认为<strong>空格</strong>（包括 <strong>TAB</strong> ）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ cat data.txt</span><br><span class="line">One line of test text.</span><br><span class="line">Two lines of test text. </span><br><span class="line">Three lines of test text.</span><br><span class="line">$ gawk &apos;&#123;print $1&#125;&apos; data.txt </span><br><span class="line">One</span><br><span class="line">Two</span><br><span class="line">Three</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>可以通过 <strong>-F</strong> 选项指定另外的分隔符（如 ‘ , ‘ ）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ cat user.csv</span><br><span class="line">Jack,male,20</span><br><span class="line">Rose,female,18</span><br><span class="line">Mike,male,24</span><br><span class="line">$ gawk -F, &apos;&#123;print $1&#125;&apos; user.csv</span><br><span class="line">Jack</span><br><span class="line">Rose</span><br><span class="line">Mike</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h5 id="2-多个命令"><a href="#2-多个命令" class="headerlink" title="2. 多个命令"></a>2. 多个命令</h5><p>gawk 语言允许在脚本语句中组合多个命令使用，只需要在各命令之间使用<strong>分号</strong>（ ; ）分隔开即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo &quot;My name is Rich&quot; | gawk &apos;&#123;$4=&quot;Christine&quot;; print $0&#125;&apos; </span><br><span class="line">My name is Christine</span><br></pre></td></tr></table></figure></p>
+<p>也可以这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;&#123;</span><br><span class="line">&gt; $4=&quot;Christine&quot;</span><br><span class="line">&gt; print $0&#125;&apos;</span><br><span class="line">My name is Rich</span><br><span class="line">My name is Christine</span><br></pre></td></tr></table></figure></p>
+<p>其中 My name is Rich 是运行时程序获取的用户输入，My name is Christine 是程序运行后的输出</p>
+<h5 id="3-BEGIN-amp-END"><a href="#3-BEGIN-amp-END" class="headerlink" title="3. BEGIN &amp; END"></a>3. BEGIN &amp; END</h5><p>默认情况下，gawk 从输入中读取一行文本，再对该文本执行程序指令。而有时候需要在读取待处理数据之前先执行某些指令，此时就要用到<strong>BEGIN</strong>关键字。<br>同样的，<strong>END</strong> 关键字允许你指定在数据处理完成后才执行的脚本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN &#123;print &quot;The data File Contents:&quot;&#125; </span><br><span class="line">&gt; &#123;print $0&#125;</span><br><span class="line">&gt; END &#123;print &quot;End of File&quot;&#125;&apos; data.txt </span><br><span class="line">The data File Contents:</span><br><span class="line">One line of test text.</span><br><span class="line">Two lines of test text. </span><br><span class="line">Three lines of test text.</span><br><span class="line">End of File</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-从文件中获取脚本"><a href="#4-从文件中获取脚本" class="headerlink" title="4. 从文件中获取脚本"></a>4. 从文件中获取脚本</h5><p>gawk 允许先将其程序脚本保存在某个文件中，再通过 <strong>-f</strong> 选项指定该文件的文件名。而在脚本文件中，各命令不再需要通过 ‘;’ 符号分隔，直接分行列出即可。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ cat script.gawk</span><br><span class="line">BEGIN &#123;</span><br><span class="line">print &quot;Users and their age&quot; </span><br><span class="line">print &quot;User \t Age&quot;</span><br><span class="line">FS=&quot;,&quot;</span><br><span class="line">&#125;</span><br><span class="line">&#123; </span><br><span class="line">print $1 &quot; \t &quot; $3</span><br><span class="line">&#125;</span><br><span class="line">END &#123;</span><br><span class="line">print &quot;There are three people&quot; </span><br><span class="line">&#125;</span><br><span class="line">$ gawk -f script.gawk user.csv</span><br><span class="line">Users and their age</span><br><span class="line">User 	 Age</span><br><span class="line">Jack 	 20</span><br><span class="line">Rose 	 18</span><br><span class="line">Mike 	 24</span><br><span class="line">There are three people</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>上述脚本文件中的 <strong>FS=”,”</strong> 用于定义字段分隔符，效果等同于 -F 选项。</p>
+</blockquote>
+<h4 id="高级特性"><a href="#高级特性" class="headerlink" title="高级特性"></a>高级特性</h4><h5 id="1-变量"><a href="#1-变量" class="headerlink" title="1. 变量"></a>1. 变量</h5><p>程序语言最重要的特性之一就是定义和引用<strong>变量</strong>。gawk 语言支持两种类型的变量：内建变量和用户自定义变量。</p>
+<p>gawk 程序在处理文本数据时，一次只读取一小段文本，称为 <strong>Record</strong> 。默认的 Record 分隔符即为换行符。而每条 Record 又可进一步划分成<strong>字段</strong>（Data Field），并按顺序依次赋值给 <code>$1，$2，$n</code> 等。默认的字段分隔符为空格（包括 TAB）</p>
+<h6 id="控制数据字段和-Record-的内建变量："><a href="#控制数据字段和-Record-的内建变量：" class="headerlink" title="控制数据字段和 Record 的内建变量："></a>控制数据字段和 Record 的内建变量：</h6><table>
+<thead>
+<tr>
+<th>变量名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIELDWIDTHS</td>
+<td>用一串由空格分隔的数字定义每个数据字段的具体宽度</td>
+</tr>
+<tr>
+<td>FS</td>
+<td>定义数据字段分割符（输入）</td>
+</tr>
+<tr>
+<td>RS</td>
+<td>定义 Record 分割符（输入）</td>
+</tr>
+<tr>
+<td>OFS</td>
+<td>定义数据字段分割符（输出）</td>
+</tr>
+<tr>
+<td>ORS</td>
+<td>定义 Record 分割符（输出）</td>
+</tr>
+</tbody>
+</table>
+<p>默认的 OFS 为空格<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;,&quot;&#125; &#123;print $1,$2,$3&#125;&apos; user.csv</span><br><span class="line">Jack male 20</span><br><span class="line">Rose female 18</span><br><span class="line">Mike male 24</span><br><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;,&quot;;OFS=&quot;:&quot;&#125; &#123;print $1,$2,$3&#125;&apos; user.csv</span><br><span class="line">Jack:male:20</span><br><span class="line">Rose:female:18</span><br><span class="line">Mike:male:24</span><br></pre></td></tr></table></figure></p>
+<p>当定义了 <strong>FIELDWIDTHS</strong> 变量时，gawk 在读取数据时就会忽略字段分割符（FS），转而使用<strong>字段宽度</strong>来分割数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ cat numbers.txt</span><br><span class="line">1005.3247596.37</span><br><span class="line">11522.349194.00</span><br><span class="line">05810.1298100.1</span><br><span class="line">$ gawk &apos;BEGIN&#123;FIELDWIDTHS=&quot;3 5 2 5&quot;&#125; &#123;print $1,$2,$3,$4&#125;&apos; numbers.txt</span><br><span class="line">100 5.324 75 96.37</span><br><span class="line">115 22.34 91 94.00 </span><br><span class="line">058 10.12 98 100.1</span><br></pre></td></tr></table></figure></p>
+<p>有些时候会遇到如下组织方式的文本文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ cat people.txt</span><br><span class="line">Riley Mullen</span><br><span class="line">123 Main Street</span><br><span class="line">Chicago, IL 60601</span><br><span class="line">(312)555-1234</span><br><span class="line"></span><br><span class="line">Frank Williams</span><br><span class="line">456 Oak Street</span><br><span class="line">Indianapolis, IN 46201</span><br><span class="line">(317)555-9876</span><br></pre></td></tr></table></figure></p>
+<p>此时可将字段分隔符（FS）设置为 “\n”，Record 分隔符（RS）设置为空字符串，则 gawk 程序会将<strong>空行</strong>作为一条 Record 的终止点。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;\n&quot;; RS=&quot;&quot;&#125; &#123;print $1,$4&#125;&apos; people.txt</span><br><span class="line">Riley Mullen (312)555-1234</span><br><span class="line">Frank Williams (317)555-9876</span><br></pre></td></tr></table></figure></p>
+<h6 id="其他内建变量"><a href="#其他内建变量" class="headerlink" title="其他内建变量"></a>其他内建变量</h6><table>
+<thead>
+<tr>
+<th>变量</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ARGC</td>
+<td>当前命令行参数的数目</td>
+</tr>
+<tr>
+<td>ARGV</td>
+<td>由命令行参数组成的数组</td>
+</tr>
+<tr>
+<td>CONVFMT</td>
+<td>数字的转换格式，默认值为 %.6 g</td>
+</tr>
+<tr>
+<td>ENVIRON</td>
+<td>包含当前系统环境变量的关联数组（字典）</td>
+</tr>
+<tr>
+<td>ERRNO</td>
+<td>当读取或关闭文件出现错误时返回的系统错误</td>
+</tr>
+<tr>
+<td>FILENAME</td>
+<td>gawk 处理的数据文件的文件名</td>
+</tr>
+<tr>
+<td>FNR</td>
+<td>当前正在处理的 Record 序号</td>
+</tr>
+<tr>
+<td>IGNORECASE</td>
+<td>设置为非零值时忽略大小写</td>
+</tr>
+<tr>
+<td>NF</td>
+<td>数据文件中的字段序号</td>
+</tr>
+<tr>
+<td>NR</td>
+<td>已处理的 Record 总数</td>
+</tr>
+<tr>
+<td>OFMT</td>
+<td>数字的输出格式，默认为 %.6 g</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;,&quot;;</span><br><span class="line">&gt; print ARGC,ARGV[0],ARGV[1];</span><br><span class="line">&gt; print ENVIRON[&quot;HOME&quot;]&#125;</span><br><span class="line">&gt; &#123;print FILENAME,FNR &quot;:&quot; $1&#125;&apos; user.csv</span><br><span class="line">2 gawk user.csv</span><br><span class="line">/Users/starky</span><br><span class="line">user.csv 1:Jack</span><br><span class="line">user.csv 2:Rose</span><br><span class="line">user.csv 3:Mike</span><br></pre></td></tr></table></figure>
+<p>ARGV 的索引是从 0 开始的，表示第一个命令行参数（呃，所以通常就是 gawk 这个命令本身）。程序脚本（引号中的内容）不算在参数内。</p>
+<h6 id="用户自定义变量"><a href="#用户自定义变量" class="headerlink" title="用户自定义变量"></a>用户自定义变量</h6><ul>
+<li>在脚本中定义变量</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;</span><br><span class="line">&gt; BEGIN&#123;</span><br><span class="line">&gt; testing = &quot;This is a test&quot; </span><br><span class="line">&gt; print testing</span><br><span class="line">&gt; testing = 45</span><br><span class="line">&gt; print testing</span><br><span class="line">&gt; &#125;&apos;</span><br><span class="line">This is a test</span><br><span class="line">45</span><br><span class="line">$ gawk &apos;BEGIN&#123;x = 4; x = x * 2 + 3; print x&#125;&apos;</span><br><span class="line">11</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在命令行参数中定义变量</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ cat script1.gawk</span><br><span class="line">BEGIN&#123;FS = &quot;,&quot;&#125;</span><br><span class="line">&#123;print $n&#125;</span><br><span class="line">$ gawk -f script1.gawk n=1 user.csv</span><br><span class="line">Jack</span><br><span class="line">Rose</span><br><span class="line">Mike</span><br></pre></td></tr></table></figure>
+<h5 id="2-数组"><a href="#2-数组" class="headerlink" title="2. 数组"></a>2. 数组</h5><p>定义数组：<code>var[index]=element</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; var[1] = 34</span><br><span class="line">&gt; var[2] = 3</span><br><span class="line">&gt; total = var[1] + var[2] </span><br><span class="line">&gt; print total</span><br><span class="line">&gt; &#125;&apos; </span><br><span class="line">37</span><br></pre></td></tr></table></figure></p>
+<p>遍历数组：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for (var in array) </span><br><span class="line">&#123;</span><br><span class="line">    statements</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; var[&quot;a&quot;] = 1</span><br><span class="line">&gt; var[&quot;g&quot;] = 2</span><br><span class="line">&gt; var[&quot;m&quot;] = 3</span><br><span class="line">&gt; var[&quot;u&quot;] = 4</span><br><span class="line">&gt; for (test in var) </span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;     print &quot;Index:&quot;,test,&quot; Value:&quot;,var[test] </span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; &#125;&apos;</span><br><span class="line">Index: u  Value: 4</span><br><span class="line">Index: m  Value: 3</span><br><span class="line">Index: a  Value: 1</span><br><span class="line">Index: g  Value: 2</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>关联数组</strong>遍历的顺序是随机的</p>
+</blockquote>
+<h5 id="3-模式匹配"><a href="#3-模式匹配" class="headerlink" title="3. 模式匹配"></a>3. 模式匹配</h5><h6 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat user.csv</span><br><span class="line">Jack,male,20</span><br><span class="line">Rose,female,18</span><br><span class="line">Mike,male,24</span><br><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;,&quot;&#125; /Jack/&#123;print $0&#125;&apos; user.csv</span><br><span class="line">Jack,male,20</span><br></pre></td></tr></table></figure>
+<h6 id="匹配符（-）"><a href="#匹配符（-）" class="headerlink" title="匹配符（~）"></a>匹配符（~）</h6><p>匹配符（~）用来对 Record 中的特定字段使用正则表达式。<strong>!~</strong> 表示不匹配。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ cat data</span><br><span class="line">This is line 1</span><br><span class="line">Another line</span><br><span class="line">line three</span><br><span class="line">This is line four</span><br><span class="line">$ gawk &apos;$3 ~ /line/&#123;print $0&#125;&apos; data</span><br><span class="line">This is line 1</span><br><span class="line">This is line four</span><br><span class="line">$ gawk &apos;$3 !~ /line/&#123;print $0&#125;&apos; data</span><br><span class="line">Another line</span><br><span class="line">line three</span><br></pre></td></tr></table></figure></p>
+<h6 id="数学表达式"><a href="#数学表达式" class="headerlink" title="数学表达式"></a>数学表达式</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ cat user.csv</span><br><span class="line">Jack,male,20</span><br><span class="line">Rose,female,18</span><br><span class="line">Mike,male,24</span><br><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;,&quot;&#125; $3 &gt;= 20&#123;print $0&#125;&apos; user.csv</span><br><span class="line">Jack,male,20</span><br><span class="line">Mike,male,24</span><br></pre></td></tr></table></figure>
+<h5 id="4-结构化命令"><a href="#4-结构化命令" class="headerlink" title="4. 结构化命令"></a>4. 结构化命令</h5><h6 id="if"><a href="#if" class="headerlink" title="if"></a>if</h6><p> <code>if (condition) statement</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ cat numbers</span><br><span class="line">2</span><br><span class="line">4</span><br><span class="line">6</span><br><span class="line">8</span><br><span class="line">10</span><br><span class="line">$ gawk &apos;&#123;</span><br><span class="line">&gt; if ($1 &lt; 5)</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;   x = $1 - 2</span><br><span class="line">&gt;   print x</span><br><span class="line">&gt; &#125; else</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;   x = $1 / 2</span><br><span class="line">&gt;   print x</span><br><span class="line">&gt; &#125;&#125;&apos; numbers</span><br><span class="line">0</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td></tr></table></figure></p>
+<h6 id="while"><a href="#while" class="headerlink" title="while"></a>while</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">while (condition)</span><br><span class="line">&#123;</span><br><span class="line">  statements</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">cat number</span><br><span class="line">130 120 135</span><br><span class="line">160 113 140</span><br><span class="line">145 170 215</span><br><span class="line">$ gawk &apos;&#123;</span><br><span class="line">&gt; total = 0</span><br><span class="line">&gt; i = 1</span><br><span class="line">&gt; while (i &lt;= 3)</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;   total += $i</span><br><span class="line">&gt;   i++</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; avg = total / 3</span><br><span class="line">&gt; print &quot;Average:&quot;,avg</span><br><span class="line">&gt; &#125;&apos; number</span><br><span class="line">Average: 128.333</span><br><span class="line">Average: 137.667</span><br><span class="line">Average: 176.667</span><br></pre></td></tr></table></figure>
+<h6 id="for"><a href="#for" class="headerlink" title="for"></a>for</h6><p><code>for( variable assignment; condition; iteration process)</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;&#123;</span><br><span class="line">&gt; total = 0</span><br><span class="line">&gt; for (i = 1; i &lt; 4; i++)</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;     total += $1</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; avg = total / 3</span><br><span class="line">&gt; print &quot;Average:&quot;,avg</span><br><span class="line">&gt; &#125;&apos; number</span><br><span class="line">Average: 130</span><br><span class="line">Average: 160</span><br><span class="line">Average: 145</span><br></pre></td></tr></table></figure></p>
+<h5 id="5-格式化输出"><a href="#5-格式化输出" class="headerlink" title="5. 格式化输出"></a>5. 格式化输出</h5><p><strong>printf</strong> 命令格式：<code>printf &quot;format string&quot;, var1, var2 . . .</code><br>常用格式控制符如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>控制字符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>c</td>
+<td>将数字显示为对应的 ASCII 字符</td>
+</tr>
+<tr>
+<td>d 或 i</td>
+<td>显示整数</td>
+</tr>
+<tr>
+<td>e</td>
+<td>将数字以科学记数法显示</td>
+</tr>
+<tr>
+<td>f</td>
+<td>显示浮点数</td>
+</tr>
+<tr>
+<td>g</td>
+<td>以科学计算法或浮点数显示（看哪种更短）</td>
+</tr>
+<tr>
+<td>o</td>
+<td>以八进制显示</td>
+</tr>
+<tr>
+<td>s</td>
+<td>显示字符串</td>
+</tr>
+<tr>
+<td>x</td>
+<td>以十六进制显示</td>
+</tr>
+<tr>
+<td>X</td>
+<td>以十六进制显示，使用大写的 A-F</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; x = 10 * 100</span><br><span class="line">&gt; printf &quot;The answer is: %e\n&quot;, x</span><br><span class="line">&gt; &#125;&apos;</span><br><span class="line">The answer is: 1.000000e+03</span><br></pre></td></tr></table></figure>
+<p>除<strong>控制字符</strong>以外，还可以使用另外三种修饰符以对输出进行更多的控制。</p>
+<ul>
+<li>width ：该数值用于指定输出的最小宽度。如长度不够，用空格补充</li>
+<li>prec ：该数值用于指定浮点数的精确度，或者字符串能包含字符的最大数量</li>
+<li>-（减号）：格式化输出时，使用左对齐</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;\n&quot;; RS=&quot;&quot;&#125; &#123;printf &quot;%16s %s\n&quot;, $1, $4&#125;&apos; people.txt</span><br><span class="line">    Riley Mullen (312)555-1234</span><br><span class="line">  Frank Williams (317)555-9876</span><br><span class="line">$</span><br><span class="line">$ gawk &apos;BEGIN&#123;FS=&quot;\n&quot;; RS=&quot;&quot;&#125; &#123;printf &quot;%-16s %s\n&quot;, $1, $4&#125;&apos; people.txt</span><br><span class="line">Riley Mullen     (312)555-1234</span><br><span class="line">Frank Williams   (317)555-9876</span><br></pre></td></tr></table></figure>
+<p>参考下面的示例， <code>%10.1f</code> 中的 <code>10</code> 用于指定字段的最小宽度（右对齐，前面用空格补），<code>.1</code> 用于指定精确度。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;&#123;</span><br><span class="line">&gt; total = 0</span><br><span class="line">&gt; for (i = 1; i &lt; 4; i++)</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;   total += $i</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; avg = total / 3</span><br><span class="line">&gt; printf &quot;Average: %10.1f\n&quot;,avg</span><br><span class="line">&gt; &#125;&apos; number</span><br><span class="line">Average:      128.3</span><br><span class="line">Average:      137.7</span><br><span class="line">Average:      176.7</span><br></pre></td></tr></table></figure></p>
+<h5 id="6-内建函数"><a href="#6-内建函数" class="headerlink" title="6. 内建函数"></a>6. 内建函数</h5><h6 id="数学函数"><a href="#数学函数" class="headerlink" title="数学函数"></a>数学函数</h6><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>atan2(x,y)</td>
+<td>x / y 的正切</td>
+</tr>
+<tr>
+<td>cos(x)</td>
+<td>x 的余弦</td>
+</tr>
+<tr>
+<td>exp(x)</td>
+<td>x 以 e 为底的指数</td>
+</tr>
+<tr>
+<td>int(x)</td>
+<td>x 的整数部分</td>
+</tr>
+<tr>
+<td>log(x)</td>
+<td>x 的自然对数</td>
+</tr>
+<tr>
+<td>rand()</td>
+<td>生成介于 0 和 1 之间的随机数</td>
+</tr>
+<tr>
+<td>sin(x)</td>
+<td>x 的正弦</td>
+</tr>
+<tr>
+<td>sqrt(x)</td>
+<td>x 的平方根</td>
+</tr>
+<tr>
+<td>srand(x)</td>
+<td>指定生成随机数的种子</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$  gawk &apos;BEGIN&#123;x=exp(100); print x&#125;&apos;</span><br><span class="line">26881171418161356094253400435962903554686976</span><br><span class="line">$  gawk &apos;BEGIN&#123;x=exp(1000); print x&#125;&apos;</span><br><span class="line">inf</span><br></pre></td></tr></table></figure>
+<h6 id="字符串函数"><a href="#字符串函数" class="headerlink" title="字符串函数"></a>字符串函数</h6><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gensub(r, s, h [, t])</td>
+<td>该函数用于检索字符串（默认为 $0 ，如 t 指定，则检索字符串 t），用正则表达式 r 进行匹配，并将匹配结果替换为 s 。如 h 为 “g” 或 “G” ，则执行全局替换；如 h 为数字，则只将第 h 个匹配项替换为 s</td>
+</tr>
+<tr>
+<td>gsub(r, s [,t]</td>
+<td>该函数用于检索字符串（默认为 $0 ，如 t 指定，则检索字符串 t），用正则表达式 r 进行匹配，并将匹配结果替换为 s （全局替换）</td>
+</tr>
+<tr>
+<td>index(s, t)</td>
+<td>该函数用于返回字符串 t 在字符串 s 中的位置索引（如 s 不包含 t ，则返回 0）</td>
+</tr>
+<tr>
+<td>length([s])</td>
+<td>该函数用于返回字符串 s 的长度，如 s 未指定，则返回 $0 的长度</td>
+</tr>
+<tr>
+<td>match(s, r )</td>
+<td>该函数用于返回字符串 s 中正则表达式 r 的位置索引</td>
+</tr>
+<tr>
+<td>split(s, a [,r])</td>
+<td>该函数用于将字符串 s 根据 FS 符分割后的字段保存在数组 a 中。如已指定正则表达式 r ，则根据 r 而不是 FS 进行分割</td>
+</tr>
+<tr>
+<td>sprintf(format, variablies)</td>
+<td>该函数用于返回一个格式化后的字符串，该字符串类似 printf 函数的输出</td>
+</tr>
+<tr>
+<td>sub(r, s [,t])</td>
+<td>该函数用于检索指定字符串 t （如果未指定 t ，则检索 $0），并使用 s 替换第一个符合条件的匹配结果</td>
+</tr>
+<tr>
+<td>tolower(s)</td>
+<td>将字符串 s 中的所有字符转换成小写</td>
+</tr>
+<tr>
+<td>toupper(s)</td>
+<td>将字符串 s 中的所有字符转换成大写</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; x = &quot;hello world, hello gawk, hello text&quot;</span><br><span class="line">&gt; y = gensub(&quot;hello&quot;,&quot;nihao&quot;,&quot;g&quot;,x)</span><br><span class="line">&gt; print y&#125;&apos;</span><br><span class="line">nihao world, nihao gawk, nihao text</span><br><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; x = &quot;hello world, hello gawk, hello text&quot;</span><br><span class="line">&gt; y = gensub(&quot;hello&quot;,&quot;nihao&quot;,2,x)</span><br><span class="line">&gt; print y&#125;&apos;</span><br><span class="line">hello world, nihao gawk, hello text</span><br><span class="line">$</span><br><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; x = &quot;hello world, hello gawk, hello text&quot;</span><br><span class="line">&gt; gsub(&quot;hello&quot;,&quot;nihao&quot;,x)</span><br><span class="line">&gt; print x&#125;&apos;</span><br><span class="line">nihao world, nihao gawk, nihao text</span><br><span class="line">$</span><br><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; x = &quot;hello world, hello gawk, hello text&quot;</span><br><span class="line">&gt; split(x,var)</span><br><span class="line">&gt; print var[2] var[4] var[6]&#125;&apos;</span><br><span class="line">world,gawk,text</span><br><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; x = &quot;hello world, hello gawk, hello text&quot;</span><br><span class="line">&gt; split(x,var,&quot;,&quot;)</span><br><span class="line">&gt; print var[1] var[2] var[3]&#125;&apos;</span><br><span class="line">hello world hello gawk hello text</span><br></pre></td></tr></table></figure>
+<h6 id="时间函数"><a href="#时间函数" class="headerlink" title="时间函数"></a>时间函数</h6><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mktime(datespec)</td>
+<td>将普通格式（ YYYY MM DD HH MM SS ）的时间日期转换成时间戳</td>
+</tr>
+<tr>
+<td>strftime(format [,timestamp])</td>
+<td>将指定时间戳（如未指定，使用当前时间戳）转换成指定的时间日期格式</td>
+</tr>
+<tr>
+<td>systime()</td>
+<td>返回当前时间的时间戳</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;BEGIN&#123;</span><br><span class="line">&gt; date = systime()</span><br><span class="line">&gt; day = strftime(&quot;%A, %B %d, %Y&quot;, date)</span><br><span class="line">&gt; print day</span><br><span class="line">&gt; &#125;&apos;</span><br><span class="line">Saturday, June 30, 2018</span><br></pre></td></tr></table></figure>
+<h6 id="用户自定义函数"><a href="#用户自定义函数" class="headerlink" title="用户自定义函数"></a>用户自定义函数</h6><p><strong>定义函数</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">function name([variables])</span><br><span class="line">&#123;</span><br><span class="line">    statements</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>使用函数</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ gawk &apos;</span><br><span class="line">&gt; function myprint()</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;     printf &quot;%-16s - %s\n&quot;, $1, $4</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; BEGIN&#123;FS=&quot;\n&quot;; RS=&quot;&quot;&#125;</span><br><span class="line">&gt; &#123;</span><br><span class="line">&gt;     myprint()</span><br><span class="line">&gt; &#125;&apos; people.txt</span><br><span class="line">Riley Mullen     - (312)555-1234</span><br><span class="line">Frank Williams   - (317)555-9876</span><br></pre></td></tr></table></figure></p>
+<p><strong>函数库</strong><br>创建函数库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat funclib</span><br><span class="line">function myprint()</span><br><span class="line">&#123;</span><br><span class="line">	printf &quot;%-16s - %s\n&quot;, $1, $4</span><br><span class="line">&#125;</span><br><span class="line">function myrand(limit)</span><br><span class="line">&#123;</span><br><span class="line">	return int(limit * rand())</span><br><span class="line">&#125;</span><br><span class="line">function printthird()</span><br><span class="line">&#123;</span><br><span class="line">	print $3</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>调用函数库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ cat script</span><br><span class="line">BEGIN&#123; FS=&quot;\n&quot;; RS=&quot;&quot;&#125;</span><br><span class="line">&#123;</span><br><span class="line">	myprint()</span><br><span class="line">&#125;</span><br><span class="line">$</span><br><span class="line">$ gawk -f funclib -f script people.txt</span><br><span class="line">Riley Mullen     - (312)555-1234</span><br><span class="line">Frank Williams   - (317)555-9876</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考书籍"><a href="#参考书籍" class="headerlink" title="参考书籍"></a>参考书籍</h4><p><a href="http://a.co/1iWO9B0" target="_blank" rel="noopener">Linux Command Line and Shell Scripting Bible 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Text/" rel="tag"># Text</a>
+          
+            <a href="/tags/Programming/" rel="tag"># Programming</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/29/emacs-quick-reference/" rel="next" title="emacs 速查手册">
+                <i class="fa fa-chevron-left"></i> emacs 速查手册
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/03/Linux-text-manipulation/" rel="prev" title="Linux 文本处理命令详解（tr cut sort uniq）">
+                Linux 文本处理命令详解（tr cut sort uniq） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本语法"><span class="nav-number">1.</span> <span class="nav-text">基本语法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-使用字段变量"><span class="nav-number">1.1.</span> <span class="nav-text">1. 使用字段变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-多个命令"><span class="nav-number">1.2.</span> <span class="nav-text">2. 多个命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-BEGIN-amp-END"><span class="nav-number">1.3.</span> <span class="nav-text">3. BEGIN &amp; END</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-从文件中获取脚本"><span class="nav-number">1.4.</span> <span class="nav-text">4. 从文件中获取脚本</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#高级特性"><span class="nav-number">2.</span> <span class="nav-text">高级特性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-变量"><span class="nav-number">2.1.</span> <span class="nav-text">1. 变量</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#控制数据字段和-Record-的内建变量："><span class="nav-number">2.1.1.</span> <span class="nav-text">控制数据字段和 Record 的内建变量：</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#其他内建变量"><span class="nav-number">2.1.2.</span> <span class="nav-text">其他内建变量</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#用户自定义变量"><span class="nav-number">2.1.3.</span> <span class="nav-text">用户自定义变量</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-数组"><span class="nav-number">2.2.</span> <span class="nav-text">2. 数组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-模式匹配"><span class="nav-number">2.3.</span> <span class="nav-text">3. 模式匹配</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#正则表达式"><span class="nav-number">2.3.1.</span> <span class="nav-text">正则表达式</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#匹配符（-）"><span class="nav-number">2.3.2.</span> <span class="nav-text">匹配符（~）</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#数学表达式"><span class="nav-number">2.3.3.</span> <span class="nav-text">数学表达式</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-结构化命令"><span class="nav-number">2.4.</span> <span class="nav-text">4. 结构化命令</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#if"><span class="nav-number">2.4.1.</span> <span class="nav-text">if</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#while"><span class="nav-number">2.4.2.</span> <span class="nav-text">while</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#for"><span class="nav-number">2.4.3.</span> <span class="nav-text">for</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-格式化输出"><span class="nav-number">2.5.</span> <span class="nav-text">5. 格式化输出</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-内建函数"><span class="nav-number">2.6.</span> <span class="nav-text">6. 内建函数</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数学函数"><span class="nav-number">2.6.1.</span> <span class="nav-text">数学函数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#字符串函数"><span class="nav-number">2.6.2.</span> <span class="nav-text">字符串函数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#时间函数"><span class="nav-number">2.6.3.</span> <span class="nav-text">时间函数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#用户自定义函数"><span class="nav-number">2.6.4.</span> <span class="nav-text">用户自定义函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考书籍"><span class="nav-number">3.</span> <span class="nav-text">参考书籍</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

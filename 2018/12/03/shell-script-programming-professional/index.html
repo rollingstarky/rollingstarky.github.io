@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Shell,Programming," />
+
+
+<meta name="description" content="高级篇一、处理用户输入1. 读取脚本参数Bash Shell 将命令行中传递给脚本的参数赋值给一组特殊的变量，叫做位置变量（positional parameters）。位置变量用 $number 的形式表示。如 $0 表示脚本文件的名称，$1 表示脚本收到的第一个参数，$2 表示第二个参数，以此类推，直到 $9 表示第九个参数。从第十个参数起，使用 ${number} 的形式。即第十个参数表示为">
+<meta name="keywords" content="Linux,Admin,Shell,Programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shell 脚本编程（高级篇）">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/12/03/shell-script-programming-professional/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="高级篇一、处理用户输入1. 读取脚本参数Bash Shell 将命令行中传递给脚本的参数赋值给一组特殊的变量，叫做位置变量（positional parameters）。位置变量用 $number 的形式表示。如 $0 表示脚本文件的名称，$1 表示脚本收到的第一个参数，$2 表示第二个参数，以此类推，直到 $9 表示第九个参数。从第十个参数起，使用 ${number} 的形式。即第十个参数表示为">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-12-02T19:58:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Shell 脚本编程（高级篇）">
+<meta name="twitter:description" content="高级篇一、处理用户输入1. 读取脚本参数Bash Shell 将命令行中传递给脚本的参数赋值给一组特殊的变量，叫做位置变量（positional parameters）。位置变量用 $number 的形式表示。如 $0 表示脚本文件的名称，$1 表示脚本收到的第一个参数，$2 表示第二个参数，以此类推，直到 $9 表示第九个参数。从第十个参数起，使用 ${number} 的形式。即第十个参数表示为">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/12/03/shell-script-programming-professional/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Shell 脚本编程（高级篇） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/12/03/shell-script-programming-professional/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Shell 脚本编程（高级篇）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T00:00:00+08:00">2018-12-03</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/12/03/shell-script-programming-professional/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/12/03/shell-script-programming-professional/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/12/03/shell-script-programming-professional/" class="leancloud_visitors" data-flag-title="Shell 脚本编程（高级篇）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">8.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:08</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="高级篇"><a href="#高级篇" class="headerlink" title="高级篇"></a>高级篇</h3><h4 id="一、处理用户输入"><a href="#一、处理用户输入" class="headerlink" title="一、处理用户输入"></a>一、处理用户输入</h4><h5 id="1-读取脚本参数"><a href="#1-读取脚本参数" class="headerlink" title="1. 读取脚本参数"></a>1. 读取脚本参数</h5><p>Bash Shell 将命令行中传递给脚本的参数赋值给一组特殊的变量，叫做<strong>位置变量</strong>（positional parameters）。位置变量用 <code>$number</code> 的形式表示。<br>如 <code>$0</code> 表示脚本文件的名称，<code>$1</code> 表示脚本收到的第一个参数，<code>$2</code> 表示第二个参数，以此类推，直到 <code>$9</code> 表示第九个参数。<br>从第十个参数起，使用 <code>${number}</code> 的形式。即第十个参数表示为 <code>${10}</code>。</p>
+<p>示例程序：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ cat add.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">total=$[ $1 + $2 ]</span><br><span class="line">echo &quot;The first parameter is $1&quot;</span><br><span class="line">echo &quot;The second parameter is $2&quot;</span><br><span class="line">echo &quot;The total value is $total&quot;</span><br><span class="line">$ ./add.sh 2 5</span><br><span class="line">The first parameter is 2</span><br><span class="line">The second parameter is 5</span><br><span class="line">The total value is 7</span><br></pre></td></tr></table></figure></p>
+<h5 id="2-参数检查"><a href="#2-参数检查" class="headerlink" title="2. 参数检查"></a>2. 参数检查</h5><p>在 Shell 脚本中使用命令行参数时，一般需要先对传入的参数进行检查。如脚本执行时没有接收到预想的参数，往往会在执行过程中报出错误。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./add.sh 2</span><br><span class="line">./add.sh: line 3: 2 +  : syntax error: operand expected (error token is &quot; &quot;)</span><br><span class="line">The first parameter is 2</span><br><span class="line">The second parameter is</span><br><span class="line">The total value is</span><br></pre></td></tr></table></figure></p>
+<p>所以参数检查是写脚本时很有必要的步骤：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat check_parameter.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if [ -n &quot;$1&quot; ]</span><br><span class="line">then</span><br><span class="line">    echo Hello $1, glad to meet you.</span><br><span class="line">else</span><br><span class="line">    echo &quot;Sorry, you did not identify youself&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./check_parameter.sh starky</span><br><span class="line">Hello starky, glad to meet you.</span><br><span class="line">$ ./check_parameter.sh</span><br><span class="line">Sorry, you did not identify youself</span><br></pre></td></tr></table></figure></p>
+<h5 id="3-特殊参数变量"><a href="#3-特殊参数变量" class="headerlink" title="3. 特殊参数变量"></a>3. 特殊参数变量</h5><h6 id="参数计数"><a href="#参数计数" class="headerlink" title="参数计数"></a>参数计数</h6><p>上面有提到，应该在使用命令行参数前先检查其是否符合要求。对于接收多个参数的脚本，有时候需要获取命令行中输入的参数数量。<br>Shell 脚本中的 <code>$#</code> 变量保存了该脚本执行时接收到的参数的数量。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ cat count_parameters.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">echo There were $# parameters supplied.</span><br><span class="line">$ ./count_parameters.sh</span><br><span class="line">There were 0 parameters supplied.</span><br><span class="line">$ ./count_parameters.sh test</span><br><span class="line">There were 1 parameters supplied.</span><br><span class="line">$ ./count_parameters.sh test test</span><br><span class="line">There were 2 parameters supplied.</span><br></pre></td></tr></table></figure></p>
+<p>通过 <code>$#</code> 变量的使用，可以将之前的 <code>add.sh</code> 脚本优化为以下形式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ cat add2.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if [ $# -ne 2 ]</span><br><span class="line">then</span><br><span class="line">    echo Usage: add2.sh a b</span><br><span class="line">else</span><br><span class="line">    total=$[ $1 + $2 ]</span><br><span class="line">    echo The total is $total</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">$ ./add2.sh</span><br><span class="line">Usage: add2.sh a b</span><br><span class="line">$ ./add2.sh 2</span><br><span class="line">Usage: add2.sh a b</span><br><span class="line">$ ./add2.sh 2 4</span><br><span class="line">The total is 6</span><br></pre></td></tr></table></figure></p>
+<h6 id="获取所有参数"><a href="#获取所有参数" class="headerlink" title="获取所有参数"></a>获取所有参数</h6><p>某些情况下需要获取命令行提供的<strong>所有</strong>参数。除了通过 <code>$#</code> 变量使用循环，还可以直接使用另外两个特殊的变量。</p>
+<p><code>$*</code> 和 <code>$@</code> 变量都可以包含命令行输入的所有参数。<br>其中 <code>$*</code> 变量接收所有参数并将它们保存在一个<strong>单一</strong>的字符串中。<br><code>$@</code> 变量接收所有参数并将它们保存在<strong>分开</strong>的字符串中。<br>即 <code>$*</code> 变量将收到的所有参数作为整体的一个参数对待，而 <code>$@</code> 变量将收到的所有参数作为不同的多个对象，可以使用 <code>for</code> 命令进行遍历。</p>
+<p>这两个变量的区别可以通过以下脚本来区分：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">$ cat iterate_parameters.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">count=1</span><br><span class="line">for param in &quot;$*&quot;</span><br><span class="line">do</span><br><span class="line">    echo &quot;\$* Parameter $count = $param&quot;</span><br><span class="line">    count=$[ $count + 1 ]</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo</span><br><span class="line">count=1</span><br><span class="line">for param in &quot;$@&quot;</span><br><span class="line">do</span><br><span class="line">    echo &quot;\$@ Parameter $count = $param&quot;</span><br><span class="line">    count=$[ count + 1 ]</span><br><span class="line">done</span><br><span class="line">$ ./iterate_parameters.sh rich barbara katie jessica</span><br><span class="line">$* Parameter 1 = rich barbara katie jessica</span><br><span class="line"></span><br><span class="line">$@ Parameter 1 = rich</span><br><span class="line">$@ Parameter 2 = barbara</span><br><span class="line">$@ Parameter 3 = katie</span><br><span class="line">$@ Parameter 4 = jessica</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-shift-命令"><a href="#4-shift-命令" class="headerlink" title="4. shift 命令"></a>4. shift 命令</h5><p><code>shift</code> 命令可以用来操作命令行参数，对它们进行整体的<strong>移位</strong>。<br>默认情况下，<code>shift</code> 命令会将所有的命令行参数整体的<strong>向左</strong>移动一个位置。<br>即 <code>$3</code> 变量的值移动到 <code>$2</code>，<code>$2</code> 变量的值移动到 <code>$1</code>。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ cat shift.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">echo &quot;The original parameters: $*&quot;</span><br><span class="line">shift 2</span><br><span class="line">echo &quot;Here&apos;s the new parameters: $*&quot;</span><br><span class="line">$ ./shift.sh 1 2 3 4 5</span><br><span class="line">The original parameters: 1 2 3 4 5</span><br><span class="line">Here&apos;s the new parameters: 3 4 5</span><br></pre></td></tr></table></figure></p>
+<h4 id="二、函数"><a href="#二、函数" class="headerlink" title="二、函数"></a>二、函数</h4><h5 id="1-函数定义"><a href="#1-函数定义" class="headerlink" title="1. 函数定义"></a>1. 函数定义</h5><p>Bash Shell 脚本中的函数可以用以下两种格式定义：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">function name &#123;</span><br><span class="line">    commands</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>或<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name() &#123;</span><br><span class="line">    commands</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>具体示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ cat func1.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function func1 &#123;</span><br><span class="line">    echo &quot;This is an example of a function&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">count=1</span><br><span class="line">while [ $count -le 5 ]</span><br><span class="line">do</span><br><span class="line">    func1</span><br><span class="line">    count=$[ $count + 1 ]</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo &quot;This is the end of the loop&quot;</span><br><span class="line">func1</span><br><span class="line">echo &quot;Now this is the end of the script&quot;</span><br><span class="line">$ ./func1.sh</span><br><span class="line">This is an example of a function</span><br><span class="line">This is an example of a function</span><br><span class="line">This is an example of a function</span><br><span class="line">This is an example of a function</span><br><span class="line">This is an example of a function</span><br><span class="line">This is the end of the loop</span><br><span class="line">This is an example of a function</span><br><span class="line">Now this is the end of the script</span><br></pre></td></tr></table></figure></p>
+<h5 id="2-函数返回值"><a href="#2-函数返回值" class="headerlink" title="2. 函数返回值"></a>2. 函数返回值</h5><h6 id="退出状态"><a href="#退出状态" class="headerlink" title="退出状态"></a>退出状态</h6><p>默认情况下，某个函数的完成状态（即退出码）即是该函数中<strong>最后一条</strong>命令的退出码。<br>在该函数执行后，可以使用 <code>$?</code> 变量获取其退出状态码。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ cat exit_status.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">func1() &#123;</span><br><span class="line">    echo &quot;trying to display a non-existent file&quot;</span><br><span class="line">    ls -l badfile</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">echo &quot;testing the function: &quot;</span><br><span class="line">func1</span><br><span class="line">echo &quot;The exit status is: $?&quot;</span><br><span class="line">$ ./exit_status.sh</span><br><span class="line">testing the function:</span><br><span class="line">trying to display a non-existent file</span><br><span class="line">ls: badfile: No such file or directory</span><br><span class="line">The exit status is: 1</span><br></pre></td></tr></table></figure></p>
+<p>因为函数 <code>func1</code> 中的最后一条命令 <code>ls -l badfile</code> 没有执行成功，所以函数执行完后，变量 <code>$?</code> 的值为 1 而不是 0</p>
+<h6 id="return-命令"><a href="#return-命令" class="headerlink" title="return 命令"></a>return 命令</h6><p>Bash Shell 可以使用 <code>return</code> 命令指定函数退出时的状态值（整数）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ cat return.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function db1 &#123;</span><br><span class="line">    read -p &quot;Enter a value: &quot; value</span><br><span class="line">    echo &quot;doubling the value&quot;</span><br><span class="line">    return $[ $value *2 ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">db1</span><br><span class="line">echo &quot;The new value is $?&quot;</span><br><span class="line">$ ./return.sh</span><br><span class="line">Enter a value: 32</span><br><span class="line">doubling the value</span><br><span class="line">The new value is 64</span><br></pre></td></tr></table></figure></p>
+<p>PS: 注意函数执行结束后需要立即使用 <code>$?</code> 获取其返回值，前面不能隔有其他命令；<br>使用 <code>return</code> 指定的退出码必须介于 0 到 255 之间</p>
+<h5 id="3-函数输出"><a href="#3-函数输出" class="headerlink" title="3. 函数输出"></a>3. 函数输出</h5><p>就像可以把命令的输出内容赋值给 Shell 变量一样，函数的输出同样也可以通过 <code>variable=$(function_name)</code> 的形式赋值给某个变量。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat func2.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function db1 &#123;</span><br><span class="line">    read -p &quot;Enter a value: &quot; value</span><br><span class="line">    echo $[ $value * 2 ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">result=$(db1)</span><br><span class="line">echo &quot;The new value is $result&quot;</span><br><span class="line">$ ./func2.sh</span><br><span class="line">Enter a value: 32</span><br><span class="line">The new value is 64</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-函数中的变量"><a href="#4-函数中的变量" class="headerlink" title="4. 函数中的变量"></a>4. 函数中的变量</h5><h6 id="向函数传递参数"><a href="#向函数传递参数" class="headerlink" title="向函数传递参数"></a>向函数传递参数</h6><p><strong>Bash Shell 对待函数就像对待普通的脚本文件</strong>一样。我们可以向脚本程序传递参数，也可以以类似的方式向函数传递参数。</p>
+<p>函数可以使用<strong>标准参数</strong>（如 <code>$#</code>）环境变量代表它从命令语句里接收到的参数。<br>如函数本身的名称由 <code>$0</code> 定义，<code>$1</code> 代表第一个参数，<code>$#</code> 代表接收到的参数的数目，<code>$*</code> 表示函数接收到的所有参数 <code>($1 $2 ...)</code> ，<code>&quot;$@&quot;</code> 表示函数接收到的所有参数，且每一个参数都被双引号包裹 <code>(&quot;$1&quot; &quot;$2&quot; ...)</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">$ cat parameter.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function addem &#123;</span><br><span class="line">    if [ $# -eq 0 ] || [ $# -gt 2 ]</span><br><span class="line">    then</span><br><span class="line">        echo -1</span><br><span class="line">    elif [ $# -eq 1 ]</span><br><span class="line">    then</span><br><span class="line">        echo $[ $1 + $1 ]</span><br><span class="line">    else</span><br><span class="line">        echo $[ $1 + $2 ]</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">echo &quot;Adding 10 and 15:&quot;</span><br><span class="line">value=$(addem 10 15)</span><br><span class="line">echo $value</span><br><span class="line">echo &quot;Try adding just one number:&quot;</span><br><span class="line">value=$(addem 10)</span><br><span class="line">echo $value</span><br><span class="line">echo &quot;Now trying adding no numbers:&quot;</span><br><span class="line">value=$(addem)</span><br><span class="line">echo $value</span><br><span class="line">echo &quot;Finally, try adding three numbers:&quot;</span><br><span class="line">value=$(addem 10 15 20)</span><br><span class="line">echo $value</span><br><span class="line">$ ./parameter.sh</span><br><span class="line">Adding 10 and 15:</span><br><span class="line">25</span><br><span class="line">Try adding just one number:</span><br><span class="line">20</span><br><span class="line">Now trying adding no numbers:</span><br><span class="line">-1</span><br><span class="line">Finally, try adding three numbers:</span><br><span class="line">-1</span><br></pre></td></tr></table></figure>
+<p>上述脚本中的 <code>addem</code> 函数通过 <code>$#</code> 变量检查传递给它的参数的数量：</p>
+<ul>
+<li>如果参数数量等于 0 或大于 2（<code>[ $# -eq 0 ] || [ $# -gt 2 ]</code>），则返回 -1 表示程序非正常退出。</li>
+<li>如果参数数量等于 1（<code>[ $# -eq 1 ]</code>），则返回两倍于该参数的值（<code>$[ $1 + $1 ]</code>）。</li>
+<li>如果参数数量等于 2（<code>[ $# -eq 2 ]</code>），则返回这两个参数的加和（<code>$[ $1 + $2 ]</code>）</li>
+</ul>
+<h6 id="全局变量与局部变量"><a href="#全局变量与局部变量" class="headerlink" title="全局变量与局部变量"></a>全局变量与局部变量</h6><p>变量的<strong>作用域</strong>是一个很容易引起问题的点。<br>函数中定义的变量可以拥有区别于普通变量的作用域，即它们可以对脚本中的其他部分“不可见”。</p>
+<p>函数使用两种类型的变量：</p>
+<ul>
+<li>全局变量</li>
+<li>局部变量</li>
+</ul>
+<p>全局变量是在<strong>整个脚本</strong>中都保持有效的变量。默认情况下，Shell 脚本中的任何变量都是全局变量。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat global.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function db1 &#123;</span><br><span class="line">    value=$[ $value * 2 ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">read -p &quot;Enter a value: &quot; value</span><br><span class="line">db1</span><br><span class="line">echo &quot;The new value is: $value&quot;</span><br><span class="line">$ ./global.sh</span><br><span class="line">Enter a value: 24</span><br><span class="line">The new value is: 48</span><br></pre></td></tr></table></figure></p>
+<p>区别于函数中的全局变量，任何只在<strong>函数内部</strong>生效的变量可以声明为局部变量，只需要在变量的声明前面加上 <code>local</code> 关键字即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ cat local.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function func1 &#123;</span><br><span class="line">    local temp=$[ $value + 5 ]</span><br><span class="line">    result=$[ $temp * 2 ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">temp=4</span><br><span class="line">value=6</span><br><span class="line"></span><br><span class="line">func1</span><br><span class="line">echo &quot;The result is $result&quot;</span><br><span class="line">echo &quot;The temp value is $temp&quot;</span><br><span class="line">$ ./local.sh</span><br><span class="line">The result is 22</span><br><span class="line">The temp value is 4</span><br></pre></td></tr></table></figure>
+<p>由于使用了 <code>local</code> 关健字指定函数内部的 <code>$temp</code> 变量为局部变量，所以函数 <code>func1</code> 中 <code>$temp</code> 变量值的变化（变为 11）并不影响函数外部 <code>$temp</code> 变量的值（仍为 4）。</p>
+<h5 id="5-函数递归"><a href="#5-函数递归" class="headerlink" title="5. 函数递归"></a>5. 函数递归</h5><p>这里用一个计算<strong>阶乘</strong>的示例简单说明下 Shell 脚本中的<strong>函数递归</strong>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ cat factorial.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">function factorial &#123;</span><br><span class="line">    if [ $1 -eq 1 ]</span><br><span class="line">    then</span><br><span class="line">        echo 1</span><br><span class="line">    else</span><br><span class="line">        local temp=$[ $1 - 1 ]</span><br><span class="line">        local result=$(factorial $temp)</span><br><span class="line">        echo $[ $result * $1 ]</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">read -p &quot;Enter value: &quot; value</span><br><span class="line">result=$(factorial $value)</span><br><span class="line">echo &quot;The factorial of $value is: $result&quot;</span><br><span class="line">$ ./factorial.sh</span><br><span class="line">Enter value: 4</span><br><span class="line">The factorial of 4 is: 24</span><br></pre></td></tr></table></figure></p>
+<h5 id="6-库"><a href="#6-库" class="headerlink" title="6. 库"></a>6. 库</h5><p>函数的使用可以减少脚本中的重复代码。即可以在脚本的其他部分直接使用函数名调用函数，完成该函数定义的功能，而无需再重新输入一遍定义该函数的大段语句。</p>
+<p>这种形式的<strong>代码复用</strong>可以扩展到多个脚本文件。Bash Shell 允许用户创建<strong>库文件</strong>，其他 Shell 脚本可以通过<strong>引用</strong>该库文件使用其中定义的函数。</p>
+<p>示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">$ cat myfuncs</span><br><span class="line">function addem &#123;</span><br><span class="line">    echo $[ $1 + $2 ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function multem &#123;</span><br><span class="line">    echo $[ $1 * $2 ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function divem &#123;</span><br><span class="line">    if [ $2 -ne 0 ]</span><br><span class="line">    then</span><br><span class="line">        echo $[ $1 / $2 ]</span><br><span class="line">    else</span><br><span class="line">        echo -1</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line">$ cat use_myfuncs.sh</span><br><span class="line">. ./myfuncs</span><br><span class="line"></span><br><span class="line">value1=10</span><br><span class="line">value2=5</span><br><span class="line"></span><br><span class="line">result1=$(addem $value1 $value2)</span><br><span class="line">result2=$(multem $value1 $value2)</span><br><span class="line">result3=$(divem $value1 $value2)</span><br><span class="line"></span><br><span class="line">echo &quot;The result of adding them is: $result1&quot;</span><br><span class="line">echo &quot;The result of multiplying them is: $result2&quot;</span><br><span class="line">echo &quot;The result of dividing them is: $result3&quot;</span><br><span class="line">$ ./use_myfuncs.sh</span><br><span class="line">The result of adding them is: 15</span><br><span class="line">The result of multiplying them is: 50</span><br><span class="line">The result of dividing them is: 2</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>myfuncs</code> 库文件中分别定义了 <code>addem</code> <code>multem</code> <code>divem</code> 三个函数，<code>use_myfuncs.sh</code> 脚本用来引用 <code>myfuncs</code> 库并使用其中定义的函数（这两个文件都需要有执行权限）。</p>
+<p>重点在于 <code>use_myfuncs.sh</code> 脚本中的第一行命令 <code>. ./myfuncs</code>。其中第一个 <code>.</code> 是 <code>source</code> 命令的缩写。<br><code>source</code> 命令的作用是在<strong>当前语境</strong>下调用另一个脚本，而不是创建一个新的 Shell 会话。这样 <code>myfuncs</code> 中的函数就可以直接被 <code>use_myfuncs.sh</code> 脚本使用。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://a.co/d/dLeNg5O" target="_blank" rel="noopener">Linux Command Line and Shell Scripting Bible 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Shell/" rel="tag"># Shell</a>
+          
+            <a href="/tags/Programming/" rel="tag"># Programming</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/15/shell-script-programming-basic/" rel="next" title="Shell 脚本编程（基础篇）">
+                <i class="fa fa-chevron-left"></i> Shell 脚本编程（基础篇）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/03/javascript-arduino-programming/" rel="prev" title="使用 JavaScript 对 Arduino 编程">
+                使用 JavaScript 对 Arduino 编程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#高级篇"><span class="nav-number">1.</span> <span class="nav-text">高级篇</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、处理用户输入"><span class="nav-number">1.1.</span> <span class="nav-text">一、处理用户输入</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-读取脚本参数"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 读取脚本参数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-参数检查"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 参数检查</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-特殊参数变量"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. 特殊参数变量</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#参数计数"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">参数计数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#获取所有参数"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">获取所有参数</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-shift-命令"><span class="nav-number">1.1.4.</span> <span class="nav-text">4. shift 命令</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、函数"><span class="nav-number">1.2.</span> <span class="nav-text">二、函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-函数定义"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 函数定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-函数返回值"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 函数返回值</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#退出状态"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">退出状态</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#return-命令"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">return 命令</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-函数输出"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. 函数输出</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-函数中的变量"><span class="nav-number">1.2.4.</span> <span class="nav-text">4. 函数中的变量</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#向函数传递参数"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">向函数传递参数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#全局变量与局部变量"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">全局变量与局部变量</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-函数递归"><span class="nav-number">1.2.5.</span> <span class="nav-text">5. 函数递归</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-库"><span class="nav-number">1.2.6.</span> <span class="nav-text">6. 库</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">1.3.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

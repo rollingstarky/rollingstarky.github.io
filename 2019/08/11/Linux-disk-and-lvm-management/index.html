@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Tools,Disk,Storage,LVM," />
+
+
+<meta name="description" content="一、设备文件在 Linux 操作系统中，设备文件是一种特殊类型的文件。这些文件绝大多数位于 /dev 目录下，用来表示 Linux 主机检测到的某个具体的硬件设备。比如 /dev/sda 文件通常用来指代系统中的第一块硬盘。Linux 操作系统及其应用与服务则通过这些设备文件与对应的硬件设备进行交互。 对于常见的磁盘（ATA、SATA、SCSI、SAS、SSD 等）和优盘等块存储设备，其设备文件主">
+<meta name="keywords" content="Linux,Admin,Tools,Disk,Storage,LVM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 磁盘设备和 LVM 管理命令详解">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/08/11/Linux-disk-and-lvm-management/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="一、设备文件在 Linux 操作系统中，设备文件是一种特殊类型的文件。这些文件绝大多数位于 /dev 目录下，用来表示 Linux 主机检测到的某个具体的硬件设备。比如 /dev/sda 文件通常用来指代系统中的第一块硬盘。Linux 操作系统及其应用与服务则通过这些设备文件与对应的硬件设备进行交互。 对于常见的磁盘（ATA、SATA、SCSI、SAS、SSD 等）和优盘等块存储设备，其设备文件主">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-08-10T18:50:52.235Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux 磁盘设备和 LVM 管理命令详解">
+<meta name="twitter:description" content="一、设备文件在 Linux 操作系统中，设备文件是一种特殊类型的文件。这些文件绝大多数位于 /dev 目录下，用来表示 Linux 主机检测到的某个具体的硬件设备。比如 /dev/sda 文件通常用来指代系统中的第一块硬盘。Linux 操作系统及其应用与服务则通过这些设备文件与对应的硬件设备进行交互。 对于常见的磁盘（ATA、SATA、SCSI、SAS、SSD 等）和优盘等块存储设备，其设备文件主">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/08/11/Linux-disk-and-lvm-management/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Linux 磁盘设备和 LVM 管理命令详解 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/08/11/Linux-disk-and-lvm-management/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux 磁盘设备和 LVM 管理命令详解</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-11T00:00:00+08:00">2019-08-11</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/08/11/Linux-disk-and-lvm-management/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/08/11/Linux-disk-and-lvm-management/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/08/11/Linux-disk-and-lvm-management/" class="leancloud_visitors" data-flag-title="Linux 磁盘设备和 LVM 管理命令详解">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">14k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:14</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、设备文件"><a href="#一、设备文件" class="headerlink" title="一、设备文件"></a>一、设备文件</h4><p>在 Linux 操作系统中，<strong>设备文件</strong>是一种特殊类型的文件。这些文件绝大多数位于 <code>/dev</code> 目录下，用来表示 Linux 主机检测到的某个具体的硬件设备。<br>比如 <code>/dev/sda</code> 文件通常用来指代系统中的第一块硬盘。<br>Linux 操作系统及其应用与服务则通过这些设备文件与对应的硬件设备进行交互。</p>
+<p>对于常见的磁盘（ATA、SATA、SCSI、SAS、SSD 等）和优盘等块存储设备，其设备文件主要以 <code>sd*</code> 的形式命名。如 <code>sda</code> 表示第一块硬盘，<code>sdb2</code> 表示第二块硬盘的第二个分区，以此类推。<br>因此，可直接使用 <code>ls -l /dev/sd*</code> 命令查看系统中的磁盘设备：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l /dev/sd*</span><br><span class="line">brw-rw---- 1 root disk 8, 0 8月   7 00:47 /dev/sda</span><br><span class="line">brw-rw---- 1 root disk 8, 1 8月   7 00:47 /dev/sda1</span><br></pre></td></tr></table></figure></p>
+<p>即当前系统中只连接了一块硬盘（<code>/dev/sda</code>），且该硬盘只有一个分区（<code>/dev/sda1</code>）。</p>
+<h4 id="二、分区"><a href="#二、分区" class="headerlink" title="二、分区"></a>二、分区</h4><p>分区可以理解为将一整块硬盘划分为一个或多个相互独立的存储区域。</p>
+<p>比如可以将系统的第一块硬盘划分为 3 个分区，分别为 sda1、sda2、sda3 。sda1 用于挂载根目录（<code>/</code>），sda2 挂载 <code>/var</code> ，sda3 挂载 <code>/home</code> 目录。则即使 <code>/var</code> 目录下的日志文件等占用了 sda2 全部的存储空间，也不会影响其他两个分区的使用。</p>
+<p>可以使用 <code>fdisk -l</code> 命令查看系统中的磁盘和分区信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ sudo fdisk -l</span><br><span class="line">Disk /dev/sda: 10 GiB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Disk model: VBOX HARDDISK</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel type: dos</span><br><span class="line">Disk identifier: 0x20985120</span><br><span class="line"></span><br><span class="line">Device     Boot Start      End  Sectors Size Id Type</span><br><span class="line">/dev/sda1        2048 20964824 20962777  10G 83 Linux</span><br></pre></td></tr></table></figure></p>
+<h5 id="创建磁盘分区"><a href="#创建磁盘分区" class="headerlink" title="创建磁盘分区"></a>创建磁盘分区</h5><p><code>fdisk</code> 命令还可以用来对硬盘进行分区操作，包括创建新分区、删除已有的分区、创建分区表等。<br>我这里通过 VirtualBox 软件为虚拟机中的 Linux 系统添加了一块空白的虚拟硬盘。使用 <code>fdisk -l</code> 命令查看系统检测到的硬盘设备：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ sudo fdisk -l</span><br><span class="line">Disk /dev/sda: 10 GiB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Disk model: VBOX HARDDISK</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel type: dos</span><br><span class="line">Disk identifier: 0x20985120</span><br><span class="line"></span><br><span class="line">Device     Boot Start      End  Sectors Size Id Type</span><br><span class="line">/dev/sda1        2048 20964824 20962777  10G 83 Linux</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disk /dev/sdb: 5 GiB, 5368709120 bytes, 10485760 sectors</span><br><span class="line">Disk model: VBOX HARDDISK</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br></pre></td></tr></table></figure></p>
+<p>此时系统中多了一块不包含任何分区的新硬盘 <code>/dev/sdb</code> 。</p>
+<p>使用 <code>fdisk /dev/sdb</code> 命令对新硬盘进行分区操作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">$ sudo fdisk /dev/sdb</span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.33.1).</span><br><span class="line">Changes will remain in memory only, until you decide to write them.</span><br><span class="line">Be careful before using the write command.</span><br><span class="line"></span><br><span class="line">Device does not contain a recognized partition table.</span><br><span class="line">Created a new DOS disklabel with disk identifier 0xce119026.</span><br><span class="line"></span><br><span class="line">Command (m for help): m</span><br><span class="line"></span><br><span class="line">Help:</span><br><span class="line"></span><br><span class="line">  DOS (MBR)</span><br><span class="line">   a   toggle a bootable flag</span><br><span class="line">   b   edit nested BSD disklabel</span><br><span class="line">   c   toggle the dos compatibility flag</span><br><span class="line"></span><br><span class="line">  Generic</span><br><span class="line">   d   delete a partition</span><br><span class="line">   F   list free unpartitioned space</span><br><span class="line">   l   list known partition types</span><br><span class="line">   n   add a new partition</span><br><span class="line">   p   print the partition table</span><br><span class="line">   t   change a partition type</span><br><span class="line">   v   verify the partition table</span><br><span class="line">   i   print information about a partition</span><br><span class="line"></span><br><span class="line">  Misc</span><br><span class="line">   m   print this menu</span><br><span class="line">   u   change display/entry units</span><br><span class="line">   x   extra functionality (experts only)</span><br><span class="line"></span><br><span class="line">  Script</span><br><span class="line">   I   load disk layout from sfdisk script file</span><br><span class="line">   O   dump disk layout to sfdisk script file</span><br><span class="line"></span><br><span class="line">  Save &amp; Exit</span><br><span class="line">   w   write table to disk and exit</span><br><span class="line">   q   quit without saving changes</span><br><span class="line"></span><br><span class="line">  Create a new label</span><br><span class="line">   g   create a new empty GPT partition table</span><br><span class="line">   G   create a new empty SGI (IRIX) partition table</span><br><span class="line">   o   create a new empty DOS partition table</span><br><span class="line">   s   create a new empty Sun partition table</span><br></pre></td></tr></table></figure></p>
+<p>进入 fdisk 程序界面之后，按下 <code>m</code> 键并回车，即可打印帮助信息，获取该界面下支持的交互式命令。<br>比如输入 <code>p</code> 可以用来输出当前硬盘的分区信息，输入 <code>n</code> 创建新的分区，输入 <code>d</code> 删除已有的分区。<br>在对分区进行任何操作之后，最后都需要使用 <code>w</code> 将之前的所有更改写入硬盘。</p>
+<p>这里先按下 <code>n</code> 开始新分区的创建，根据提示选择分区类型（<code>p</code> 表示主分区，<code>e</code> 表示扩展分区），进一步选择分区编号和第一个扇区的位置（一般默认即可），最后输入新分区中最后一个扇区的位置（也可以直接指定分区大小），格式为 <code>+/-sectors</code> 或 <code>+/-size</code> 。如输入 <code>+3G</code> 则表示创建大小为 3 GB 的新分区。具体步骤如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Command (m for help): n</span><br><span class="line">Partition type</span><br><span class="line">   p   primary (0 primary, 0 extended, 4 free)</span><br><span class="line">   e   extended (container for logical partitions)</span><br><span class="line">Select (default p): p</span><br><span class="line">Partition number (1-4, default 1):</span><br><span class="line">First sector (2048-10485759, default 2048):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (2048-10485759, default 10485759): +3G</span><br><span class="line"></span><br><span class="line">Created a new partition 1 of type &apos;Linux&apos; and of size 3 GiB.</span><br><span class="line"></span><br><span class="line">Command (m for help): n</span><br><span class="line">Partition type</span><br><span class="line">   p   primary (1 primary, 0 extended, 3 free)</span><br><span class="line">   e   extended (container for logical partitions)</span><br><span class="line">Select (default p): p</span><br><span class="line">Partition number (2-4, default 2):</span><br><span class="line">First sector (6293504-10485759, default 6293504):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (6293504-10485759, default 10485759):</span><br><span class="line"></span><br><span class="line">Created a new partition 2 of type &apos;Linux&apos; and of size 2 GiB.</span><br></pre></td></tr></table></figure></p>
+<p>再用同样的步骤将磁盘的剩余空间划分为另一个分区。此时查看分区信息，原本空白的 5GB 新硬盘 sdb 已经被划分为两个分区 sdb1 和 sdb2 ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Command (m for help): p</span><br><span class="line">Disk /dev/sdb: 5 GiB, 5368709120 bytes, 10485760 sectors</span><br><span class="line">Disk model: VBOX HARDDISK</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel type: dos</span><br><span class="line">Disk identifier: 0xce119026</span><br><span class="line"></span><br><span class="line">Device     Boot   Start      End Sectors Size Id Type</span><br><span class="line">/dev/sdb1          2048  6293503 6291456   3G 83 Linux</span><br><span class="line">/dev/sdb2       6293504 10485759 4192256   2G 83 Linux</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，如果此时按下 <code>q</code> 按键直接退出 fdisk 程序，则之前所做的全部操作都不会被保存。<br>如确认前面对硬盘的操作没有问题，应使用 <code>w</code> 命令将新的分区信息写入到磁盘中。类似于编辑文件时的保存并退出。</p>
+<h4 id="三、文件系统"><a href="#三、文件系统" class="headerlink" title="三、文件系统"></a>三、文件系统</h4><p>可以将磁盘等存储设备看作一个小型的图书馆，存放在其中的书籍即硬盘中的数据，而分区的作用类似于对书籍分门类存放的书架，形成相对独立的区域。<br>但是书架上的书籍并不是随意放置的，每本书都需要根据一定的规则和顺序有规律地摆放，有时还要记录下摆放的具体位置。这些书籍的摆放规则即对应于分区上的<strong>文件系统</strong>。</p>
+<p><strong>文件系统是对存储设备的空间进行组织和分配，负责文件存取并对存入的文件进行保护和检索的系统</strong>。对操作系统而言，文件的读写不会直接作用于硬盘扇区，而是通过文件系统以特定的规则处理和组织文件数据。<br>常见的文件系统如 Windows 中的 NTFS 和 Linux 系统中 Ext4 等。</p>
+<p>在 Windows 系统中，通常所说的“分区”操作即包含了创建分区并建立文件系统的过程。而在 Linux 系统中，这两步操作则需要两个独立的命令完成。</p>
+<p>可以使用 <code>mkfs.ext4 /dev/sdb1</code> 命令，在之前新加硬盘的第一个分区上创建 Ext4 格式的文件系统。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mkfs.ext4 /dev/sdb1</span><br><span class="line">mke2fs 1.44.6 (5-Mar-2019)</span><br><span class="line">Creating filesystem with 786432 4k blocks and 196608 inodes</span><br><span class="line">Filesystem UUID: d5e21599-12e9-44da-ae51-124d89fe5eda</span><br><span class="line">Superblock backups stored on blocks:</span><br><span class="line">        32768, 98304, 163840, 229376, 294912</span><br><span class="line"></span><br><span class="line">Allocating group tables: done</span><br><span class="line">Writing inode tables: done</span><br><span class="line">Creating journal (16384 blocks): done</span><br><span class="line">Writing superblocks and filesystem accounting information: done</span><br></pre></td></tr></table></figure></p>
+<h5 id="交换分区"><a href="#交换分区" class="headerlink" title="交换分区"></a>交换分区</h5><p>Linux 系统中的 swap 分区可以看作位于硬盘上的“内存设备”。Linux 会将内存中一部分不需要立即使用的数据临时交换至硬盘上的 swap 分区，以缓解内存不足等情况。</p>
+<p>我的 Linux 虚拟机安装时并没有分配 swap 分区，这里通过 <code>mkswap</code> 命令将 2G 大小的 <code>sdb2</code> 分区划分为 swap 空间：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mkswap /dev/sdb2</span><br><span class="line">Setting up swapspace version 1, size = 2 GiB (2146430976 bytes)</span><br><span class="line">no label, UUID=47006330-810c-4321-8d73-d52a5f70bc88</span><br></pre></td></tr></table></figure></p>
+<p>然后使用 <code>swapon</code> 命令立即启用前面创建的 swap 分区：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo swapon /dev/sdb2</span><br><span class="line">$ free -h</span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:          983Mi       223Mi       168Mi       4.0Mi       590Mi       597Mi</span><br><span class="line">Swap:         2.0Gi          0B       2.0Gi</span><br></pre></td></tr></table></figure></p>
+<h5 id="分区挂载"><a href="#分区挂载" class="headerlink" title="分区挂载"></a>分区挂载</h5><p>在 Windows 系统中，一般插入一个已经分好区的硬盘或优盘之后，会自动为添加的一个或多个分区分配<strong>盘符</strong>（如 D:、E:、F: 等），之后就可以直接通过盘符在新分区上读取或写入文件了。</p>
+<p>Linux 系统中没有盘符的概念，它的文件层次是一个从根目录（<code>/</code>）开始的树状结构（目录），一直向下延申，每一个分支都是一条具体的路径，指向某个特定的文件。比如 <code>/usr</code>、<code>/root</code>、<code>/var</code>、<code>/var/log</code> 等。</p>
+<p>目录可以说是独立于硬件存储设备的抽象的逻辑结构，用于指定文件系统层次中的某个具体位置。而磁盘分区与目录结构的对应关系，则需要通过<strong>挂载</strong>来指定。</p>
+<p>一般在安装系统时，可以将 sda1 分区挂载到根目录下，则该目录下的所有文件之后都将保存在 sda1 上。如果后面又添加了一块新的数据盘 sdb，该硬盘只有一个分区 sdb1。为了将某些文件保存在 sdb1 分区上，可以在目录树中新建一个空白分支（比如 <code>/mnt/data</code>）并将 sdb1 挂载在该分支下。之后 <code>/mnt/data</code> 目录下创建的任何子目录和文件等数据都会保存在 sdb1 上。<br>具体命令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mkdir -p /mnt/data</span><br><span class="line">$ sudo mount /dev/sdb1 /mnt/data</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>df -h</code> 命令查看文件系统占用的磁盘空间的具体情况：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ df -h</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">udev            456M     0  456M   0% /dev</span><br><span class="line">tmpfs            99M  1.1M   98M   2% /run</span><br><span class="line">/dev/sda1       9.8G  5.2G  4.2G  56% /</span><br><span class="line">tmpfs           492M     0  492M   0% /dev/shm</span><br><span class="line">tmpfs           5.0M  4.0K  5.0M   1% /run/lock</span><br><span class="line">tmpfs           492M     0  492M   0% /sys/fs/cgroup</span><br><span class="line">tmpfs            99M     0   99M   0% /run/user/117</span><br><span class="line">tmpfs            99M     0   99M   0% /run/user/1000</span><br><span class="line">/dev/sdb1       2.9G  9.0M  2.8G   1% /mnt/data</span><br></pre></td></tr></table></figure></p>
+<p>可以看到新添加的分区 /dev/sdb1 已经挂载到 /mnt/data 目录下了。</p>
+<p>或者也可以使用 <code>lsblk</code> 命令查看块存储设备（即磁盘和分区）的容量和挂载点：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ lsblk</span><br><span class="line">NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT</span><br><span class="line">sda      8:0    0   10G  0 disk</span><br><span class="line">└─sda1   8:1    0   10G  0 part /</span><br><span class="line">sdb      8:16   0    5G  0 disk</span><br><span class="line">├─sdb1   8:17   0    3G  0 part /mnt/data</span><br><span class="line">└─sdb2   8:18   0    2G  0 part [SWAP]</span><br><span class="line">sr0     11:0    1 1024M  0 rom</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，手动挂载的分区在系统重启以后会自动卸载。如果想像根目录那样，每次系统启动时自动挂载分区，可以修改 <code>/etc/fstab</code> 配置文件，示例内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># &lt;file system&gt;                           &lt;mount point&gt;  &lt;type&gt;  &lt;options&gt;  &lt;dump&gt;  &lt;pass&gt;</span><br><span class="line">UUID=f3435713-b2cd-4196-b07b-2ffb116a028d /              ext4    defaults   0       1</span><br><span class="line">/dev/sdb1                                 /mnt/data      ext4    defaults   0       1</span><br><span class="line">/dev/sdb2                                 none           swap    sw         0       0</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p><strong>PS</strong>：相对于 <code>/dev/sda1</code> 这种形式，使用 UUID 挂载分区往往更保险一点，可以通过 <code>blkid</code> 命令查看磁盘分区的 UUID：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo blkid</span><br><span class="line">/dev/sda1: UUID=&quot;f3435713-b2cd-4196-b07b-2ffb116a028d&quot; TYPE=&quot;ext4&quot; PARTUUID=&quot;20985120-01&quot;</span><br><span class="line">/dev/sdb1: UUID=&quot;d5e21599-12e9-44da-ae51-124d89fe5eda&quot; TYPE=&quot;ext4&quot; PARTUUID=&quot;ce119026-01&quot;</span><br><span class="line">/dev/sdb2: UUID=&quot;47006330-810c-4321-8d73-d52a5f70bc88&quot; TYPE=&quot;swap&quot; PARTUUID=&quot;ce119026-02&quot;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h4 id="四、LVM（逻辑卷管理）"><a href="#四、LVM（逻辑卷管理）" class="headerlink" title="四、LVM（逻辑卷管理）"></a>四、LVM（逻辑卷管理）</h4><p>对于不包含<strong>逻辑卷管理</strong>（LVM）的磁盘分区方案，分区的位置、大小和数量一般都是固定的，从而导致扩展当前分区和添加新分区等操作变得困难。<br>此时若添加额外的硬盘和分区，则需要在目录树中创建新的分支作为挂载点，文件数据分散到多个复杂的位置上，不便于合并、备份和管理数据。</p>
+<p>LVM 允许将单个或多个分区合并为一个逻辑卷组，且其中包含的逻辑卷可以<strong>动态</strong>地添加、改变大小或删除。<br>LVM 系统最底层为物理卷（pv），即磁盘、分区和 RAID 阵列等。物理卷可以用来创建逻辑卷组（vg），而逻辑卷组又可以包含任意数量的逻辑卷（lv），逻辑卷从功能上即对应于物理磁盘上的分区。</p>
+<h5 id="创建卷组和逻辑卷"><a href="#创建卷组和逻辑卷" class="headerlink" title="创建卷组和逻辑卷"></a>创建卷组和逻辑卷</h5><p>可以使用 <code>pvcreate</code> 命令将某个存储设备（磁盘或分区等）标记为物理卷。<br>这里我通过 VirtualBox 添加了另一块大小为 5G 的空白的虚拟硬盘，系统检测到该设备为 /dev/sdc ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ lsblk</span><br><span class="line">NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT</span><br><span class="line">sda      8:0    0   10G  0 disk</span><br><span class="line">└─sda1   8:1    0   10G  0 part /</span><br><span class="line">sdb      8:16   0    5G  0 disk</span><br><span class="line">├─sdb1   8:17   0    3G  0 part /mnt/data</span><br><span class="line">└─sdb2   8:18   0    2G  0 part [SWAP]</span><br><span class="line">sdc      8:32   0    5G  0 disk</span><br><span class="line">sr0     11:0    1 1024M  0 rom</span><br></pre></td></tr></table></figure></p>
+<p>创建物理卷：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo pvcreate /dev/sdc</span><br><span class="line">  Physical volume &quot;/dev/sdc&quot; successfully created.</span><br></pre></td></tr></table></figure></p>
+<p>通过 <code>pvs</code> 命令列出所有的物理卷：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo pvs</span><br><span class="line">  PV         VG Fmt  Attr PSize PFree</span><br><span class="line">  /dev/sdc      lvm2 ---  5.00g 5.00g</span><br></pre></td></tr></table></figure></p>
+<p>通过 <code>vgcreate</code> 命令在物理卷的基础上创建逻辑卷组：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vgcreate data-volume /dev/sdc</span><br><span class="line">  Volume group &quot;data-volume&quot; successfully created</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>vgs</code> 命令列出当前所有的逻辑卷组：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vgs</span><br><span class="line">  VG          #PV #LV #SN Attr   VSize  VFree</span><br><span class="line">  data-volume   1   0   0 wz--n- &lt;5.00g &lt;5.00g</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>lvcreate</code> 命令在卷组中创建逻辑卷：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lvcreate --name data --size 2G data-volume</span><br><span class="line">  Logical volume &quot;data&quot; created.</span><br></pre></td></tr></table></figure></p>
+<p>访问逻辑卷可以通过 <code>/dev/mapper/&lt;vgname&gt;-&lt;lvname&gt;</code> 或者 <code>/dev/&lt;vgname&gt;/&lt;lvname&gt;</code> 形式的路径，即刚刚创建的 data 逻辑卷可以通过 <code>/dev/data-volume/data</code> 指定。<br>在该逻辑卷上创建 Ext4 文件系统：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mkfs.ext4 /dev/data-volume/data</span><br><span class="line">mke2fs 1.44.6 (5-Mar-2019)</span><br><span class="line">Creating filesystem with 524288 4k blocks and 131072 inodes</span><br><span class="line">Filesystem UUID: 0f24cdd8-62e0-42fd-bc38-aa3bce91e099</span><br><span class="line">Superblock backups stored on blocks:</span><br><span class="line">        32768, 98304, 163840, 229376, 294912</span><br><span class="line"></span><br><span class="line">Allocating group tables: done</span><br><span class="line">Writing inode tables: done</span><br><span class="line">Creating journal (16384 blocks): done</span><br><span class="line">Writing superblocks and filesystem accounting information: done</span><br></pre></td></tr></table></figure></p>
+<p>此时该逻辑卷即可挂载到某个目录分支下像普通物理分区一样正常使用了。</p>
+<h5 id="操作卷组和逻辑卷"><a href="#操作卷组和逻辑卷" class="headerlink" title="操作卷组和逻辑卷"></a>操作卷组和逻辑卷</h5><p>可以使用 <code>lvextend</code> 命令动态地扩展逻辑卷的存储空间：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lvextend --size +2G --resizefs /dev/data-volume/data</span><br><span class="line">fsck from util-linux 2.33.1</span><br><span class="line">/dev/mapper/data--volume-data: clean, 11/131072 files, 26156/524288 blocks</span><br><span class="line">  Size of logical volume data-volume/data changed from 2.00 GiB (512 extents) to 4.00 GiB (1024 extents).</span><br><span class="line">  Logical volume data-volume/data successfully resized.</span><br><span class="line">resize2fs 1.44.6 (5-Mar-2019)</span><br><span class="line">Resizing the filesystem on /dev/mapper/data--volume-data to 1048576 (4k) blocks.</span><br><span class="line">The filesystem on /dev/mapper/data--volume-data is now 1048576 (4k) blocks long.</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>--size +2G</code> 用于指定增加 2G 空间，<code>--resizefs</code> 指定在扩展逻辑卷大小的同时扩充文件系统的大小（文件系统默认不会随逻辑卷的空间变化而自动扩展）。</p>
+<p>或者也可以直接指定扩展后的大小，如：<br><code>$ sudo lvextend --size 4G --resizefs /dev/data-volume/data</code></p>
+<p>其他常用的命令比如通过 <code>lvresize</code> 命令扩展逻辑卷，使其占用当前卷组中剩余的全部空间：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lvresize -l +100%free /dev/data-volume/data</span><br><span class="line">  Size of logical volume data-volume/data changed from &lt;3.00 GiB (767 extents) to &lt;5.00 GiB (1279 extents).</span><br><span class="line">  Logical volume data-volume/data successfully resized.</span><br></pre></td></tr></table></figure></p>
+<p>因为上面的命令没有加上 <code>--resizefs</code> 或者 <code>-r</code> 选项，因此文件系统不会随着逻辑卷自动扩展大小，可以通过 <code>resize2fs</code> 命令手动扩展文件系统：<br><code>$ sudo resize2fs /dev/data-volume/data</code></p>
+<p>假设一段时间以后，逻辑卷 /dev/data-volume/data 的空间即将被数据填满，可以尝试添加另一块硬盘 <code>sdd</code>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ lsblk</span><br><span class="line">NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT</span><br><span class="line">sda                   8:0    0   10G  0 disk</span><br><span class="line">└─sda1                8:1    0   10G  0 part /</span><br><span class="line">sdb                   8:16   0    5G  0 disk</span><br><span class="line">├─sdb1                8:17   0    3G  0 part /mnt/data</span><br><span class="line">└─sdb2                8:18   0    2G  0 part [SWAP]</span><br><span class="line">sdc                   8:32   0    5G  0 disk</span><br><span class="line">└─data--volume-data 253:0    0    5G  0 lvm</span><br><span class="line">sdd                   8:48   0    5G  0 disk</span><br><span class="line">sr0                  11:0    1 1024M  0 rom</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>pvcreate</code> 命令创建物理卷：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo pvs</span><br><span class="line">  PV         VG          Fmt  Attr PSize  PFree</span><br><span class="line">  /dev/sdc   data-volume lvm2 a--  &lt;5.00g    0</span><br><span class="line">  /dev/sdd               lvm2 ---   5.00g 5.00g</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>vgextend</code> 命令将该物理卷添加到之前创建的卷组 <code>data-volume</code> 中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vgextend data-volume /dev/sdd</span><br><span class="line">  Volume group &quot;data-volume&quot; successfully extended</span><br><span class="line">$ sudo vgs</span><br><span class="line">  VG          #PV #LV #SN Attr   VSize VFree</span><br><span class="line">  data-volume   2   1   0 wz--n- 9.99g &lt;5.00g</span><br></pre></td></tr></table></figure></p>
+<p>此时的 data-volume 卷组包含了两个物理卷（<code>/dev/sdc</code> 和 <code>/dev/sdd</code>）和一个逻辑卷（<code>/dev/data-volume/data</code>），总大小变为 10G，闲置空间为 5G（即刚刚添加的物理卷）。</p>
+<p>最后使用 <code>lvresize</code> 命令扩展逻辑卷大小，使其占据两个物理卷的全部存储空间：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lvresize -l +100%free -r /dev/data-volume/data</span><br><span class="line">fsck from util-linux 2.33.1</span><br><span class="line">/dev/mapper/data--volume-data: clean, 11/196608 files, 30268/785408 blocks</span><br><span class="line">  Size of logical volume data-volume/data changed from &lt;5.00 GiB (1279 extents) to 9.99 GiB (2558 extents).</span><br><span class="line">  Logical volume data-volume/data successfully resized.</span><br><span class="line">resize2fs 1.44.6 (5-Mar-2019)</span><br><span class="line">Resizing the filesystem on /dev/mapper/data--volume-data to 2619392 (4k) blocks.</span><br><span class="line">The filesystem on /dev/mapper/data--volume-data is now 2619392 (4k) blocks long.</span><br></pre></td></tr></table></figure></p>
+<p>此时逻辑卷 /dev/data-volume/data 的大小扩展为 10G，即占用了整个卷组 data-volume（包含两个 5G 的物理卷）的全部空间。</p>
+<p><strong>总结</strong>：LVM 卷组（vg）的作用类似于物理磁盘，用于承载逻辑卷（lv）。卷组可以由多个物理卷（磁盘或分区等）构成，空间不够时也可以随时添加新的物理卷进行扩展。<br>而卷组上的逻辑卷（lv）类似于磁盘分区，可以挂载到目录作为存储空间。但是物理分区的位置和大小固定，而逻辑卷则可以在卷组的基础上动态的改变大小，甚至跨越多个物理磁盘和分区，使得管理起来更加方便和灵活。</p>
+<p>常用 LVM 命令列表：</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Used For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pvcreate</td>
+<td>Labeling devices for use with LVM</td>
+</tr>
+<tr>
+<td>pvremove</td>
+<td>Removing the LVM label from a physical volume</td>
+</tr>
+<tr>
+<td>pvdisplay / pvs</td>
+<td>Displaying information on the specified device or all physical volumes on the system</td>
+</tr>
+<tr>
+<td>vgcreate</td>
+<td>Creating a new volume group</td>
+</tr>
+<tr>
+<td>vgremove</td>
+<td>Removing (deleting) a volume group</td>
+</tr>
+<tr>
+<td>vgextend</td>
+<td>Adding physical volumes to a volume group</td>
+</tr>
+<tr>
+<td>vgreduce</td>
+<td>Removing physical volumes from a volume group</td>
+</tr>
+<tr>
+<td>vgdisplay / vgs</td>
+<td>Displaying information about the specified group or all volume groups on the system</td>
+</tr>
+<tr>
+<td>lvcreate</td>
+<td>Creating a new logical volume</td>
+</tr>
+<tr>
+<td>lvremove</td>
+<td>Removing (deleting) a logical volume</td>
+</tr>
+<tr>
+<td>lvextend</td>
+<td>Increasing the size of a logical volume</td>
+</tr>
+<tr>
+<td>lvreduce</td>
+<td>Decreasing the size of a logical volume</td>
+</tr>
+<tr>
+<td>lvdisplay / lvs</td>
+<td>Displaying all logical volumes on the system or in a specified volume group</td>
+</tr>
+</tbody>
+</table>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.apress.com/cn/book/9781484220078" target="_blank" rel="noopener">Pro Linux System Administration</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Disk/" rel="tag"># Disk</a>
+          
+            <a href="/tags/Storage/" rel="tag"># Storage</a>
+          
+            <a href="/tags/LVM/" rel="tag"># LVM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/01/monitor-system-nagios4-installation-and-usage/" rel="next" title="Nagios4 系统监控工具安装及配置简介（Ubuntu 19.04）">
+                <i class="fa fa-chevron-left"></i> Nagios4 系统监控工具安装及配置简介（Ubuntu 19.04）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/24/using-supervisor-to-control-Linux-processes/" rel="prev" title="Python Tricks —— 使用 Supervisor 控制 Linux 进程">
+                Python Tricks —— 使用 Supervisor 控制 Linux 进程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、设备文件"><span class="nav-number">1.</span> <span class="nav-text">一、设备文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、分区"><span class="nav-number">2.</span> <span class="nav-text">二、分区</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建磁盘分区"><span class="nav-number">2.1.</span> <span class="nav-text">创建磁盘分区</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、文件系统"><span class="nav-number">3.</span> <span class="nav-text">三、文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#交换分区"><span class="nav-number">3.1.</span> <span class="nav-text">交换分区</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分区挂载"><span class="nav-number">3.2.</span> <span class="nav-text">分区挂载</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、LVM（逻辑卷管理）"><span class="nav-number">4.</span> <span class="nav-text">四、LVM（逻辑卷管理）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建卷组和逻辑卷"><span class="nav-number">4.1.</span> <span class="nav-text">创建卷组和逻辑卷</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#操作卷组和逻辑卷"><span class="nav-number">4.2.</span> <span class="nav-text">操作卷组和逻辑卷</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

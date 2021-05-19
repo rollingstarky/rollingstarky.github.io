@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,Advanced,Program,Functional,Generator,Iterator," />
+
+
+<meta name="description" content="迭代是数据处理的基石。扫描内存中放不下的数据集时，通常需要一种惰性获取数据项的方式，即按需一次获取一个数据项。这就是迭代器模式。 在 Python 中，所有序列类型都支持迭代。在语言内部，迭代器用于支持以下操作：  for 循环 构建和扩展序列类型 逐行遍历文本文件 列表推导、字典推导和集合推导 元组拆包 调用函数时，使用 * 拆包实参  可迭代对象以下代码实现了一个 Sentence 类，通过索">
+<meta name="keywords" content="Python,Advanced,Program,Functional,Generator,Iterator">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fluent Python 笔记 —— 可迭代对象、迭代器和生成器">
+<meta property="og:url" content="https://rollingstarky.github.io/2020/10/18/fluent-python-iterator-and-generator/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="迭代是数据处理的基石。扫描内存中放不下的数据集时，通常需要一种惰性获取数据项的方式，即按需一次获取一个数据项。这就是迭代器模式。 在 Python 中，所有序列类型都支持迭代。在语言内部，迭代器用于支持以下操作：  for 循环 构建和扩展序列类型 逐行遍历文本文件 列表推导、字典推导和集合推导 元组拆包 调用函数时，使用 * 拆包实参  可迭代对象以下代码实现了一个 Sentence 类，通过索">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-10-18T03:09:15.273Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fluent Python 笔记 —— 可迭代对象、迭代器和生成器">
+<meta name="twitter:description" content="迭代是数据处理的基石。扫描内存中放不下的数据集时，通常需要一种惰性获取数据项的方式，即按需一次获取一个数据项。这就是迭代器模式。 在 Python 中，所有序列类型都支持迭代。在语言内部，迭代器用于支持以下操作：  for 循环 构建和扩展序列类型 逐行遍历文本文件 列表推导、字典推导和集合推导 元组拆包 调用函数时，使用 * 拆包实参  可迭代对象以下代码实现了一个 Sentence 类，通过索">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2020/10/18/fluent-python-iterator-and-generator/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Fluent Python 笔记 —— 可迭代对象、迭代器和生成器 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2020/10/18/fluent-python-iterator-and-generator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Fluent Python 笔记 —— 可迭代对象、迭代器和生成器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-18T00:00:00+08:00">2020-10-18</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/10/18/fluent-python-iterator-and-generator/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2020/10/18/fluent-python-iterator-and-generator/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2020/10/18/fluent-python-iterator-and-generator/" class="leancloud_visitors" data-flag-title="Fluent Python 笔记 —— 可迭代对象、迭代器和生成器">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">13k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:13</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>迭代是数据处理的基石。扫描内存中放不下的数据集时，通常需要一种<strong>惰性获取数据项</strong>的方式，即按需一次获取一个数据项。这就是迭代器模式。</p>
+<p>在 Python 中，所有序列类型都支持迭代。在语言内部，迭代器用于支持以下操作：</p>
+<ul>
+<li>for 循环</li>
+<li>构建和扩展序列类型</li>
+<li>逐行遍历文本文件</li>
+<li>列表推导、字典推导和集合推导</li>
+<li><strong>元组拆包</strong></li>
+<li>调用函数时，使用 <code>*</code> 拆包实参</li>
+</ul>
+<h4 id="可迭代对象"><a href="#可迭代对象" class="headerlink" title="可迭代对象"></a>可迭代对象</h4><p>以下代码实现了一个 Sentence 类，通过索引从文本中提取单词：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> reprlib</span><br><span class="line"></span><br><span class="line">RE_WORD = re.compile(<span class="string">'\w+'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sentence</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, text)</span>:</span></span><br><span class="line">        self.text = text</span><br><span class="line">        self.words = RE_WORD.findall(text)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.words[index]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> len(self.words)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f'Sentence(<span class="subst">&#123;reprlib.repr(self.text)&#125;</span>)'</span></span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> sentence <span class="keyword">import</span> Sentence</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s = Sentence(<span class="string">'"The time has come," the Walrus said,'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>s</span><br><span class="line">Sentence(<span class="string">'"The time ha... Walrus said,'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> word <span class="keyword">in</span> s:</span><br><span class="line"><span class="meta">... </span>    print(word)</span><br><span class="line">...</span><br><span class="line">The</span><br><span class="line">time</span><br><span class="line">has</span><br><span class="line">come</span><br><span class="line">the</span><br><span class="line">Walrus</span><br><span class="line">said</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(s)</span><br><span class="line">[<span class="string">'The'</span>, <span class="string">'time'</span>, <span class="string">'has'</span>, <span class="string">'come'</span>, <span class="string">'the'</span>, <span class="string">'Walrus'</span>, <span class="string">'said'</span>]</span><br></pre></td></tr></table></figure></p>
+<p>上面创建的 Sentence 实例是可迭代的。因此该实例对象可被 <code>for</code> 循环调用、可以用于构建列表等。</p>
+<h5 id="迭代的机制"><a href="#迭代的机制" class="headerlink" title="迭代的机制"></a>迭代的机制</h5><p>Python 解释器需要迭代对象 x 时，会自动执行 <code>iter(x)</code>。其作用如下：</p>
+<ul>
+<li>检查对象是否实现了 <code>__iter__</code> 方法，如已实现则调用 <code>__iter__</code>，返回一个迭代器对象</li>
+<li>若对象没有实现 <code>__iter__</code> 方法，但实现了 <code>__getitem__</code> 方法，Python 会创建一个迭代器，尝试按顺序（从索引 0 开始）获取元素</li>
+<li>若上述尝试失败，抛出 TypeError 异常（<code>X object is not iterable</code>）</li>
+</ul>
+<p>所有 Python 序列都实现了 <code>__iter__</code> 方法，因此都支持迭代操作。</p>
+<h5 id="可迭代对象与迭代器的对比"><a href="#可迭代对象与迭代器的对比" class="headerlink" title="可迭代对象与迭代器的对比"></a>可迭代对象与迭代器的对比</h5><p>可迭代对象指<strong>通过 <code>iter</code> 函数调用可以获取迭代器的对象</strong>。即对象实现了能够返回迭代器的 <code>__iter__</code> 方法，该对象就是可迭代的；或者实现了 <code>__getitem__</code> 方法，且其参数是从 0 开始的索引，则对象也可以迭代。</p>
+<p>一个简单的 <code>for</code> 循环背后也是有迭代器的作用的：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>s = <span class="string">'ABC'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> char <span class="keyword">in</span> s:</span><br><span class="line"><span class="meta">... </span>    print(char)</span><br><span class="line">...</span><br><span class="line">A</span><br><span class="line">B</span><br><span class="line">C</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>while</code> 循环模拟效果如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>s = <span class="string">'ABC'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>it = iter(s)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">try</span>:</span><br><span class="line"><span class="meta">... </span>            print(next(it))</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">except</span> StopIteration:</span><br><span class="line"><span class="meta">... </span>            <span class="keyword">del</span> it</span><br><span class="line"><span class="meta">... </span>            <span class="keyword">break</span></span><br><span class="line">...</span><br><span class="line">A</span><br><span class="line">B</span><br><span class="line">C</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>使用可迭代的对象（字符串 s）创建迭代器 it</li>
+<li>不断在迭代器 it 上调用 <code>next</code> 函数，获取下一个字符</li>
+<li>若已获取到最后一个字符，迭代器抛出 StopIteration 异常</li>
+<li>捕获 StopIteration 异常，释放 it 对象，退出循环</li>
+</ul>
+<p>Python 语言内部会自动处理 for 循环和其他迭代上下文（如列表推导等）中的 StopIteration 异常。</p>
+<p>迭代器（如前面的 it）实现了无参数的 <code>__next__</code> 方法，返回序列中的下一个元素；若没有元素了，则抛出 StopIteration 异常。Python 中的迭代器还实现了 <code>__iter__</code> 方法，返回该迭代器本身（即确保迭代器本身也是可迭代对象）</p>
+<h4 id="典型的迭代器"><a href="#典型的迭代器" class="headerlink" title="典型的迭代器"></a>典型的迭代器</h4><p>关于可迭代对象与迭代器之间的区别，可以参考如下代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> reprlib</span><br><span class="line"></span><br><span class="line">RE_WORD = re.compile(<span class="string">'\w+'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sentence</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, text)</span>:</span></span><br><span class="line">        self.text = text</span><br><span class="line">        self.words = RE_WORD.findall(text)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f'Sentence(<span class="subst">&#123;reprlib.repr(self.text)&#125;</span>)'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> SentenceIterator(self.words)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SentenceIterator</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, words)</span>:</span></span><br><span class="line">        self.words = words</span><br><span class="line">        self.index = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__next__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            word = self.words[self.index]</span><br><span class="line">        <span class="keyword">except</span> IndexError:</span><br><span class="line">            <span class="keyword">raise</span> StopIteration()</span><br><span class="line">        self.index += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> word</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self</span><br></pre></td></tr></table></figure></p>
+<p>根据迭代器协议，可迭代对象 Sentence 中的 <code>__iter__</code> 方法会实例化并返回一个迭代器（SentenceIterator），而 SentenceIterator 作为迭代器实现了 <code>__next__</code> 和 <code>__iter__</code> 方法。</p>
+<p>构建可迭代对象时出现错误的原因经常是混淆了可迭代对象与迭代器。<strong>可迭代对象通过内部的 <code>__iter__</code> 方法返回一个实例化的迭代器对象；而迭代器要实现 <code>__next__</code> 方法返回单个元素，此外还需要实现 <code>__iter__</code> 方法返回迭代器本身</strong>。</p>
+<h4 id="生成器函数"><a href="#生成器函数" class="headerlink" title="生成器函数"></a>生成器函数</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> reprlib</span><br><span class="line"></span><br><span class="line">RE_WORD = re.compile(<span class="string">'\w+'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sentence</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, text)</span>:</span></span><br><span class="line">        self.text = text</span><br><span class="line">        self.words = RE_WORD.findall(text)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f'Sentence(<span class="subst">&#123;reprlib.repr(self.text)&#125;</span>)'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> SentenceIterator(self.words)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SentenceIterator</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, words)</span>:</span></span><br><span class="line">        self.words = words</span><br><span class="line">        self.index = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__next__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            word = self.words[self.index]</span><br><span class="line">        <span class="keyword">except</span> IndexError:</span><br><span class="line">            <span class="keyword">raise</span> StopIteration()</span><br><span class="line">        self.index += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> word</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self</span><br></pre></td></tr></table></figure>
+<p>实现可迭代对象，相较于之前的代码，符合 Python 习惯的方式是用生成器函数替换手动实现的迭代器 SentenceIterator 类。</p>
+<p>只要 Python 函数的定义体中有 yield 关键字，则该函数就是生成器函数。调用生成器函数会返回一个生成器对象。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="function"><span class="keyword">def</span> <span class="title">gen_123</span><span class="params">()</span>:</span></span><br><span class="line"><span class="meta">... </span>    <span class="keyword">yield</span> <span class="number">1</span></span><br><span class="line"><span class="meta">... </span>    <span class="keyword">yield</span> <span class="number">2</span></span><br><span class="line"><span class="meta">... </span>    <span class="keyword">yield</span> <span class="number">3</span></span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>gen_123</span><br><span class="line">&lt;function gen_123 at <span class="number">0x7f63e57f0f80</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>gen_123()</span><br><span class="line">&lt;generator object gen_123 at <span class="number">0x7f63e57dc950</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> i <span class="keyword">in</span> gen_123():</span><br><span class="line"><span class="meta">... </span>    print(i)</span><br><span class="line">...</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>g = gen_123()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g)</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g)</span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g)</span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g)</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">"&lt;stdin&gt;"</span>, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">StopIteration</span><br></pre></td></tr></table></figure></p>
+<p>把生成器对象传递给 <code>next()</code> 函数时，其行为与迭代器一致。</p>
+<h4 id="惰性求值"><a href="#惰性求值" class="headerlink" title="惰性求值"></a>惰性求值</h4><p><code>re.finditer</code> 是 <code>re.findall</code> 函数的惰性版本，返回的不是结果列表而是一个生成器，按需生成 <code>re.MatchObject</code> 实例。即只在需要时才生成下一个单词。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> reprlib</span><br><span class="line"></span><br><span class="line">RE_WORD = re.compile(<span class="string">'\w+'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sentence</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, text)</span>:</span></span><br><span class="line">        self.text = text</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f'Sentence(<span class="subst">&#123;reprlib.repr(self.text)&#125;</span>)'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> match <span class="keyword">in</span> RE_WORD.finditer(self.text):</span><br><span class="line">            <span class="keyword">yield</span> match.group()</span><br></pre></td></tr></table></figure>
+<p><code>finditer</code> 函数返回一个迭代器，包含 <code>self.text</code> 中匹配 RE_WORD 的单词，产出 MatchObject 实例。<code>match.group()</code> 方法从 MatchObject 实例中提取匹配正则表达式的具体文本。</p>
+<p>生成器函数已极大地简化了代码，但使用<strong>生成器表达式</strong>能够把代码变得更为简短。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="function"><span class="keyword">def</span> <span class="title">gen_AB</span><span class="params">()</span>:</span></span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'start'</span>)</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">yield</span> <span class="string">'A'</span></span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'continue'</span>)</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">yield</span> <span class="string">'B'</span></span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'end.'</span>)</span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>res = (x * <span class="number">3</span> <span class="keyword">for</span> x <span class="keyword">in</span> gen_AB())</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>res</span><br><span class="line">&lt;generator object &lt;genexpr&gt; at <span class="number">0x7f4619324ad0</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> i <span class="keyword">in</span> res:</span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'--&gt;'</span>, i)</span><br><span class="line">...</span><br><span class="line">start</span><br><span class="line">--&gt; AAA</span><br><span class="line"><span class="keyword">continue</span></span><br><span class="line">--&gt; BBB</span><br><span class="line">end.</span><br></pre></td></tr></table></figure></p>
+<p>可以看出，<strong>生成器表达式会产出生成器</strong>。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> reprlib</span><br><span class="line"></span><br><span class="line">RE_WORD = re.compile(<span class="string">'\w+'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sentence</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, text)</span>:</span></span><br><span class="line">        self.text = text</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f'Sentence(<span class="subst">&#123;reprlib.repr(self.text)&#125;</span>)'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> (match.group() <span class="keyword">for</span> match <span class="keyword">in</span> RE_WORD.finditer(self.text))</span><br></pre></td></tr></table></figure></p>
+<h4 id="标准库中的生成器函数"><a href="#标准库中的生成器函数" class="headerlink" title="标准库中的生成器函数"></a>标准库中的生成器函数</h4><p><strong>用于过滤的生成器函数</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>itertools</td>
+<td><code>compress(it, selector_it)</code></td>
+<td>并行处理两个可迭代对象。若 <code>selector_it</code> 中的元素是真值，产出 <code>it</code> 中对应的元素</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>dropwhile(predicate, it)</code></td>
+<td>把可迭代对象 <code>it</code> 中的元素传给 <code>predicate</code>，跳过 <code>predicate(item)</code> 为真值的元素，在 <code>predicate(item)</code> 为假时停止，产出剩余（未跳过）的所有元素（不再继续检查）</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>filter(predicate, it)</code></td>
+<td>把 <code>it</code> 中的各个元素传给 <code>predicate</code>，若 <code>predicate(item)</code> 返回真值，产出对应元素</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>filterfalse(predicate, it)</code></td>
+<td>与 <code>filter</code> 函数类似，不过 <code>predicate(item)</code> 返回假值时产出对应元素</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>takewhile(predicate, it)</code></td>
+<td><code>predicate(item)</code> 返回真值时产出对应元素，然后立即停止不再继续检查</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>islice(it, stop)</code> 或 <code>islice(it, start, stop, step=1)</code></td>
+<td>产出 <code>it</code> 的切片，作用类似于 <code>s[:stop]</code> 或 <code>s[start:stop:step</code>，不过 <code>it</code> 可以是任何可迭代对象，且实现的是惰性操作</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="function"><span class="keyword">def</span> <span class="title">vowel</span><span class="params">(c)</span>:</span></span><br><span class="line"><span class="meta">... </span>    <span class="keyword">return</span> c.lower() <span class="keyword">in</span> <span class="string">'aeiou'</span></span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(filter(vowel, <span class="string">'Aardvark'</span>))</span><br><span class="line">[<span class="string">'A'</span>, <span class="string">'a'</span>, <span class="string">'a'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> itertools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.filterfalse(vowel, <span class="string">'Aardvark'</span>))</span><br><span class="line">[<span class="string">'r'</span>, <span class="string">'d'</span>, <span class="string">'v'</span>, <span class="string">'r'</span>, <span class="string">'k'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.dropwhile(vowel, <span class="string">'Aardvark'</span>))</span><br><span class="line">[<span class="string">'r'</span>, <span class="string">'d'</span>, <span class="string">'v'</span>, <span class="string">'a'</span>, <span class="string">'r'</span>, <span class="string">'k'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.compress(<span class="string">'Aardvark'</span>, (<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>)))</span><br><span class="line">[<span class="string">'A'</span>, <span class="string">'r'</span>, <span class="string">'d'</span>, <span class="string">'a'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.islice(<span class="string">'Aardvark'</span>, <span class="number">4</span>))</span><br><span class="line">[<span class="string">'A'</span>, <span class="string">'a'</span>, <span class="string">'r'</span>, <span class="string">'d'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.islice(<span class="string">'Aardvark'</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">2</span>))</span><br><span class="line">[<span class="string">'a'</span>, <span class="string">'d'</span>, <span class="string">'a'</span>]</span><br></pre></td></tr></table></figure>
+<p><strong>用于映射的生成器函数</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>itertools</td>
+<td><code>accumulate(it, [func])</code></td>
+<td>产出累积的总和。若提供了 <code>func</code>，则把 <code>it</code> 中的前两个元素传给 <code>func</code>，再把计算结果连同下一个元素传给 <code>func</code>，以此类推，产出结果</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>enumerate(it, start=0)</code></td>
+<td>产出由两个元素构成的元组，结构是 <code>(index, item)</code>。其中 <code>index</code> 从 <code>start</code> 开始计数，<code>item</code> 则从 <code>it</code> 中获取</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>map(func, it1, [it2, ..., itN])</code></td>
+<td>把 <code>it</code> 中的各个元素传给 <code>func</code>，产出结果；若传入 N 个可迭代对象，则 <code>func</code> 必须能接受 N 个参数，且并行处理各个可迭代对象</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(enumerate(<span class="string">'albatroz'</span>, <span class="number">1</span>))</span><br><span class="line">[(<span class="number">1</span>, <span class="string">'a'</span>), (<span class="number">2</span>, <span class="string">'l'</span>), (<span class="number">3</span>, <span class="string">'b'</span>), (<span class="number">4</span>, <span class="string">'a'</span>), (<span class="number">5</span>, <span class="string">'t'</span>), (<span class="number">6</span>, <span class="string">'r'</span>), (<span class="number">7</span>, <span class="string">'o'</span>), (<span class="number">8</span>, <span class="string">'z'</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> operator</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(map(operator.mul, range(<span class="number">11</span>), range(<span class="number">11</span>)))</span><br><span class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">9</span>, <span class="number">16</span>, <span class="number">25</span>, <span class="number">36</span>, <span class="number">49</span>, <span class="number">64</span>, <span class="number">81</span>, <span class="number">100</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(map(operator.mul, range(<span class="number">11</span>), [<span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>]))</span><br><span class="line">[<span class="number">0</span>, <span class="number">4</span>, <span class="number">16</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(map(<span class="keyword">lambda</span> a, b: (a, b), range(<span class="number">11</span>), [<span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>]))</span><br><span class="line">[(<span class="number">0</span>, <span class="number">2</span>), (<span class="number">1</span>, <span class="number">4</span>), (<span class="number">2</span>, <span class="number">8</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> itertools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sample = [<span class="number">5</span>, <span class="number">4</span>, <span class="number">2</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">9</span>, <span class="number">1</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.accumulate(sample))</span><br><span class="line">[<span class="number">5</span>, <span class="number">9</span>, <span class="number">11</span>, <span class="number">19</span>, <span class="number">26</span>, <span class="number">32</span>, <span class="number">35</span>, <span class="number">35</span>, <span class="number">44</span>, <span class="number">45</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.accumulate(sample, max))</span><br><span class="line">[<span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">8</span>, <span class="number">8</span>, <span class="number">8</span>, <span class="number">8</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">9</span>]</span><br></pre></td></tr></table></figure>
+<p><strong>合并多个可迭代对象的生成器函数</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>itertools</td>
+<td><code>chain(it1, ..., itN)</code></td>
+<td>先产出 <code>it1</code> 中的所有元素，然后产出 <code>it2</code> 中的所有元素，以此类推，无缝连接</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>chain.from_iterable(it)</code></td>
+<td>产出 <code>it</code> 生成的各个可迭代对象中的元素，一个接一个无缝连接；<code>it</code> 中的元素应该为可迭代对象（即 <code>it</code> 是嵌套了可迭代对象的可迭代对象）</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>product(it1, ..., itN, repeat=1)</code></td>
+<td>计算笛卡尔积。从输入的各个可迭代对象中获取元素，合并成 N 个元素组成的元组，与嵌套的 for 循环效果一样。<code>repeat</code> 指明重复处理多少次输入的可迭代对象</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>zip(it1, ..., itN)</code></td>
+<td>并行从输入的各个可迭代对象中获取元素，产出由 N 个元素组成的元组。只要其中任何一个可迭代对象到头了，就直接停止</td>
+</tr>
+<tr>
+<td>itertools</td>
+<td><code>zip_longest(it1, ..., itN, fillvalue=None)</code></td>
+<td>并行从输入的各个可迭代对象中获取元素，产出由 N 个元素组成的元组，等到最长的可迭代对象到头后才停止。空缺的值用 <code>fillvalue</code> 填充</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> itertools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.chain(<span class="string">'ABC'</span>, range(<span class="number">2</span>)))</span><br><span class="line">[<span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>, <span class="number">0</span>, <span class="number">1</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.chain(enumerate(<span class="string">'ABC'</span>)))</span><br><span class="line">[(<span class="number">0</span>, <span class="string">'A'</span>), (<span class="number">1</span>, <span class="string">'B'</span>), (<span class="number">2</span>, <span class="string">'C'</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.chain.from_iterable(enumerate(<span class="string">'ABC'</span>)))</span><br><span class="line">[<span class="number">0</span>, <span class="string">'A'</span>, <span class="number">1</span>, <span class="string">'B'</span>, <span class="number">2</span>, <span class="string">'C'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(zip(<span class="string">'ABC'</span>, range(<span class="number">5</span>)))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="number">0</span>), (<span class="string">'B'</span>, <span class="number">1</span>), (<span class="string">'C'</span>, <span class="number">2</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(zip(<span class="string">'ABC'</span>, range(<span class="number">5</span>), [<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>]))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="number">0</span>, <span class="number">10</span>), (<span class="string">'B'</span>, <span class="number">1</span>, <span class="number">20</span>), (<span class="string">'C'</span>, <span class="number">2</span>, <span class="number">30</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.zip_longest(<span class="string">'ABC'</span>, range(<span class="number">5</span>)))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="number">0</span>), (<span class="string">'B'</span>, <span class="number">1</span>), (<span class="string">'C'</span>, <span class="number">2</span>), (<span class="keyword">None</span>, <span class="number">3</span>), (<span class="keyword">None</span>, <span class="number">4</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.zip_longest(<span class="string">'ABC'</span>, range(<span class="number">5</span>), fillvalue=<span class="string">'?'</span>))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="number">0</span>), (<span class="string">'B'</span>, <span class="number">1</span>), (<span class="string">'C'</span>, <span class="number">2</span>), (<span class="string">'?'</span>, <span class="number">3</span>), (<span class="string">'?'</span>, <span class="number">4</span>)]</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.product(<span class="string">'ABC'</span>, range(<span class="number">2</span>)))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="number">0</span>), (<span class="string">'A'</span>, <span class="number">1</span>), (<span class="string">'B'</span>, <span class="number">0</span>), (<span class="string">'B'</span>, <span class="number">1</span>), (<span class="string">'C'</span>, <span class="number">0</span>), (<span class="string">'C'</span>, <span class="number">1</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>suits = <span class="string">'spades hearts diamonds clubs'</span>.split()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.product(<span class="string">'AK'</span>, suits))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'spades'</span>), (<span class="string">'A'</span>, <span class="string">'hearts'</span>), (<span class="string">'A'</span>, <span class="string">'diamonds'</span>), (<span class="string">'A'</span>, <span class="string">'clubs'</span>), (<span class="string">'K'</span>, <span class="string">'spades'</span>), (<span class="string">'K'</span>, <span class="string">'hearts'</span>), (<span class="string">'K'</span>, <span class="string">'diamonds'</span>), (<span class="string">'K'</span>, <span class="string">'clubs'</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.product(<span class="string">'ABC'</span>))</span><br><span class="line">[(<span class="string">'A'</span>,), (<span class="string">'B'</span>,), (<span class="string">'C'</span>,)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.product(<span class="string">'ABC'</span>, repeat=<span class="number">2</span>))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'A'</span>), (<span class="string">'A'</span>, <span class="string">'B'</span>), (<span class="string">'A'</span>, <span class="string">'C'</span>), (<span class="string">'B'</span>, <span class="string">'A'</span>), (<span class="string">'B'</span>, <span class="string">'B'</span>), (<span class="string">'B'</span>, <span class="string">'C'</span>), (<span class="string">'C'</span>, <span class="string">'A'</span>), (<span class="string">'C'</span>, <span class="string">'B'</span>), (<span class="string">'C'</span>, <span class="string">'C'</span>)]</span><br></pre></td></tr></table></figure>
+<p><strong>把输入的各个元素扩展成多个输出元素的生成器函数</strong><br>|模块|函数|说明|<br>|-|-|-|<br>|itertools|<code>combinations(it, out_len)</code>|把可迭代对象 <code>it</code> 产出的 <code>out_len</code> 个元素组合在一起产出|<br>|itertools|<code>combinations_with_replacement(it, out_len)</code>|把 <code>it</code> 产出的 <code>out_len</code> 个元素组合在一起产出，包含相同元素的组合|<br>|itertools|<code>count(start=0, step=1)</code>|从 <code>start</code> 开始不断产出数字，按 <code>step</code> 指定的步幅增加|<br>|itertools|<code>cycle(it)</code>|从 <code>it</code> 中产出各个元素，存储各个元素的副本，然后按顺序重复不断地产出各个元素|<br>|itertools|<code>permutations(it, out_len=None)</code>|把 <code>out_len</code> 个 <code>it</code> 产出的元素排列在一起，然后产出这些排列；<code>out_len</code> 的默认值等于 <code>len(list(it))</code>|<br>|itertools|<code>repeat(item, [times])</code>|重复不断地产出指定的元素，除非提供 <code>times</code> 指定次数|</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> itertools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>ct = itertools.count()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(ct)</span><br><span class="line"><span class="number">0</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(ct), next(ct), next(ct)</span><br><span class="line">(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.islice(itertools.count(<span class="number">1</span>, <span class="number">.3</span>), <span class="number">3</span>))</span><br><span class="line">[<span class="number">1</span>, <span class="number">1.3</span>, <span class="number">1.6</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>cy = itertools.cycle(<span class="string">'ABC'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(cy)</span><br><span class="line"><span class="string">'A'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.islice(cy, <span class="number">7</span>))</span><br><span class="line">[<span class="string">'B'</span>, <span class="string">'C'</span>, <span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>, <span class="string">'A'</span>, <span class="string">'B'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>rp = itertools.repeat(<span class="number">7</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(rp), next(rp)</span><br><span class="line">(<span class="number">7</span>, <span class="number">7</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.repeat(<span class="number">8</span>, <span class="number">4</span>))</span><br><span class="line">[<span class="number">8</span>, <span class="number">8</span>, <span class="number">8</span>, <span class="number">8</span>]</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> itertools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.combinations(<span class="string">'ABC'</span>, <span class="number">2</span>))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'B'</span>), (<span class="string">'A'</span>, <span class="string">'C'</span>), (<span class="string">'B'</span>, <span class="string">'C'</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.combinations_with_replacement(<span class="string">'ABC'</span>, <span class="number">2</span>))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'A'</span>), (<span class="string">'A'</span>, <span class="string">'B'</span>), (<span class="string">'A'</span>, <span class="string">'C'</span>), (<span class="string">'B'</span>, <span class="string">'B'</span>), (<span class="string">'B'</span>, <span class="string">'C'</span>), (<span class="string">'C'</span>, <span class="string">'C'</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.permutations(<span class="string">'ABC'</span>, <span class="number">2</span>))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'B'</span>), (<span class="string">'A'</span>, <span class="string">'C'</span>), (<span class="string">'B'</span>, <span class="string">'A'</span>), (<span class="string">'B'</span>, <span class="string">'C'</span>), (<span class="string">'C'</span>, <span class="string">'A'</span>), (<span class="string">'C'</span>, <span class="string">'B'</span>)]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(itertools.product(<span class="string">'ABC'</span>, repeat=<span class="number">2</span>))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'A'</span>), (<span class="string">'A'</span>, <span class="string">'B'</span>), (<span class="string">'A'</span>, <span class="string">'C'</span>), (<span class="string">'B'</span>, <span class="string">'A'</span>), (<span class="string">'B'</span>, <span class="string">'B'</span>), (<span class="string">'B'</span>, <span class="string">'C'</span>), (<span class="string">'C'</span>, <span class="string">'A'</span>), (<span class="string">'C'</span>, <span class="string">'B'</span>), (<span class="string">'C'</span>, <span class="string">'C'</span>)]</span><br></pre></td></tr></table></figure>
+<p><strong>用于重新排列元素的生成器函数</strong><br>|模块|函数|说明|<br>|-|-|-|<br>|itertools|<code>groupby(it, key=None)</code>|产出由两个元素组成的元素，形式为 <code>(key, group)</code>，其中 <code>key</code> 是分组标准，<code>group</code> 是生成器，用于产出分组里的元素|<br>|内置|<code>reversed(seq)</code>|从后向前，倒序产出 <code>seq</code> 中的元素；<code>seq</code> 必须是序列，或者实现了 <code>__reversed__</code> 特殊方法的对象|<br>|itertools|<code>tee(it, n=2)</code>|产出一个有 <code>n</code> 个生成器组成的元组，每个生成器都可以独立地产出输入的可迭代对象中的元素|</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> itertools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>animals = [<span class="string">'duck'</span>, <span class="string">'eagle'</span>, <span class="string">'rat'</span>, <span class="string">'giraffe'</span>, <span class="string">'bear'</span>, <span class="string">'bat'</span>, <span class="string">'dolphin'</span>, <span class="string">'shark'</span>, <span class="string">'lion'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>animals.sort(key=len)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>animals</span><br><span class="line">[<span class="string">'rat'</span>, <span class="string">'bat'</span>, <span class="string">'duck'</span>, <span class="string">'bear'</span>, <span class="string">'lion'</span>, <span class="string">'eagle'</span>, <span class="string">'shark'</span>, <span class="string">'giraffe'</span>, <span class="string">'dolphin'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> length, group <span class="keyword">in</span> itertools.groupby(animals, len):</span><br><span class="line"><span class="meta">... </span>    print(length, <span class="string">'-&gt;'</span>, list(group))</span><br><span class="line">...</span><br><span class="line">3 -&gt; ['rat', 'bat']</span><br><span class="line">4 -&gt; ['duck', 'bear', 'lion']</span><br><span class="line">5 -&gt; ['eagle', 'shark']</span><br><span class="line">7 -&gt; ['giraffe', 'dolphin']</span><br><span class="line">&gt;&gt;&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>g1, g2 = itertools.tee(<span class="string">'ABC'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g1)</span><br><span class="line"><span class="string">'A'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g2)</span><br><span class="line"><span class="string">'A'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>next(g2)</span><br><span class="line"><span class="string">'B'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(g1)</span><br><span class="line">[<span class="string">'B'</span>, <span class="string">'C'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(g2)</span><br><span class="line">[<span class="string">'C'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(zip(*itertools.tee(<span class="string">'ABC'</span>)))</span><br><span class="line">[(<span class="string">'A'</span>, <span class="string">'A'</span>), (<span class="string">'B'</span>, <span class="string">'B'</span>), (<span class="string">'C'</span>, <span class="string">'C'</span>)]</span><br></pre></td></tr></table></figure>
+<p><strong>PS</strong>：<code>itertools.groupby</code> 假定输入的可迭代对象已按照分组标准完成排序</p>
+<p><strong>读取迭代器，返回单个值的函数</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内置</td>
+<td><code>all(it)</code></td>
+<td><code>it</code> 中的所有元素都为真值时返回 True，否则返回 False；<code>all([])</code> 返回 True</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>any(it)</code></td>
+<td>只要 <code>it</code> 中有元素为真值就返回 True，否则返回 False；<code>any([])</code> 返回 False</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>max(it, [key=], [default=])</code></td>
+<td>返回 <code>it</code> 中值最大的元素；<code>key</code> 是排序函数，与 <code>sorted</code> 中的一样；若可迭代对象为空，返回 <code>default</code></td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>min(it, [key=], [default=])</code></td>
+<td>返回 <code>it</code> 中值最小的元素；<code>key</code> 是排序函数；若可迭代对象为空，返回 <code>default</code></td>
+</tr>
+<tr>
+<td>functools</td>
+<td><code>reduce(func, it, [initial])</code></td>
+<td>把前两个元素传给 <code>func</code>，然后把计算结果和第三个元素传给 <code>func</code>，以此类推，返回最后的结果。若提供了 <code>initial</code>，则将其作为第一个元素传入</td>
+</tr>
+<tr>
+<td>内置</td>
+<td><code>sum(it, start=0)</code></td>
+<td><code>it</code> 中所有元素的总和，若提供可选的 <code>start</code>，会把它也加上</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>all([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>all([<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>])</span><br><span class="line"><span class="keyword">False</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>all([])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>any([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>any([<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>])</span><br><span class="line"><span class="keyword">True</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>any([<span class="number">0</span>, <span class="number">0.0</span>])</span><br><span class="line"><span class="keyword">False</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>any([])</span><br><span class="line"><span class="keyword">False</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> functools</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>functools.reduce(<span class="keyword">lambda</span> a, b: a * b, range(<span class="number">1</span>, <span class="number">6</span>))</span><br><span class="line"><span class="number">120</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> operator</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>functools.reduce(operator.mul, range(<span class="number">1</span>, <span class="number">6</span>))</span><br><span class="line"><span class="number">120</span></span><br></pre></td></tr></table></figure>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://shop.oreilly.com/product/0636920032519.do" target="_blank" rel="noopener">Fluent Python</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Advanced/" rel="tag"># Advanced</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Functional/" rel="tag"># Functional</a>
+          
+            <a href="/tags/Generator/" rel="tag"># Generator</a>
+          
+            <a href="/tags/Iterator/" rel="tag"># Iterator</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/10/13/python-and-data-structure-linked-list/" rel="next" title="Python 与数据结构 —— 链表及其应用">
+                <i class="fa fa-chevron-left"></i> Python 与数据结构 —— 链表及其应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/08/fluent-python-first-class-function-and-design-patterns/" rel="prev" title="Fluent Python 笔记 —— 使用一等函数实现设计模式">
+                Fluent Python 笔记 —— 使用一等函数实现设计模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#可迭代对象"><span class="nav-number">1.</span> <span class="nav-text">可迭代对象</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#迭代的机制"><span class="nav-number">1.1.</span> <span class="nav-text">迭代的机制</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#可迭代对象与迭代器的对比"><span class="nav-number">1.2.</span> <span class="nav-text">可迭代对象与迭代器的对比</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#典型的迭代器"><span class="nav-number">2.</span> <span class="nav-text">典型的迭代器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#生成器函数"><span class="nav-number">3.</span> <span class="nav-text">生成器函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#惰性求值"><span class="nav-number">4.</span> <span class="nav-text">惰性求值</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#标准库中的生成器函数"><span class="nav-number">5.</span> <span class="nav-text">标准库中的生成器函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,Program,Audio,AI,chatbot,SpeechRecognition," />
+
+
+<meta name="description" content="依稀记得去年生日，对着 Google 说 “Sing me Happy Birthday” 。她真的给我唱了英文版的生日歌，满怀深情地（我感觉……）。最后还加了一串调皮的鼓声。我转头对着公司的前台小姐姐说，看见没有，你的 Siri 不爱我。。。  呃，不瞎扯了。基于以上的渊源，我用 Python 写了一个还算得上智能的语音助理。 截图如下： 演示视频：用 Python 实现的智能语音机器人（一）">
+<meta name="keywords" content="Python,Program,Audio,AI,chatbot,SpeechRecognition">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人）">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/03/03/python-voice-assistant/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="依稀记得去年生日，对着 Google 说 “Sing me Happy Birthday” 。她真的给我唱了英文版的生日歌，满怀深情地（我感觉……）。最后还加了一串调皮的鼓声。我转头对着公司的前台小姐姐说，看见没有，你的 Siri 不爱我。。。  呃，不瞎扯了。基于以上的渊源，我用 Python 写了一个还算得上智能的语音助理。 截图如下： 演示视频：用 Python 实现的智能语音机器人（一）">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-e9b25825fcc9d91f.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-7fe7677cfcd5703c.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8fb1fecaad6b1547.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-81c29b52cba113e7.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-03-06T14:04:06.757Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人）">
+<meta name="twitter:description" content="依稀记得去年生日，对着 Google 说 “Sing me Happy Birthday” 。她真的给我唱了英文版的生日歌，满怀深情地（我感觉……）。最后还加了一串调皮的鼓声。我转头对着公司的前台小姐姐说，看见没有，你的 Siri 不爱我。。。  呃，不瞎扯了。基于以上的渊源，我用 Python 写了一个还算得上智能的语音助理。 截图如下： 演示视频：用 Python 实现的智能语音机器人（一）">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-e9b25825fcc9d91f.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/03/03/python-voice-assistant/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/03/03/python-voice-assistant/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-03T00:00:00+08:00">2019-03-03</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/03/03/python-voice-assistant/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/03/03/python-voice-assistant/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/03/03/python-voice-assistant/" class="leancloud_visitors" data-flag-title="用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">6.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:06</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>依稀记得去年生日，对着 Google 说 “Sing me Happy Birthday” 。<br>她真的给我唱了英文版的生日歌，满怀深情地（我感觉……）。最后还加了一串调皮的鼓声。<br>我转头对着公司的前台小姐姐说，看见没有，你的 Siri 不爱我。。。</p>
+</blockquote>
+<p>呃，不瞎扯了。<br>基于以上的渊源，我用 Python 写了一个还算得上智能的语音助理。</p>
+<p>截图如下：<img src="https://upload-images.jianshu.io/upload_images/6875152-e9b25825fcc9d91f.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AI1"></p>
+<p>演示视频：<a href="https://www.bilibili.com/video/av45532130/" target="_blank" rel="noopener">用 Python 实现的智能语音机器人（一）</a></p>
+<p><a href="https://github.com/rollingstarky/Python-Voice-Assistant" target="_blank" rel="noopener">源代码</a></p>
+<p>不要慌，用的现成的框架和公共 API，一百来行代码而已，权当游戏。</p>
+<h4 id="一、整体结构"><a href="#一、整体结构" class="headerlink" title="一、整体结构"></a>一、整体结构</h4><p>没有做过多的设计（不懂。。。），整体就是一个简单的线性结构，顺序执行。<br>一次交互完毕后，从头开始重复执行。</p>
+<p><code>SpeechRecognition（录音）--&gt; 百度语音（Speech-to-Text）--&gt; 图灵机器人（语义分析及应答）--&gt; 百度语音（Text-to-Speech）--&gt; PyAudio（音频播放）</code></p>
+<h4 id="二、SpeechRecognition"><a href="#二、SpeechRecognition" class="headerlink" title="二、SpeechRecognition"></a>二、SpeechRecognition</h4><p><a href="https://pypi.org/project/SpeechRecognition/" target="_blank" rel="noopener">SpeechRecogintion</a> 是 Python 的一个语音识别框架，已经对接了如谷歌和微软的 STT （语音转文本）服务。</p>
+<p>本项目里的语音识别及合成用的是百度的开放服务，所以只是需要 SpeechRecogintion 的录音功能。<br>它可以检测语音中的停顿<strong>自动终止</strong>录音并保存，比 PyAudio 更人性化（代码写起来也更简单）。</p>
+<h5 id="安装依赖库"><a href="#安装依赖库" class="headerlink" title="安装依赖库"></a>安装依赖库</h5><h6 id="Windows"><a href="#Windows" class="headerlink" title="Windows"></a>Windows</h6><p>安装 SpeechRecognition 需要提前装好 Python 的 <a href="https://pypi.org/project/PyAudio/" target="_blank" rel="noopener">PyAudio</a> 框架。PyAudio 貌似需要编译安装，Windows 系统上估计会有点麻烦。</p>
+<p>我用的是 <a href="https://www.anaconda.com/distribution/" target="_blank" rel="noopener">Anaconda</a> 软件，Windows 系统上用它管理 Python 包很方便。<br>嫌这个软件太大的话，也有简化版的 <a href="https://conda.io/en/latest/miniconda.html" target="_blank" rel="noopener">Miniconda</a> 。<br>装好以后直接执行下面的命令即可（当然也可以在 conda 的虚拟环境里安装，不赘述）：<br><code>conda install pyaudio</code></p>
+<p>PyAudio 装好以后，直接使用 Python 的包管理工具 <code>pip</code> 安装 SpeechRecognition 即可：<br><code>pip install SpeechRecognition</code></p>
+<h6 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h6><p>Linux 系统下就显得省事一点了。可以直接使用系统自带的包管理器安装 PyAudio （如 Ubuntu 和 Raspbian 系统的 <code>apt-get</code>）<br><code>$ sudo apt-get install python3-pyaudio</code></p>
+<p>当然也可以使用 <code>pip</code> 命令安装，不过需要提前装好编译用的依赖库 <strong>portaudio19</strong> ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install portaudio19-dev</span><br><span class="line">$ pip install pyaudio</span><br></pre></td></tr></table></figure></p>
+<p>同样的，PyAudio 装好以后，安装 SpeechRecognition ：<br><code>pip install SpeechRecognition</code></p>
+<h5 id="录音代码"><a href="#录音代码" class="headerlink" title="录音代码"></a>录音代码</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">import speech_recognition as sr</span><br><span class="line"></span><br><span class="line">def rec(rate=16000):</span><br><span class="line">    r = sr.Recognizer()</span><br><span class="line">    with sr.Microphone(sample_rate=rate) as source:</span><br><span class="line">        print(&quot;please say something&quot;)</span><br><span class="line">        audio = r.listen(source)</span><br><span class="line"></span><br><span class="line">    with open(&quot;recording.wav&quot;, &quot;wb&quot;) as f:</span><br><span class="line">        f.write(audio.get_wav_data())</span><br><span class="line"></span><br><span class="line">rec()</span><br></pre></td></tr></table></figure>
+<p>从系统麦克风拾取音频数据，<strong>采样率为 16000</strong>（貌似百度语音 API 最高就支持到 16k 的采样率）。<br>之后把采集到的音频数据以 wav 格式保存在当前目录下的 <code>recording.wav</code> 文件中，供后面的程序使用。</p>
+<p>录音完成后，可以找到录好的音频文件试听一下效果。</p>
+<h4 id="三、百度语音（STT）"><a href="#三、百度语音（STT）" class="headerlink" title="三、百度语音（STT）"></a>三、百度语音（STT）</h4><h5 id="创建应用"><a href="#创建应用" class="headerlink" title="创建应用"></a>创建应用</h5><p><a href="https://ai.baidu.com/tech/speech/" target="_blank" rel="noopener">百度语音</a>是<a href="https://cloud.baidu.com/" target="_blank" rel="noopener">百度云</a> AI 开放平台提供的支持语音识别和语音合成的服务，注册以后就可以直接访问它的 REST API 了，并且有向普通用户提供免费的调用额度。</p>
+<p>注册成功以后，进入语音服务的<a href="https://console.bce.baidu.com/ai/#/ai/speech/app/list" target="_blank" rel="noopener">控制台</a>创建一个新的应用，记下自己的 <code>AppID</code>、<code>API Key</code> 和 <code>Secret Key</code>。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-7fe7677cfcd5703c.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="key"></p>
+<h5 id="语音识别代码"><a href="#语音识别代码" class="headerlink" title="语音识别代码"></a>语音识别代码</h5><p>百度 AI 有提供面向 Python 的框架 <code>baidu-aip</code> ，感觉就相当于重新打包以后的 requests 库，用来访问 REST API。这里简单起见，直接使用该框架。<br>安装：<br><code>pip install baidu-aip</code></p>
+<p>语音识别代码如下（代码中的 Key 替换成自己的）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">from aip import AipSpeech</span><br><span class="line"></span><br><span class="line">APP_ID = &apos;Your AppID&apos;</span><br><span class="line">API_KEY = &apos;Your API Key&apos;</span><br><span class="line">SECRET_KEY = &apos;Your Secret Key&apos;</span><br><span class="line"></span><br><span class="line">client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)</span><br><span class="line"></span><br><span class="line">def listen():</span><br><span class="line">    with open(&apos;recording.wav&apos;, &apos;rb&apos;) as f:</span><br><span class="line">        audio_data = f.read()</span><br><span class="line"></span><br><span class="line">    result = client.asr(audio_data, &apos;wav&apos;, 16000, &#123;</span><br><span class="line">        &apos;dev_pid&apos;: 1536,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    result_text = result[&quot;result&quot;][0]</span><br><span class="line"></span><br><span class="line">    print(&quot;you said: &quot; + result_text)</span><br><span class="line"></span><br><span class="line">    return result_text</span><br><span class="line"></span><br><span class="line">listen()</span><br></pre></td></tr></table></figure></p>
+<p>简单来说，将 SpeechRecognition 录制的音频上传至百度语音的服务，返回识别后的文本结果并输出。</p>
+<h4 id="四、图灵机器人"><a href="#四、图灵机器人" class="headerlink" title="四、图灵机器人"></a>四、图灵机器人</h4><p><a href="http://www.turingapi.com/" target="_blank" rel="noopener">图灵机器人</a>是一个提供（一定额度内）免费的<strong>智能聊天</strong>服务的平台，注册以后就可以创建自己的聊天机器人并接入到项目中。</p>
+<p>首先进入图灵机器人的<a href="http://www.tuling123.com/member/robot/index.jhtml" target="_blank" rel="noopener">控制台</a>并创建一个新的聊天机器人，记下分配到的 <code>apikey</code>。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-8fb1fecaad6b1547.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="apikey"></p>
+<p>该平台也提供了开放的 REST API ，但是不像百度那样有打包自己的 SDK 。所以需要使用 Python 的 requests 库访问，代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import json</span><br><span class="line"></span><br><span class="line">TURING_KEY = &quot;Your apikey&quot;</span><br><span class="line">URL = &quot;http://openapi.tuling123.com/openapi/api/v2&quot;</span><br><span class="line">HEADERS = &#123;&apos;Content-Type&apos;: &apos;application/json;charset=UTF-8&apos;&#125;</span><br><span class="line"></span><br><span class="line">def robot(text=&quot;&quot;):</span><br><span class="line">    data = &#123;</span><br><span class="line">        &quot;reqType&quot;: 0,</span><br><span class="line">        &quot;perception&quot;: &#123;</span><br><span class="line">            &quot;inputText&quot;: &#123;</span><br><span class="line">                &quot;text&quot;: &quot;&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;selfInfo&quot;: &#123;</span><br><span class="line">                &quot;location&quot;: &#123;</span><br><span class="line">                    &quot;city&quot;: &quot;杭州&quot;,</span><br><span class="line">                    &quot;street&quot;: &quot;网商路&quot;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;userInfo&quot;: &#123;</span><br><span class="line">            &quot;apiKey&quot;: TURING_KEY,</span><br><span class="line">            &quot;userId&quot;: &quot;starky&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    data[&quot;perception&quot;][&quot;inputText&quot;][&quot;text&quot;] = text</span><br><span class="line">    response = requests.request(&quot;post&quot;, URL, json=data, headers=HEADERS)</span><br><span class="line">    response_dict = json.loads(response.text)</span><br><span class="line"></span><br><span class="line">    result = response_dict[&quot;results&quot;][0][&quot;values&quot;][&quot;text&quot;]</span><br><span class="line">    print(&quot;the AI said: &quot; + result)</span><br><span class="line">    return result</span><br><span class="line"></span><br><span class="line">robot(&quot;你好&quot;)</span><br></pre></td></tr></table></figure></p>
+<p>简单来说就是上传一个 json 格式的请求（包含聊天内容和个人信息等），获取到回复。再从收到的对象中提取出回复的文本。</p>
+<h4 id="五、百度语音（TTS）"><a href="#五、百度语音（TTS）" class="headerlink" title="五、百度语音（TTS）"></a>五、百度语音（TTS）</h4><p>其实大部分系统都有内置的 TTS （即文本转语音）引擎，如 MacOS 的 <code>say</code> 命令，只不过其中有很多都显得太“机械”，呃，缺少“人情味儿”。。。</p>
+<p>百度的 TTS 引擎语音效果听起来还是很卡哇伊（4 号选手度丫丫）的，比较超出我的预期。</p>
+<p>测试代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">from aip import AipSpeech</span><br><span class="line"></span><br><span class="line">APP_ID = &apos;Your AppID&apos;</span><br><span class="line">API_KEY = &apos;Your API Key&apos;</span><br><span class="line">SECRET_KEY = &apos;Your Secret Key&apos;</span><br><span class="line"></span><br><span class="line">client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)</span><br><span class="line"></span><br><span class="line">def speak(text=&quot;&quot;):</span><br><span class="line">    result = client.synthesis(text, &apos;zh&apos;, 1, &#123;</span><br><span class="line">        &apos;spd&apos;: 4,</span><br><span class="line">        &apos;vol&apos;: 5,</span><br><span class="line">        &apos;per&apos;: 4,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    if not isinstance(result, dict):</span><br><span class="line">        with open(&apos;audio.mp3&apos;, &apos;wb&apos;) as f:</span><br><span class="line">            f.write(result)</span><br><span class="line">speak(&quot;你好啊&quot;)</span><br></pre></td></tr></table></figure></p>
+<p>就是把需要转换成语音的文本内容上传，再将返回的数据保存在本地。貌似只能生成 mp3 格式。</p>
+<h4 id="六、PyAudio-播放"><a href="#六、PyAudio-播放" class="headerlink" title="六、PyAudio 播放"></a>六、PyAudio 播放</h4><p>这个我有点方。。。没找到 Python 播放 MP3 的合适的方法，所以用 os.system 调用系统中的 <code>sox</code> 命令将 MP3 转为 wav 格式，再用 PyAudio 播放。</p>
+<h5 id="sox-安装"><a href="#sox-安装" class="headerlink" title="sox 安装"></a>sox 安装</h5><p><a href="http://sox.sourceforge.net/" target="_blank" rel="noopener">SoX</a> 是一个强大的跨平台的音频处理工具，Linux 系统可以直接使用包管理器安装：<br><code>$ sudo apt-get install sox libsox-fmt-mp3</code></p>
+<p>Windows 系统安装的默认的 SoX 是不包含 mp3 格式支持的，所以需要自己编译（手动狗头）或者下载已经编译好的 dll 文件（<a href="https://github.com/rollingstarky/Python-Voice-Assistant/raw/master/sox-dll/libmad.dll" target="_blank" rel="noopener">libmad.dll</a> 和 <a href="https://github.com/rollingstarky/Python-Voice-Assistant/raw/master/sox-dll/libmp3lame.dll" target="_blank" rel="noopener">libmp3lame.dll</a>，放置在 SoX 的安装目录下。<br>最后将安装目录添加至系统的 PATH 环境变量即可。</p>
+<p>代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">import pyaudio</span><br><span class="line">import wave</span><br><span class="line">import os</span><br><span class="line">import time</span><br><span class="line"></span><br><span class="line">def play():</span><br><span class="line">    os.system(&apos;sox audio.mp3 audio.wav&apos;)</span><br><span class="line">    wf = wave.open(&apos;audio.wav&apos;, &apos;rb&apos;)</span><br><span class="line">    p = pyaudio.PyAudio()</span><br><span class="line"></span><br><span class="line">    def callback(in_data, frame_count, time_info, status):</span><br><span class="line">        data = wf.readframes(frame_count)</span><br><span class="line">        return (data, pyaudio.paContinue)</span><br><span class="line"></span><br><span class="line">    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),</span><br><span class="line">                    channels=wf.getnchannels(),</span><br><span class="line">                    rate=wf.getframerate(),</span><br><span class="line">                    output=True,</span><br><span class="line">                    stream_callback=callback)</span><br><span class="line"></span><br><span class="line">    stream.start_stream()</span><br><span class="line"></span><br><span class="line">    while stream.is_active():</span><br><span class="line">        time.sleep(0.1)</span><br><span class="line"></span><br><span class="line">    stream.stop_stream()</span><br><span class="line">    stream.close()</span><br><span class="line">    wf.close()</span><br><span class="line"></span><br><span class="line">    p.terminate()</span><br><span class="line"></span><br><span class="line">play()</span><br></pre></td></tr></table></figure></p>
+<h4 id="七、最终代码及视频演示"><a href="#七、最终代码及视频演示" class="headerlink" title="七、最终代码及视频演示"></a>七、最终代码及视频演示</h4><p>整合后的最终代码我就不再贴一遍了，100 行左右，已上传至 <a href="https://github.com/rollingstarky/Python-Voice-Assistant" target="_blank" rel="noopener">Github </a>。<br>第二个视频：<a href="https://www.bilibili.com/video/av45532338/" target="_blank" rel="noopener">用 Python 实现的智能语音机器人（二）</a></p>
+<p>聊天截图：<img src="https://upload-images.jianshu.io/upload_images/6875152-81c29b52cba113e7.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ai2"></p>
+<p>对了，这个是支持<strong>树莓派</strong>的。不过需要额外装一个USB音频驱动作为录音设备。参考<a href="https://www.jianshu.com/p/bab144c0f35d" target="_blank" rel="noopener">树莓派3 音频配置及其应用场景（录音、VoIP 电话等）</a></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://pypi.org/project/SpeechRecognition/" target="_blank" rel="noopener">SpeechRecognition</a><br><a href="https://cloud.baidu.com/doc/SPEECH/index.html" target="_blank" rel="noopener">百度语音</a><br><a href="https://www.kancloud.cn/turing/www-tuling123-com/718218" target="_blank" rel="noopener">图灵机器人</a><br><a href="http://people.csail.mit.edu/hubert/pyaudio/" target="_blank" rel="noopener">PyAudio</a><br><a href="http://sox.sourceforge.net/Docs/Documentation" target="_blank" rel="noopener">SoX</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Audio/" rel="tag"># Audio</a>
+          
+            <a href="/tags/AI/" rel="tag"># AI</a>
+          
+            <a href="/tags/chatbot/" rel="tag"># chatbot</a>
+          
+            <a href="/tags/SpeechRecognition/" rel="tag"># SpeechRecognition</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/28/windows-powershell-cookbook-2/" rel="next" title="Windows PowerShell 学习笔记其二（变量与控制语句）">
+                <i class="fa fa-chevron-left"></i> Windows PowerShell 学习笔记其二（变量与控制语句）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/10/windows-powershell-cookbook-3/" rel="prev" title="Windows PowerShell 学习笔记其三（字符串与数组）">
+                Windows PowerShell 学习笔记其三（字符串与数组） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、整体结构"><span class="nav-number">1.</span> <span class="nav-text">一、整体结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、SpeechRecognition"><span class="nav-number">2.</span> <span class="nav-text">二、SpeechRecognition</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装依赖库"><span class="nav-number">2.1.</span> <span class="nav-text">安装依赖库</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Windows"><span class="nav-number">2.1.1.</span> <span class="nav-text">Windows</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Linux"><span class="nav-number">2.1.2.</span> <span class="nav-text">Linux</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#录音代码"><span class="nav-number">2.2.</span> <span class="nav-text">录音代码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、百度语音（STT）"><span class="nav-number">3.</span> <span class="nav-text">三、百度语音（STT）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建应用"><span class="nav-number">3.1.</span> <span class="nav-text">创建应用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#语音识别代码"><span class="nav-number">3.2.</span> <span class="nav-text">语音识别代码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、图灵机器人"><span class="nav-number">4.</span> <span class="nav-text">四、图灵机器人</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、百度语音（TTS）"><span class="nav-number">5.</span> <span class="nav-text">五、百度语音（TTS）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#六、PyAudio-播放"><span class="nav-number">6.</span> <span class="nav-text">六、PyAudio 播放</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#sox-安装"><span class="nav-number">6.1.</span> <span class="nav-text">sox 安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#七、最终代码及视频演示"><span class="nav-number">7.</span> <span class="nav-text">七、最终代码及视频演示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

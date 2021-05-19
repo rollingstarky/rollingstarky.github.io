@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Admin,Tools,Shell,Windows,Program,Script,PowerShell," />
+
+
+<meta name="description" content="重定向与管道重定向可以借助管道符和 Out-File 命令将某个命令的输出内容重定向至文本文件中。 如：Get-ChildItem | Out-File files.txt通过 Get-ChildItem（即 dir）获取当前目录下的文件列表，再借助管道和 Out-File 将列表保存在 files.txt 文件中。 在使用 Out-File 命令时可以带上 -Encoding 等选项来指定输出文">
+<meta name="keywords" content="Admin,Tools,Shell,Windows,Program,Script,PowerShell">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Windows PowerShell 学习笔记其二（变量与控制语句）">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/02/28/windows-powershell-cookbook-2/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="重定向与管道重定向可以借助管道符和 Out-File 命令将某个命令的输出内容重定向至文本文件中。 如：Get-ChildItem | Out-File files.txt通过 Get-ChildItem（即 dir）获取当前目录下的文件列表，再借助管道和 Out-File 将列表保存在 files.txt 文件中。 在使用 Out-File 命令时可以带上 -Encoding 等选项来指定输出文">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-28T13:39:46.586Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Windows PowerShell 学习笔记其二（变量与控制语句）">
+<meta name="twitter:description" content="重定向与管道重定向可以借助管道符和 Out-File 命令将某个命令的输出内容重定向至文本文件中。 如：Get-ChildItem | Out-File files.txt通过 Get-ChildItem（即 dir）获取当前目录下的文件列表，再借助管道和 Out-File 将列表保存在 files.txt 文件中。 在使用 Out-File 命令时可以带上 -Encoding 等选项来指定输出文">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/02/28/windows-powershell-cookbook-2/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Windows PowerShell 学习笔记其二（变量与控制语句） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/02/28/windows-powershell-cookbook-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Windows PowerShell 学习笔记其二（变量与控制语句）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-28T00:00:00+08:00">2019-02-28</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Windows/" itemprop="url" rel="index"><span itemprop="name">Windows</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/02/28/windows-powershell-cookbook-2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/02/28/windows-powershell-cookbook-2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/02/28/windows-powershell-cookbook-2/" class="leancloud_visitors" data-flag-title="Windows PowerShell 学习笔记其二（变量与控制语句）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:12</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="重定向与管道"><a href="#重定向与管道" class="headerlink" title="重定向与管道"></a>重定向与管道</h4><h5 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h5><p>可以借助<strong>管道符</strong>和 <code>Out-File</code> 命令将某个命令的输出内容重定向至文本文件中。</p>
+<p>如：<code>Get-ChildItem | Out-File files.txt</code><br>通过 <code>Get-ChildItem</code>（即 <code>dir</code>）获取当前目录下的文件列表，再借助管道和 <code>Out-File</code> 将列表保存在 <code>files.txt</code> 文件中。</p>
+<p>在使用 <code>Out-File</code> 命令时可以带上 <code>-Encoding</code> 等选项来指定输出文件的编码等属性：<br><code>Get-Content filename.cs | Out-File -Encoding ASCII file.txt</code><br><code>Get-ChildItem | Out-File -Width 120 files.cs</code></p>
+<p>或者也可以使用类似 bash 里的 <code>&gt;</code> 符号：<br><code>Get-ChildItem &gt; files.txt</code><br><code>Get-ChildItem 2&gt; errors.txt</code><br><code>Get-ChildItem n&gt; otherStreams.txt</code></p>
+<h6 id="在文件末尾添加内容"><a href="#在文件末尾添加内容" class="headerlink" title="在文件末尾添加内容"></a>在文件末尾添加内容</h6><p>在使用 <code>Out-File</code> 命令的同时，可以附加上 <code>-Append</code> 选项用来指明在文件末尾添加内容，如：<br><code>Get-ChildItem | Out-File -Append files.txt</code></p>
+<p>同样也可以使用类似于 bash 中的 <code>&gt;&gt;</code> 符号：<br><code>Get-ChildItem &gt;&gt; files.txt</code></p>
+<h5 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h5><p>简单来说，<strong>管道</strong>可以用来连接多个命令，使得上一个命令的<strong>输出</strong>作为下一个命令的<strong>输入</strong>，从而将多个命令以“首尾相接”的方式执行。</p>
+<p><code>Get-Process | Where-Object WorkingSet -gt 100mb | Sort-Object -Descending WS</code><br>获取系统当前的进程信息，并筛选出内存占用大于 100MB 的进程，再将筛选结果按照占用的内存由大到小排序后输出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-Process | Where-Object WorkingSet -gt 100mb | Sort-Object -Descending WS</span><br><span class="line"></span><br><span class="line">Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName</span><br><span class="line">-------  ------    -----      -----     ------     --  -- -----------</span><br><span class="line">    997      75   342180     249576   1,265.59   8516   0 MsMpEng</span><br><span class="line">   1598     103   147168     203348      40.02   5992   3 SearchUI</span><br><span class="line">    806      29   167004     173960     186.02   5288   3 chrome</span><br><span class="line">   1757     182    75120     153712     195.45  13116   3 chrome</span><br><span class="line">   2816     134    89428     124596     126.25   1480   3 explorer</span><br><span class="line">    367      38    83872     116840      74.64    416   3 chrome</span><br></pre></td></tr></table></figure></p>
+<h6 id="筛选（Where-Object）"><a href="#筛选（Where-Object）" class="headerlink" title="筛选（Where-Object）"></a>筛选（Where-Object）</h6><p><code>Where-Object</code> 命令可以对某个列表内容或命令的输出应用各种类型的筛选条件。它的默认别名为 <code>where</code> 和 <code>?</code>。</p>
+<p><code>Get-Process | Where-Object { $_.Name -like &quot;Baidu*&quot; }</code><br>获取当前系统中名字以“Baidu”开头的进程及其信息</p>
+<p>上面的命令同时也可以这样表述：<br><code>Get-Process | Where-Object Name -like &quot;Baidu*&quot;</code></p>
+<p>即先通过 <code>Get-Process</code> 命令获取全部进程信息，再将它们传递给 <code>Where-Object</code> 命令。而 <code>Where-Object</code> 又指定每一个进程的 <code>Name</code> 属性（即进程名称）与模式 <code>Baidu*</code> 进行匹配，最后只输出匹配的结果。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; gps | where &#123; $_.Name -like &quot;Baidu*&quot; &#125;</span><br><span class="line"></span><br><span class="line">Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName</span><br><span class="line">-------  ------    -----      -----     ------     --  -- -----------</span><br><span class="line">   1030     251    58288      98076     552.59    204   3 BaiduNetdisk</span><br><span class="line">    187      14    11952       8628       0.06   4856   3 BaiduNetdiskHost</span><br></pre></td></tr></table></figure></p>
+<p>其他示例如筛选未响应的进程：<br><code>Get-Process | where { -not $_.Responding }</code></p>
+<p>筛选已经停止的服务：<br><code>Get-Process | where { $_.Status -eq &quot;Stopped&quot; }</code></p>
+<h6 id="遍历（Foreach-Object）"><a href="#遍历（Foreach-Object）" class="headerlink" title="遍历（Foreach-Object）"></a>遍历（Foreach-Object）</h6><p><code>Foreach-Object</code> 命令（默认别名为 <code>foreach</code> 和 <code>%</code>）用于对某个列表中的每一个对象指定特定的操作。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; 1..5 | Foreach-Object &#123; $_ * 2 &#125;</span><br><span class="line">2</span><br><span class="line">4</span><br><span class="line">6</span><br><span class="line">8</span><br><span class="line">10</span><br></pre></td></tr></table></figure></p>
+<p>又比如筛选当前目录下所有的文本文件，并去掉它们的只读属性：<br><code>Get-ChildItem *.txt | Foreach-Object { attrib -r $_ }</code></p>
+<p>其中 <code>$_</code> 表示传递给 <code>Foreach-Object</code> 的每一个对象。<code>attrib -r $_</code> 即表示对 <code>Get-ChildItem *.txt</code> 获取到的所有文本文件去除只读属性。</p>
+<p>又如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $myArray = 1,2,3,4,5</span><br><span class="line">PS C:\Users\starky&gt; $sum = 0</span><br><span class="line">PS C:\Users\starky&gt; $myArray | Foreach-Object &#123; $sum += $_ &#125;</span><br><span class="line">PS C:\Users\starky&gt; $sum</span><br><span class="line">15</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令也可以使用如下形式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $myArray = 1,2,3,4,5</span><br><span class="line">PS C:\Users\starky&gt; $myArray | Foreach-Object &#123; $sum = 0 &#125; &#123; $sum += $_ &#125; &#123; $sum &#125;</span><br><span class="line">15</span><br></pre></td></tr></table></figure></p>
+<h6 id="格式化输出"><a href="#格式化输出" class="headerlink" title="格式化输出"></a>格式化输出</h6><p>PowerShell 中的许多命令默认情况下是以“表格”的形式来格式化输出的，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-Process PowerShell</span><br><span class="line"></span><br><span class="line">Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName</span><br><span class="line">-------  ------    -----      ----- -----   ------     -- -----------</span><br><span class="line">    410      41    60444      75004   550     3.21   4212 powershell</span><br><span class="line">    428      43    60688      56684   561     4.04   5288 powershell</span><br></pre></td></tr></table></figure></p>
+<p>实际上在多数情况下，命令的“真实”输出包含了更加丰富的信息，可以使用 <code>Format-List</code> 命令比较一下效果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-Process PowerShell | Format-List *</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">__NounName                 : Process</span><br><span class="line">Name                       : powershell</span><br><span class="line">Handles                    : 404</span><br><span class="line">VM                         : 575397888</span><br><span class="line">WS                         : 76754944</span><br><span class="line">PM                         : 61808640</span><br><span class="line">NPM                        : 41736</span><br><span class="line">Path                       : C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe</span><br><span class="line">Company                    : Microsoft Corporation</span><br><span class="line">CPU                        : 3.2136206</span><br><span class="line">FileVersion                : 6.3.9600.16406 (winblue_gdr_oob.130926-1103)</span><br><span class="line">ProductVersion             : 6.3.9600.16406</span><br><span class="line">Description                : Windows PowerShell</span><br><span class="line">Product                    : Microsoft® Windows® Operating System</span><br><span class="line">Id                         : 4212</span><br><span class="line">PriorityClass              : Normal</span><br><span class="line">HandleCount                : 404</span><br><span class="line">WorkingSet                 : 76754944</span><br><span class="line">PagedMemorySize            : 61808640</span><br><span class="line">PrivateMemorySize          : 61808640</span><br><span class="line">VirtualMemorySize          : 575397888</span><br><span class="line">TotalProcessorTime         : 00:00:03.2136206</span><br><span class="line">BasePriority               : 8</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p><code>Format-List</code> 是 4 种格式化输出的命令之一，其他还有 <code>Format-Table</code>、<code>Format-Wide</code>、<code>Format-Custom</code>。<code>Format-List</code> 用来接收输入内容并将其以列表的形式输出。</p>
+<p>默认情况下，不带任何参数的格式化命令只会输出对象的一小部分属性，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-Process PowerShell | Format-List</span><br><span class="line"></span><br><span class="line">Id      : 4212</span><br><span class="line">Handles : 428</span><br><span class="line">CPU     : 3.4632222</span><br><span class="line">Name    : powershell</span><br><span class="line"></span><br><span class="line">Id      : 5288</span><br><span class="line">Handles : 392</span><br><span class="line">CPU     : 4.1028263</span><br><span class="line">Name    : powershell</span><br></pre></td></tr></table></figure></p>
+<p>而 <code>Format-List *</code> 则会显示输入对象的所有属性。</p>
+<p>同时，也可以在格式化命令后面手动指定需要显示的属性或参数，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-Process PowerShell | Format-Table Id,Name,CPU,WS -Auto</span><br><span class="line"></span><br><span class="line">  Id Name             CPU       WS</span><br><span class="line">  -- ----             ---       --</span><br><span class="line">4212 powershell 3.7128238 78704640</span><br><span class="line">5288 powershell 4.1028263 58068992</span><br></pre></td></tr></table></figure></p>
+<h4 id="变量与对象"><a href="#变量与对象" class="headerlink" title="变量与对象"></a>变量与对象</h4><h5 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h5><p>在 PowerShell 中，可以将命令的输出或其他内容先保存在某个变量（以 <code>$</code> 符号为前缀）中，以供后续使用（甚至可以把变量直接传递给管道符）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $result = 2 + 2</span><br><span class="line">PS C:\Users\starky&gt; $result</span><br><span class="line">4</span><br><span class="line">PS C:\Users\starky&gt; $processes = Get-Process</span><br><span class="line">PS C:\Users\starky&gt; $processes.Count</span><br><span class="line">64</span><br><span class="line">PS C:\Users\starky&gt; $processes | Where-Object &#123; $_.ID -eq 0 &#125;</span><br><span class="line"></span><br><span class="line">Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName</span><br><span class="line">-------  ------    -----      ----- -----   ------     -- -----------</span><br><span class="line">      0       0        0         24     0               0 Idle</span><br></pre></td></tr></table></figure>
+<h5 id="访问环境变量"><a href="#访问环境变量" class="headerlink" title="访问环境变量"></a>访问环境变量</h5><p>PowerShell 可以很轻松地访问系统中定义的环境变量，如使用 <code>Get-ChildItem env:</code> 命令获取当前系统已定义的所有环境变量的列表：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-ChildItem env:</span><br><span class="line"></span><br><span class="line">Name                           Value</span><br><span class="line">----                           -----</span><br><span class="line">ALLUSERSPROFILE                C:\ProgramData</span><br><span class="line">APPDATA                        C:\Users\starky\AppData\Roaming</span><br><span class="line">CommonProgramFiles             C:\Program Files\Common Files</span><br><span class="line">CommonProgramFiles(x86)        C:\Program Files (x86)\Common Files</span><br><span class="line">CommonProgramW6432             C:\Program Files\Common Files</span><br><span class="line">COMPUTERNAME                   Starky-Lenovo</span><br><span class="line">ComSpec                        C:\windows\system32\cmd.exe</span><br><span class="line">FP_NO_HOST_CHECK               NO</span><br><span class="line">HOMEDRIVE                      C:</span><br><span class="line">HOMEPATH                       \Users\starky</span><br><span class="line">LOCALAPPDATA                   C:\Users\starky\AppData\Local</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>也可以使用 <code>$env:variablename</code> 形式的变量名直接表示系统环境变量。几种形式的示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; Get-ChildItem env:username</span><br><span class="line"></span><br><span class="line">Name                           Value</span><br><span class="line">----                           -----</span><br><span class="line">USERNAME                       starky</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">PS C:\Users\starky&gt; Get-ChildItem Environment::username</span><br><span class="line"></span><br><span class="line">Name                           Value</span><br><span class="line">----                           -----</span><br><span class="line">USERNAME                       starky</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">PS C:\Users\H19038&gt; $env:username</span><br><span class="line">starky</span><br></pre></td></tr></table></figure></p>
+<h5 id="作用域"><a href="#作用域" class="headerlink" title="作用域"></a>作用域</h5><p>创建一个只在<strong>特定范围</strong>内生效的变量，使用如下形式的语法：<br><code>$SCOPE:variable = value</code></p>
+<p>获取特定的作用域里某个变量的值，使用如下形式的语法：<br><code>$SCOPE:variable</code></p>
+<p>如创建一个在脚本执行完毕后仍旧有效的变量，使用 <code>GLOBAL</code> 作用域：<br><code>$GLOBAL:variable = value</code></p>
+<p>在某个函数内部更改脚本范围内的变量，需要显式地指定 <code>SCRIPT</code> 作用域：<br><code>$SCRIPT:variable = value</code></p>
+<p>PowerShell 中变量的作用域，就是控制各变量在不同范围内的可见性。比如当进入一个代码块、函数或别名时，当前的作用域成为新的“本地作用域”（子作用域），原来的作用域则成为“父作用域”。<br>子作用域可以访问父作用域中定义的所有变量，但是没有权限直接修改这些变量的值。<br>换句话说，子作用域可以修改在父作用域中定义的变量，但是这种修改不会将新值自动同步到父作用域。</p>
+<h5 id="NET-对象"><a href="#NET-对象" class="headerlink" title=".NET 对象"></a>.NET 对象</h5><p>PowerShell 可以直接访问 .NET 对象的<strong>方法</strong>（包括静态方法和实例）和<strong>属性</strong>，比如访问某个静态方法：<br><code>[ClassName]::MethodName(parameter list)</code></p>
+<p>访问某个对象实例绑定的方法：<br><code>$objectReference.MethodName(parameter list)</code></p>
+<p>访问某个类的静态属性：<br><code>[ClassName]::PropertyName</code></p>
+<p>访问某个对象实例的属性：<br><code>$objectReference.PropertyName</code></p>
+<p>下面是一些具体的例子。</p>
+<p><strong>静态方法</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; [System.Diagnostics.Process]::GetProcessById(0)</span><br><span class="line"></span><br><span class="line">Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName</span><br><span class="line">-------  ------    -----      ----- -----   ------     -- -----------</span><br><span class="line">      0       0        0         24     0               0 Idle</span><br></pre></td></tr></table></figure></p>
+<p><strong>实例方法</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $now = Get-Date</span><br><span class="line">PS C:\Users\starky&gt; $now.ToString()</span><br><span class="line">2019/2/27 15:34:21</span><br></pre></td></tr></table></figure></p>
+<p><strong>静态属性</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; [System.DateTime]::Now</span><br><span class="line"></span><br><span class="line">2019年2月27日 15:36:09</span><br></pre></td></tr></table></figure></p>
+<p><strong>实例属性</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $today = Get-Date</span><br><span class="line">PS C:\Users\starky&gt; $today.DayOfWeek</span><br><span class="line">Wednesday</span><br></pre></td></tr></table></figure></p>
+<h5 id="创建对象的实例"><a href="#创建对象的实例" class="headerlink" title="创建对象的实例"></a>创建对象的实例</h5><p>使用 <strong>New-Object</strong> 命令可以创建某个 .NET 对象的实例。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $generator = New-Object System.Random</span><br><span class="line">PS C:\Users\starky&gt; $generator.NextDouble()</span><br><span class="line">0.697396862179691</span><br></pre></td></tr></table></figure></p>
+<p>也可以在创建实例的同时直接使用它：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; (New-Object Net.WebClient).DownloadString(&quot;http://www.baidu.com&quot;)</span><br><span class="line">&lt;!DOCTYPE html&gt;&lt;!--STATUS OK--&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>通常的做法是，创建对象实例的同时，还要为其指定某些属性。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $startInfo = New-Object Diagnostics.ProcessStartInfo -Property @&#123;</span><br><span class="line">&gt;&gt; &apos;Filename&apos; = &quot;powershell.exe&quot;;</span><br><span class="line">&gt;&gt; &apos;WorkingDirectory&apos; = $HOMEPATH;</span><br><span class="line">&gt;&gt; &apos;Verb&apos; = &quot;RunAs&quot;</span><br><span class="line">&gt;&gt; &#125;</span><br><span class="line">&gt;&gt;</span><br><span class="line">PS C:\Users\starky&gt; [Diagnostics.Process]::Start($startInfo)</span><br><span class="line"></span><br><span class="line">Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName</span><br><span class="line">-------  ------    -----      ----- -----   ------     -- -----------</span><br><span class="line">      4       2      260       1224     6     0.00   6248 powershell</span><br></pre></td></tr></table></figure></p>
+<p>上述命令中创建 <code>Diagnostics.ProcessStartInfo</code> 对象的语句也可以简写为如下形式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$startInfo = [Diagnostics.ProcessStartInfo] @&#123;</span><br><span class="line">	&apos;Filename&apos; = &quot;powershell.exe&quot;;</span><br><span class="line">	&apos;WorkingDirectory&apos; = $HOMEPATH;</span><br><span class="line">	&apos;Verb&apos; = &quot;RunAs&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有时候为了简写 .NET 类的完整名称，可以借助变量赋值，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $math = [System.Math]</span><br><span class="line">PS C:\Users\starky&gt; $math::Min(1,10)</span><br><span class="line">1</span><br><span class="line">PS C:\Users\starky&gt; $math::Sin(3.14)</span><br><span class="line">0.00159265291648683</span><br></pre></td></tr></table></figure></p>
+<h4 id="循环与流程控制"><a href="#循环与流程控制" class="headerlink" title="循环与流程控制"></a>循环与流程控制</h4><h5 id="比较与逻辑运算"><a href="#比较与逻辑运算" class="headerlink" title="比较与逻辑运算"></a>比较与逻辑运算</h5><p>PowerShell 支持的<strong>比较运算符</strong>：<br><code>-eq, -ne, -gt, -in, -notin, -lt, -le, -like, -notlike, -match, -notmatch, -contains, -notcontains, -is, -isnot</code></p>
+<p><strong>逻辑运算符</strong>：<br><code>-and, -or, -xor, -not</code></p>
+<p>逻辑与比较运算符可以用来在数据间进行比较，同时也可以测试当前某些特定的条件是否成立。<br>如判断当前目录下的文件个数是否大于等于 4：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; (dir).Count -ge 4</span><br><span class="line">True</span><br></pre></td></tr></table></figure></p>
+<p>某个字符串是否匹配特定的正则表达式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; &quot;Hello World&quot; -match &quot;H.*World&quot;</span><br><span class="line">True</span><br></pre></td></tr></table></figure></p>
+<p>默认情况下，PowerShell 里的比较运算是区分大小写的，如果想不区分大小写，可以使用如下版本的比较运算符：<br><code>-ceq, -cne, -cge, -cgt, -cin, -clt, -cle, -clike, -cnotlike, -cmatch, -cnotmatch, -ccontains, -cnotcontains</code></p>
+<p>逻辑运算符可以组合多个值为 <code>true</code> 或 <code>false</code> 的语句，并根据运算符号的不同返回特定的逻辑运算结果。<br>比如判断某个字符串是否匹配特定模式，且字符串长度大于 10：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $data = &quot;Hello World&quot;</span><br><span class="line">PS C:\Users\starky&gt; ($data -like &quot;*llo W*&quot;) -and ($data.Length -gt 10)</span><br><span class="line">True</span><br></pre></td></tr></table></figure></p>
+<h5 id="条件语句"><a href="#条件语句" class="headerlink" title="条件语句"></a>条件语句</h5><p>PowerShell 中的 <code>if</code> 语句基本用法如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$temperature = 35</span><br><span class="line"></span><br><span class="line">if($temperature -le 0)</span><br><span class="line">&#123;</span><br><span class="line">    &quot;Freezing&quot;</span><br><span class="line">&#125;</span><br><span class="line">elseif($temperature -le 10)</span><br><span class="line">&#123;</span><br><span class="line">    &quot;Cold&quot;</span><br><span class="line">&#125;</span><br><span class="line">elseif($temperature -le 20)</span><br><span class="line">&#123;</span><br><span class="line">    &quot;Warm&quot;</span><br><span class="line">&#125;</span><br><span class="line">else</span><br><span class="line">&#123;</span><br><span class="line">    &quot;Hot&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>除了流程控制，条件语句也经常用来对变量进行赋值，形式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\starky&gt; $result = if(Get-Process -n notepad) &#123; &quot;Running&quot; &#125; else &#123; &quot;Not running&quot; &#125;</span><br><span class="line">Get-Process : 找不到名为“notepad”的进程。请验证该进程名称，然后再次调用 cmdlet。</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">PS C:\Users\starky&gt; $result</span><br><span class="line">Not running</span><br></pre></td></tr></table></figure></p>
+<p>通常情况下，使用 <code>switch</code> 语句可以替代包含大量 <code>if ... elseif ... else</code> 的语句。<br>PowerShell 的 switch 在对用户输入进行条件判断时，支持多种选项的使用，如<strong>通配符</strong>、<strong>正则表达式</strong>甚至简短的<strong>代码块</strong>，相比于 C 和 C++ 中的 switch 语句更显得强大。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$temperature = 35</span><br><span class="line"></span><br><span class="line">switch($temperature)</span><br><span class="line">&#123;</span><br><span class="line">    &#123; $_ -lt 0 &#125;    &#123; &quot;Below Freezing&quot;; break &#125;</span><br><span class="line">    32              &#123; &quot;Exactly Freezing&quot;; break &#125;</span><br><span class="line">    &#123; $_ -le 10 &#125;   &#123; &quot;Cold&quot;; break &#125;</span><br><span class="line">    &#123; $_ -le 20 &#125;   &#123; &quot;Warm&quot;; break &#125;</span><br><span class="line">    default         &#123; &quot;Hot&quot; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h5><p><strong>for 循环</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for($counter = 1; $counter -le 10; $counter++)</span><br><span class="line">&#123;</span><br><span class="line">    &quot;Loop number $counter&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>foreach 循环</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">foreach($file in dir)</span><br><span class="line">&#123;</span><br><span class="line">    &quot;File name: &quot; + $file.Name</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>或者：<code>dir | foreach { &quot;File name: &quot; + $_.Name }</code></p>
+<p><strong>while 循环</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$response = &quot;&quot;</span><br><span class="line">while($response -ne &quot;QUIT&quot;)</span><br><span class="line">&#123;</span><br><span class="line">    $response = Read-Host &quot;Type something&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>do..while 循环</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$response = &quot;&quot;</span><br><span class="line">do</span><br><span class="line">&#123;</span><br><span class="line">    $response = Read-Host &quot;Type something&quot;</span><br><span class="line">&#125; while($response -ne &quot;QUIT&quot;)</span><br></pre></td></tr></table></figure></p>
+<p><strong>do..until</strong> 循环：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$response = &quot;&quot;</span><br><span class="line">do</span><br><span class="line">&#123;</span><br><span class="line">    $response = Read-Host &quot;Type something&quot;</span><br><span class="line">&#125; until($response -eq &quot;QUIT&quot;)</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考书籍"><a href="#参考书籍" class="headerlink" title="参考书籍"></a>参考书籍</h4><p><a href="http://shop.oreilly.com/product/0636920024132.do" target="_blank" rel="noopener">Windows PowerShell Cookbook, 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Shell/" rel="tag"># Shell</a>
+          
+            <a href="/tags/Windows/" rel="tag"># Windows</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Script/" rel="tag"># Script</a>
+          
+            <a href="/tags/PowerShell/" rel="tag"># PowerShell</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/26/windows-powershell-cookbook-1/" rel="next" title="Windows PowerShell 学习笔记其一（特性介绍）">
+                <i class="fa fa-chevron-left"></i> Windows PowerShell 学习笔记其一（特性介绍）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/03/python-voice-assistant/" rel="prev" title="用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人）">
+                用 Python 实现自己的智能语音助理（百度语音 + 图灵机器人） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#重定向与管道"><span class="nav-number">1.</span> <span class="nav-text">重定向与管道</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#重定向"><span class="nav-number">1.1.</span> <span class="nav-text">重定向</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#在文件末尾添加内容"><span class="nav-number">1.1.1.</span> <span class="nav-text">在文件末尾添加内容</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#管道"><span class="nav-number">1.2.</span> <span class="nav-text">管道</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#筛选（Where-Object）"><span class="nav-number">1.2.1.</span> <span class="nav-text">筛选（Where-Object）</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#遍历（Foreach-Object）"><span class="nav-number">1.2.2.</span> <span class="nav-text">遍历（Foreach-Object）</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#格式化输出"><span class="nav-number">1.2.3.</span> <span class="nav-text">格式化输出</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#变量与对象"><span class="nav-number">2.</span> <span class="nav-text">变量与对象</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#变量"><span class="nav-number">2.1.</span> <span class="nav-text">变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#访问环境变量"><span class="nav-number">2.2.</span> <span class="nav-text">访问环境变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#作用域"><span class="nav-number">2.3.</span> <span class="nav-text">作用域</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#NET-对象"><span class="nav-number">2.4.</span> <span class="nav-text">.NET 对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建对象的实例"><span class="nav-number">2.5.</span> <span class="nav-text">创建对象的实例</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#循环与流程控制"><span class="nav-number">3.</span> <span class="nav-text">循环与流程控制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#比较与逻辑运算"><span class="nav-number">3.1.</span> <span class="nav-text">比较与逻辑运算</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#条件语句"><span class="nav-number">3.2.</span> <span class="nav-text">条件语句</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#循环"><span class="nav-number">3.3.</span> <span class="nav-text">循环</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考书籍"><span class="nav-number">4.</span> <span class="nav-text">参考书籍</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

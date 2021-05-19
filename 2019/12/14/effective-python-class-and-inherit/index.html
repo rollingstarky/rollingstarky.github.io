@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,Advanced,Class,OOP,Inherit,Effective," />
+
+
+<meta name="description" content="一、用辅助类（而不是字典）来维护程序的状态Python 内置的字典类型可以很好地保存某个对象在其生命周期中的（动态）内部状态。如下面的成绩单类：12345678910111213141516171819202122class SimpleGradebook(object):    def __init__(self):        self._grades = &amp;#123;&amp;#125;    d">
+<meta name="keywords" content="Python,Advanced,Class,OOP,Inherit,Effective">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高效 Python 代码——类与继承">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/12/14/effective-python-class-and-inherit/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="一、用辅助类（而不是字典）来维护程序的状态Python 内置的字典类型可以很好地保存某个对象在其生命周期中的（动态）内部状态。如下面的成绩单类：12345678910111213141516171819202122class SimpleGradebook(object):    def __init__(self):        self._grades = &amp;#123;&amp;#125;    d">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-13T17:50:58.321Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="高效 Python 代码——类与继承">
+<meta name="twitter:description" content="一、用辅助类（而不是字典）来维护程序的状态Python 内置的字典类型可以很好地保存某个对象在其生命周期中的（动态）内部状态。如下面的成绩单类：12345678910111213141516171819202122class SimpleGradebook(object):    def __init__(self):        self._grades = &amp;#123;&amp;#125;    d">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/12/14/effective-python-class-and-inherit/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>高效 Python 代码——类与继承 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/12/14/effective-python-class-and-inherit/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">高效 Python 代码——类与继承</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-14T00:00:00+08:00">2019-12-14</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/12/14/effective-python-class-and-inherit/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/12/14/effective-python-class-and-inherit/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/12/14/effective-python-class-and-inherit/" class="leancloud_visitors" data-flag-title="高效 Python 代码——类与继承">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">15k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:15</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、用辅助类（而不是字典）来维护程序的状态"><a href="#一、用辅助类（而不是字典）来维护程序的状态" class="headerlink" title="一、用辅助类（而不是字典）来维护程序的状态"></a>一、用辅助类（而不是字典）来维护程序的状态</h4><p>Python 内置的字典类型可以很好地保存某个对象在其生命周期中的（动态）内部状态。<br>如下面的成绩单类：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SimpleGradebook</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._grades = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_student</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self._grades[name] = []</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">report_grade</span><span class="params">(self, name, score)</span>:</span></span><br><span class="line">        self._grades[name].append(score)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">average_grade</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        grades = self._grades[name]</span><br><span class="line">        <span class="keyword">return</span> sum(grades) / len(grades)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">book = SimpleGradebook()</span><br><span class="line">book.add_student(<span class="string">'Isaac Newton'</span>)</span><br><span class="line">book.report_grade(<span class="string">'Isaac Newton'</span>, <span class="number">90</span>)</span><br><span class="line">book.report_grade(<span class="string">'Isaac Newton'</span>, <span class="number">80</span>)</span><br><span class="line"></span><br><span class="line">print(book.average_grade(<span class="string">'Isaac Newton'</span>))</span><br><span class="line"><span class="comment"># =&gt; 85.0</span></span><br></pre></td></tr></table></figure></p>
+<p>在上面的 <code>SimpleGradebook</code> 类中，学生名字及其对应的成绩都保存在 <code>_grades</code> 字典结构中，这样就不必把每个学生都表示成对象并预设一个用于存放名字的属性了。</p>
+<p>字典类型用起来方便，但也容易因为过度使用导致一些问题。如果需要扩充上面成绩单类的功能，把学生成绩按照科目保存。则 <code>_grades</code> 字典中需要嵌入另一个字典存储科目与多次成绩的键值对。<br>即类似这样的结构：<code>{&#39;Einstein&#39;: {&#39;Math&#39;: [80, 90]}}</code><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BySubjectGradebook</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._grades = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_student</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self._grades[name] = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">report_grade</span><span class="params">(self, name, subject, grade)</span>:</span></span><br><span class="line">        by_subject = self._grades[name]</span><br><span class="line">        grade_list = by_subject.setdefault(subject, [])</span><br><span class="line">        grade_list.append(grade)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">average_grade</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        by_subject = self._grades[name]</span><br><span class="line">        total, count = <span class="number">0</span>, <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> grades <span class="keyword">in</span> by_subject.values():</span><br><span class="line">            total += sum(grades)</span><br><span class="line">            count += len(grades)</span><br><span class="line">        <span class="keyword">return</span> total / count</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">book = BySubjectGradebook()</span><br><span class="line">book.add_student(<span class="string">'Albert Einstein'</span>)</span><br><span class="line">book.report_grade(<span class="string">'Albert Einstein'</span>, <span class="string">'Math'</span>, <span class="number">80</span>)</span><br><span class="line">book.report_grade(<span class="string">'Albert Einstein'</span>, <span class="string">'Math'</span>, <span class="number">90</span>)</span><br><span class="line">book.report_grade(<span class="string">'Albert Einstein'</span>, <span class="string">'Gym'</span>, <span class="number">70</span>)</span><br><span class="line">book.report_grade(<span class="string">'Albert Einstein'</span>, <span class="string">'Gym'</span>, <span class="number">80</span>)</span><br><span class="line"></span><br><span class="line">print(book.average_grade(<span class="string">'Albert Einstein'</span>))</span><br><span class="line"><span class="comment"># =&gt; 80.0</span></span><br></pre></td></tr></table></figure></p>
+<p>假设需求再次改变，在记录某个分数的同时，还需要记录该次成绩占该科目历次成绩的权重。。。此时用于保存成绩的数据结构可以改成这样：<br><code>{&#39;Einstein&#39;: {&#39;Math&#39;: [(80, 0.4), (90, 0.6)]}}</code><br>但是对于新的 <code>average_grade</code> 方法来说，处理上述数据记录的代码就比较难以理解了。</p>
+<h5 id="把嵌套结构重构为类"><a href="#把嵌套结构重构为类" class="headerlink" title="把嵌套结构重构为类"></a>把嵌套结构重构为类</h5><p>用来保存程序状态的数据结构一旦过于复杂（如包含多层嵌套），则应该将其拆解为类，提供更为明确的接口，同时更好的封装数据。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> namedtuple</span><br><span class="line"></span><br><span class="line">Grade = namedtuple(<span class="string">'Grade'</span>, (<span class="string">'score'</span>, <span class="string">'weight'</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 科目类。_grades 属性用于保存带权重的分数（Grade()）对象</span></span><br><span class="line"><span class="comment"># average_grade 方法用于按权重计算本科成绩的平均分</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Subject</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._grades = []</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">report_grade</span><span class="params">(self, score, weight)</span>:</span></span><br><span class="line">        self._grades.append(Grade(score, weight))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">average_grade</span><span class="params">(self)</span>:</span></span><br><span class="line">        total, total_weight = <span class="number">0</span>, <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> grade <span class="keyword">in</span> self._grades:</span><br><span class="line">            total += grade.score * grade.weight</span><br><span class="line">            total_weight += grade.weight</span><br><span class="line">        <span class="keyword">return</span> total / total_weight</span><br><span class="line"></span><br><span class="line"><span class="comment"># 学生类。_subjects 属性用于保存该学生的所有科目（Subject()）对象</span></span><br><span class="line"><span class="comment"># average_grade 方法用于计算该学生所有科目成绩的平均分</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._subjects = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subject</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> name <span class="keyword">not</span> <span class="keyword">in</span> self._subjects:</span><br><span class="line">            self._subjects[name] = Subject()</span><br><span class="line">        <span class="keyword">return</span> self._subjects[name]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">average_grade</span><span class="params">(self)</span>:</span></span><br><span class="line">        total, count = <span class="number">0</span>, <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> subject <span class="keyword">in</span> self._subjects.values():</span><br><span class="line">            total += subject.average_grade()</span><br><span class="line">            count += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> total / count</span><br><span class="line"></span><br><span class="line"><span class="comment"># 成绩单类。_students 属性保存所有的学生（Student()）对象</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Gradebook</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._students = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">student</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> name <span class="keyword">not</span> <span class="keyword">in</span> self._students:</span><br><span class="line">            self._students[name] = Student()</span><br><span class="line">        <span class="keyword">return</span> self._students[name]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">book = Gradebook()</span><br><span class="line">albert = book.student(<span class="string">'Albert Einstein'</span>)</span><br><span class="line">math = albert.subject(<span class="string">'Math'</span>)</span><br><span class="line">math.report_grade(<span class="number">80</span>, <span class="number">0.4</span>)</span><br><span class="line">math.report_grade(<span class="number">90</span>, <span class="number">0.6</span>)</span><br><span class="line"></span><br><span class="line">print(albert.average_grade())</span><br><span class="line"><span class="comment"># =&gt; 86.0</span></span><br></pre></td></tr></table></figure>
+<h5 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h5><ul>
+<li>尽量不使用多层嵌套的字典（如包含其他字典的字典）存储程序状态，也不要使用过长的元组</li>
+<li>容器中包含简单又不可变的数据，可以先使用 <code>namedtuple</code> 表示，有需要时再改为完整的类</li>
+<li>用于保存程序内部状态的字典若过于复杂，应将其拆解为多个辅助类</li>
+</ul>
+<h4 id="二、用-super-初始化父类"><a href="#二、用-super-初始化父类" class="headerlink" title="二、用 super 初始化父类"></a>二、用 super 初始化父类</h4><p>初始化父类的传统方式，是在子类里直接调用父类的 <code>__init__</code> 方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyBaseClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self.value = value</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyChildClass</span><span class="params">(MyBaseClass)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        MyBaseClass.__init__(self, <span class="number">5</span>)</span><br></pre></td></tr></table></figure></p>
+<p>上述方法对于简单的继承行为是可行的，但是很多情况下仍会出现问题。<br>首先若子类受到多重继承的影响，则直接调用父类的 <code>__init__</code> 方法会产生无法预知的行为（调用顺序不确定）。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyBaseClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self.value = value</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimesTwo</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.value *= <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PlusFive</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.value += <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">OneWay</span><span class="params">(MyBaseClass, TimesTwo, PlusFive)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        MyBaseClass.__init__(self, value)</span><br><span class="line">        TimesTwo.__init__(self)</span><br><span class="line">        PlusFive.__init__(self)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AnotherWay</span><span class="params">(MyBaseClass, TimesTwo, PlusFive)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        MyBaseClass.__init__(self, value)</span><br><span class="line">        PlusFive.__init__(self)</span><br><span class="line">        TimesTwo.__init__(self)</span><br><span class="line"></span><br><span class="line">foo = OneWay(<span class="number">5</span>)</span><br><span class="line">print(<span class="string">f"First ordering is (5 * 2) + 5 = <span class="subst">&#123;foo.value&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">bar = AnotherWay(<span class="number">5</span>)</span><br><span class="line">print(<span class="string">f"Second ordering still is <span class="subst">&#123;foo.value&#125;</span>"</span>)</span><br></pre></td></tr></table></figure></p>
+<p><code>OneWay</code> 与 <code>AnotherWay</code> 中定义了两种完全不同的调用父类 <code>__init__</code> 方法的顺序，但实际执行的结果却是相同的，导致子类代码中定义的调用顺序与子类实际产生的行为不一致。</p>
+<p>此外在<strong>菱形继承</strong>中，直接调用父类的构造器也会出现问题。菱形继承是指子类继承自两个单独的超类，而这两个父类又都继承自同一个公共基类。这种继承方式会使菱形顶部的公共基类多次执行其 <code>__init__</code> 方法，产生意想不到的行为。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyBaseClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self.value = value</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimesFive</span><span class="params">(MyBaseClass)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        MyBaseClass.__init__(self, value)</span><br><span class="line">        self.value *= <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PlusTwo</span><span class="params">(MyBaseClass)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        MyBaseClass.__init__(self, value)</span><br><span class="line">        self.value += <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThisWay</span><span class="params">(TimesFive, PlusTwo)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        TimesFive.__init__(self, value)</span><br><span class="line">        PlusTwo.__init__(self, value)</span><br><span class="line"></span><br><span class="line">foo = ThisWay(<span class="number">5</span>)</span><br><span class="line">print(<span class="string">f"Should be (5 * 5) + 2 = 27 but actully is <span class="subst">&#123;foo.value&#125;</span>"</span>)</span><br><span class="line"><span class="comment"># =&gt; Should be (5 * 5) + 2 = 27 but actully is 7</span></span><br></pre></td></tr></table></figure></p>
+<p>最终结果为 7，原因是在调用第二个父类的构造器（即 <code>PlusTwo.__init__</code>）时，公共基类的构造器（即 <code>MyBaseClass.__init__</code>）会再次被调用导致 <code>value</code> 重新变成 5，而不能保持 <code>TimesFive.__init__</code> 之后的 25。</p>
+<h5 id="通过-super-调用父类的构造器："><a href="#通过-super-调用父类的构造器：" class="headerlink" title="通过 super 调用父类的构造器："></a>通过 <code>super</code> 调用父类的构造器：</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyBaseClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self.value = value</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimesFive</span><span class="params">(MyBaseClass)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        super(__class__, self).__init__(value)</span><br><span class="line">        self.value *= <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PlusTwo</span><span class="params">(MyBaseClass)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        super(__class__, self).__init__(value)</span><br><span class="line">        self.value += <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThisWay</span><span class="params">(TimesFive, PlusTwo)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        super(__class__, self).__init__(value)</span><br><span class="line"></span><br><span class="line">foo = ThisWay(<span class="number">5</span>)</span><br><span class="line">print(<span class="string">f"Should be (5 * 5) + 2 = 27 but actully is <span class="subst">&#123;foo.value&#125;</span>"</span>)</span><br><span class="line"><span class="comment"># =&gt; Should be (5 * 5) + 2 = 27 but actully is 35</span></span><br></pre></td></tr></table></figure>
+<p>此时程序的行为可以说和预期相符合了，注意后三个类中 <code>super</code> 的使用。其中传入 <code>super</code> 的第一个参数 <code>__class__</code> 用来指代当前类本身。</p>
+<h4 id="三、只在使用-Mix-in-制作工具类时进行多重继承"><a href="#三、只在使用-Mix-in-制作工具类时进行多重继承" class="headerlink" title="三、只在使用 Mix-in 制作工具类时进行多重继承"></a>三、只在使用 Mix-in 制作工具类时进行多重继承</h4><p><strong>应在 Python 编程中尽量避开多重继承。</strong><br>若一定要利用多重继承带来的便捷及封装性，应考虑编写 <strong>mix-in</strong> 类。<br>mix-in 是一种“小型”类，其中只定义了其他类可能需要提供的一套附加方法，但是不定义自身的实例属性，也不要求继承者调用自己的 <code>__init__</code> 构造器。</p>
+<p>可以在 mix-in 里面通过动态检测机制编写一套通用的功能代码，根据对各类对象当前状态的判定，确定代码实际的行为。从而将 mix-in 应用到多个不同的类上面。<br>分层地组合 mix-in 类可以减少重复代码并提升代码复用程度。<br>如需要将内存中的 Python 对象转换为字典结构（即通常所说的<strong>序列化</strong>操作），可以创建下面的 mix-in 类实现此功能并添加 <code>public</code> 方法供其他类继承。重点在于通过 <code>hasattr</code> 动态地访问实例的属性、用 <code>isinstance</code> 动态地检测对象类型、用 <code>__dict__</code> 访问实例内部的字典。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># todict.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ToDictMixin</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">to_dict</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self._traverse_dict(self.__dict__)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_traverse_dict</span><span class="params">(self, instance_dict)</span>:</span></span><br><span class="line">        output = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> key, value <span class="keyword">in</span> instance_dict.items():</span><br><span class="line">            output[key] = self._traverse(key, value)</span><br><span class="line">        <span class="keyword">return</span> output</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_traverse</span><span class="params">(self, key, value)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> isinstance(value, ToDictMixin):</span><br><span class="line">            <span class="keyword">return</span> value.to_dict()</span><br><span class="line">        <span class="keyword">elif</span> isinstance(value, dict):</span><br><span class="line">            <span class="keyword">return</span> self._traverse_dict(value)</span><br><span class="line">        <span class="keyword">elif</span> isinstance(value, list):</span><br><span class="line">            <span class="keyword">return</span> [self._traverse(key, i) <span class="keyword">for</span> i <span class="keyword">in</span> value]</span><br><span class="line">        <span class="keyword">elif</span> hasattr(value, <span class="string">'__dict__'</span>):</span><br><span class="line">            <span class="keyword">return</span> self._traverse_dict(value.__dict__)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"><span class="comment"># 利用 mix-in 将二叉树表示为字典</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BinaryTree</span><span class="params">(ToDictMixin)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value, left=None, right=None)</span>:</span></span><br><span class="line">        self.value = value</span><br><span class="line">        self.left = left</span><br><span class="line">        self.right = right</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    tree = BinaryTree(<span class="number">10</span>,</span><br><span class="line">                      left=BinaryTree(<span class="number">7</span>, right=BinaryTree(<span class="number">9</span>)),</span><br><span class="line">                      right=BinaryTree(<span class="number">13</span>, left=BinaryTree(<span class="number">11</span>)))</span><br><span class="line">    print(tree.to_dict())</span><br><span class="line"><span class="comment"># =&gt; &#123;'value': 10, 'left': &#123;'value': 7, 'left': None, 'right': &#123;'value': 9, 'left': None, 'right': None&#125;&#125;, 'right': &#123;'value': 13, 'left': &#123;'value': 11, 'left': None, 'right': None&#125;, 'right': None&#125;&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>mix-in 最大的优势在于，可以随时向基类中添加额外的通用功能，并且在必要时覆盖重写某些方法。<br>多个 mix-in 之间也可以相互组合。<br>在前面 <code>todict.py</code> 代码的基础上，可以再定义一个 <code>JsonMixin</code> 用来为任意类提供通用的 JSON 序列化功能。<code>JsonMixin</code> 的定义代码决定了继承自它的类需要包含 <code>to_dict</code> 方法（比如可以从 <code>ToDictMixin</code> 中继承），且其 <code>__init__</code> 方法接受关键字参数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">from</span> todict <span class="keyword">import</span> ToDictMixin</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JsonMixin</span><span class="params">(object)</span>:</span></span><br><span class="line"><span class="meta">    @classmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">from_json</span><span class="params">(cls, data)</span>:</span></span><br><span class="line">        kwargs = json.loads(data)</span><br><span class="line">        <span class="keyword">return</span> cls(**kwargs)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">to_json</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> json.dumps(self.to_dict())</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DatacenterRack</span><span class="params">(ToDictMixin, JsonMixin)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, switch=None, machines=None)</span>:</span></span><br><span class="line">        self.switch = Switch(**switch)</span><br><span class="line">        self.machines = [</span><br><span class="line">            Machine(**kwargs) <span class="keyword">for</span> kwargs <span class="keyword">in</span> machines</span><br><span class="line">        ]</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Switch</span><span class="params">(ToDictMixin, JsonMixin)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, ports=None, speed=None)</span>:</span></span><br><span class="line">        self.ports = ports</span><br><span class="line">        self.speed = speed</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Machine</span><span class="params">(ToDictMixin, JsonMixin)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, cores=None, ram=None, disk=None)</span>:</span></span><br><span class="line">        self.cores = cores</span><br><span class="line">        self.ram = ram</span><br><span class="line">        self.disk = disk</span><br><span class="line"></span><br><span class="line">serialized = <span class="string">"""&#123;</span></span><br><span class="line"><span class="string">    "switch": &#123;"ports": 5, "speed": 1e9&#125;,</span></span><br><span class="line"><span class="string">    "machines": [</span></span><br><span class="line"><span class="string">        &#123;"cores": 8, "ram": 32e9, "disk": 5e12&#125;,</span></span><br><span class="line"><span class="string">        &#123;"cores": 4, "ram": 16e9, "disk": 1e12&#125;,</span></span><br><span class="line"><span class="string">        &#123;"cores": 2, "ram": 4e9, "disk": 500e9&#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">&#125;"""</span></span><br><span class="line"></span><br><span class="line">deserialized = DatacenterRack.from_json(serialized)</span><br><span class="line">roundtrip = deserialized.to_json()</span><br><span class="line"><span class="keyword">assert</span> json.loads(serialized) == json.loads(roundtrip)</span><br></pre></td></tr></table></figure></p>
+<p><code>ToDictMixin</code> 和 <code>ToJsonMixin</code> 两个 mix-in 中分别定义了不同的通用功能组件，符合规范的多重继承下的子类则可以直接使用这两者提供的 <code>to_dict</code> 和 <code>to_json</code> 方法，达到功能整合的效果。</p>
+<h5 id="要点-1"><a href="#要点-1" class="headerlink" title="要点"></a>要点</h5><ul>
+<li>能用 mix-in 组件实现的效果，就不用多重继承来做</li>
+<li>将各功能实现为可插拔的 mix-in 组件，让子类选择继承需要的组件</li>
+<li>简单行为封装到 mix-in 组件里，多个 mix-in 组合成复杂行为</li>
+</ul>
+<h4 id="四、多使用-public-属性"><a href="#四、多使用-public-属性" class="headerlink" title="四、多使用 public 属性"></a>四、多使用 public 属性</h4><p>Python 类的属性有 <code>public</code> 和 <code>private</code> 两种，任何人都可以在对象上通过 dot 操作符（<code>.</code>）访问 public 属性。<br>private 属性是名称中以两个下划线开头的属性，可以被当前类中的方法访问。但从类外部直接访问 private 属性会报 <code>AttributeError</code> 异常。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyObject</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.public_field = <span class="number">5</span></span><br><span class="line">        self.__private_field = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_private_field</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.__private_field</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">foo = MyObject()</span><br><span class="line">print(foo.public_field)</span><br><span class="line"><span class="comment"># =&gt; 5</span></span><br><span class="line">print(foo.get_private_field())</span><br><span class="line"><span class="comment"># =&gt; 10</span></span><br><span class="line">print(foo.__private_field)</span><br><span class="line"><span class="comment"># =&gt; AttributeError: 'MyObject' object has no attribute '__private_field'</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>类方法可以访问当前类的私有属性。子类无法访问父类的私有字段</strong>。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyObject</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.__private_field = <span class="number">71</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @classmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_private_field</span><span class="params">(cls, instance)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> instance.__private_field</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyChildObject</span><span class="params">(MyObject)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_private_field</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.__private_field</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">bar = MyObject()</span><br><span class="line">print(MyObject.get_private_field(bar))</span><br><span class="line"><span class="comment"># =&gt; 71</span></span><br><span class="line">bar_child = MyChildObject()</span><br><span class="line">print(bar_child.get_private_field())</span><br><span class="line"><span class="comment"># =&gt; AttributeError: 'MyChildObject' object has no attribute '_MyChildObject__private_field'</span></span><br></pre></td></tr></table></figure></p>
+<p>Python 会对私有属性的名称做一些简单的变换，这种变换导致了私有属性对类外部不可见，同时子类也无法访问父类的私有属性。也就是说，Python 并没有从<strong>语法</strong>上严格保证 private 字段的私密性。<br>在子类的继承体系发生变化时，对 private 字段的引用很容易失效，从而导致子类出现错误。</p>
+<p>为了尽量减少无意义的访问内部属性导致的意外，Python 习惯用单下划线开头的字段表示受保护（<code>protected</code>）字段，当前类之外的代码使用这些字段时应格外注意。<br>一般来说，宁可让子类更多地访问父类的 protected 属性，也尽量不要把这些属性设置成 private。并且应该在文档中说明每个 protected 字段的含义，在扩展代码时如何保证数据安全。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="comment"># This stores the user-supplied value for the object.</span></span><br><span class="line">        <span class="comment"># It should be coercible to a string. Once assigned for</span></span><br><span class="line">        <span class="comment"># the object it should be treated as immutable.</span></span><br><span class="line">        self._value = value</span><br></pre></td></tr></table></figure></p>
+<h5 id="要点-2"><a href="#要点-2" class="headerlink" title="要点"></a>要点</h5><ul>
+<li>Python 编译器无法严格保证 private 字段的私密性</li>
+<li>应多使用 protected 属性，并将合理用法在文档中说明</li>
+<li>只有子类不受自己控制时，为避免命名冲突才考虑使用 private 属性</li>
+</ul>
+<h4 id="五、继承-collections-abc-以实现自定义的容器类型"><a href="#五、继承-collections-abc-以实现自定义的容器类型" class="headerlink" title="五、继承 collections.abc 以实现自定义的容器类型"></a>五、继承 collections.abc 以实现自定义的容器类型</h4><p><strong>大部分的 Python 编程都是在定义类，类可以包含数据且能够描述数据与对象之间的交互方式。Python 中的类从某种程度上说都是封装了属性与功能容器。</strong></p>
+<p>如果要设计功能比较简单的序列，可以直接继承 Python 内置的 list 类型。如创建一种可以统计各元素出现频率的自定义列表：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FrequencyList</span><span class="params">(list)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, members)</span>:</span></span><br><span class="line">        super().__init__(members)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">frequency</span><span class="params">(self)</span>:</span></span><br><span class="line">        counts = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> item <span class="keyword">in</span> self:</span><br><span class="line">            counts.setdefault(item, <span class="number">0</span>)</span><br><span class="line">            counts[item] += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> counts</span><br><span class="line"></span><br><span class="line">foo = FrequencyList([<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'a'</span>, <span class="string">'c'</span>, <span class="string">'b'</span>, <span class="string">'a'</span>, <span class="string">'d'</span>])</span><br><span class="line">print(<span class="string">f'Length is <span class="subst">&#123;len(foo)&#125;</span>'</span>)</span><br><span class="line">print(<span class="string">f'Frequency: '</span>, foo.frequency())</span><br><span class="line"><span class="comment"># =&gt; Length is 7</span></span><br><span class="line"><span class="comment"># =&gt; Frequency:  &#123;'a': 3, 'b': 2, 'c': 1, 'd': 1&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>假设某对象本身并不是 list 类型的子类，但是需要它表现得像 list 一样，可以通过下标访问其元素。<br>Python 用一些名称比较特殊的实例方法来实现与容器有关的行为。如需要用下标访问序列中的元素，可以考虑实现序列对象的 <code>__getitem__</code> 方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>bar = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>bar[<span class="number">0</span>]</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>bar.__getitem__(<span class="number">0</span>)</span><br><span class="line"><span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p>如下面的二叉树类实现了 <code>__getitem__</code> 方法，使得不仅可以按深度优先的次序遍历（<code>_traverse()</code>）二叉树中的对象，还可以通过下标访问：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># binarynode.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BinaryNode</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value, left=None, right=None)</span>:</span></span><br><span class="line">        self.value = value</span><br><span class="line">        self.left = left</span><br><span class="line">        self.right = right</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IndexableNode</span><span class="params">(BinaryNode)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_traverse</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self.left <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">            <span class="keyword">yield</span> <span class="keyword">from</span> self.left._traverse()</span><br><span class="line">        <span class="keyword">yield</span> self</span><br><span class="line">        <span class="keyword">if</span> self.right <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">            <span class="keyword">yield</span> <span class="keyword">from</span> self.right._traverse()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> i, item <span class="keyword">in</span> enumerate(self._traverse()):</span><br><span class="line">            <span class="keyword">if</span> i == index:</span><br><span class="line">                <span class="keyword">return</span> item.value</span><br><span class="line">        <span class="keyword">raise</span> IndexError(<span class="string">f'Index <span class="subst">&#123;index&#125;</span> is out of range'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SequenceNode</span><span class="params">(IndexableNode)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> count, _ <span class="keyword">in</span> enumerate(self._traverse(), <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">return</span> count</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    tree = SequenceNode(</span><br><span class="line">        <span class="number">10</span>,</span><br><span class="line">        left=SequenceNode(</span><br><span class="line">            <span class="number">5</span>,</span><br><span class="line">            left=SequenceNode(<span class="number">2</span>),</span><br><span class="line">            right=SequenceNode(</span><br><span class="line">                <span class="number">6</span>,</span><br><span class="line">                right=SequenceNode(<span class="number">7</span>))),</span><br><span class="line">        right=SequenceNode(</span><br><span class="line">            <span class="number">15</span>,</span><br><span class="line">            left=SequenceNode(<span class="number">11</span>)))</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'LRR is'</span>, tree.left.right.right.value)</span><br><span class="line">    <span class="comment"># =&gt; LRR is 7</span></span><br><span class="line">    print(<span class="string">'Index 0 is'</span>, tree[<span class="number">0</span>])</span><br><span class="line">    <span class="comment"># =&gt; Index 0 is 2</span></span><br><span class="line">    print(<span class="string">'11 in the tree?'</span>, <span class="number">11</span> <span class="keyword">in</span> tree)</span><br><span class="line">    <span class="comment"># =&gt; 11 in the tree? True</span></span><br><span class="line">    print(<span class="string">'Tree is'</span>, list(tree))</span><br><span class="line">    <span class="comment"># =&gt; Tree is [2, 5, 6, 7, 10, 11, 15]</span></span><br><span class="line">    print(<span class="string">'Tree length is'</span>, len(tree))</span><br><span class="line">    <span class="comment"># =&gt; Tree length is 7</span></span><br></pre></td></tr></table></figure></p>
+<p>为了使序列可以通过内置的 <code>len()</code> 函数获取长度，<code>SequenceNode</code> 类中还实现了 <code>__len__</code> 方法。而更多的功能就意味着需要额外实现更多的特殊方法。<br>为了避免这些麻烦，可以使用内置的 <code>collections.abc</code> 模块。此模块定义了一系列抽象基类，提供了每一种容器类型所应具备的常用方法。继承这样的基类，如果忘记实现某个方法，<code>collections.abc</code> 模块会报错；如果实现了抽象基类要求的每一个方法，则基类会自动实现剩下的所有方法。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> binarynode <span class="keyword">import</span> SequenceNode</span><br><span class="line"><span class="keyword">from</span> collections.abc <span class="keyword">import</span> Sequence</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BetterNode</span><span class="params">(SequenceNode, Sequence)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">tree = BetterNode(</span><br><span class="line">    <span class="number">10</span>,</span><br><span class="line">    left=BetterNode(</span><br><span class="line">        <span class="number">5</span>,</span><br><span class="line">        left=BetterNode(<span class="number">2</span>),</span><br><span class="line">        right=BetterNode(</span><br><span class="line">            <span class="number">6</span>,</span><br><span class="line">            right=BetterNode(<span class="number">7</span>))),</span><br><span class="line">    right=BetterNode(</span><br><span class="line">        <span class="number">15</span>,</span><br><span class="line">        left=BetterNode(<span class="number">11</span>))</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">print(<span class="string">'Index of 7 is'</span>, tree.index(<span class="number">7</span>))</span><br><span class="line"><span class="comment"># =&gt; Index of 7 is 3</span></span><br><span class="line">print(<span class="string">'Count of 10 is'</span>, tree.count(<span class="number">10</span>))</span><br><span class="line"><span class="comment"># =&gt; Count of 10 is 1</span></span><br></pre></td></tr></table></figure></p>
+<p><code>SequenceNode</code> 中已经实现了 <code>Sequence</code> 要求的 <code>__getitem__</code> 和 <code>__len__</code> 方法，因此 <code>Sequence</code> 基类为继承的 <code>BetterNode</code> 子类自动实现了 <code>index()</code> 和 <code>count()</code> 方法。</p>
+<h5 id="要点-3"><a href="#要点-3" class="headerlink" title="要点"></a>要点</h5><ul>
+<li>如自定义的容器子类比较简单，可直接继承 Python 内置的容器类型（如 list、dict 等）</li>
+<li>正确实现自定义容器类型可能需要编写大量的特殊方法</li>
+<li>编写自定义容器类型时，可以从 collections.abc 模块中的抽象基类继承，这些基类能保证子类具备统一的接口及行为</li>
+</ul>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://book.douban.com/subject/26709315/" target="_blank" rel="noopener">Effective Python</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Advanced/" rel="tag"># Advanced</a>
+          
+            <a href="/tags/Class/" rel="tag"># Class</a>
+          
+            <a href="/tags/OOP/" rel="tag"># OOP</a>
+          
+            <a href="/tags/Inherit/" rel="tag"># Inherit</a>
+          
+            <a href="/tags/Effective/" rel="tag"># Effective</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/10/go-basic-syntax-variable-control-structure-function/" rel="next" title="Golang 基本语法速查——变量、控制结构与函数">
+                <i class="fa fa-chevron-left"></i> Golang 基本语法速查——变量、控制结构与函数
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/21/file-upload-by-django-rest-framework-two-ways/" rel="prev" title="Django REST framework 实现文件上传的两种方式">
+                Django REST framework 实现文件上传的两种方式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、用辅助类（而不是字典）来维护程序的状态"><span class="nav-number">1.</span> <span class="nav-text">一、用辅助类（而不是字典）来维护程序的状态</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#把嵌套结构重构为类"><span class="nav-number">1.1.</span> <span class="nav-text">把嵌套结构重构为类</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#要点"><span class="nav-number">1.2.</span> <span class="nav-text">要点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、用-super-初始化父类"><span class="nav-number">2.</span> <span class="nav-text">二、用 super 初始化父类</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#通过-super-调用父类的构造器："><span class="nav-number">2.1.</span> <span class="nav-text">通过 super 调用父类的构造器：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、只在使用-Mix-in-制作工具类时进行多重继承"><span class="nav-number">3.</span> <span class="nav-text">三、只在使用 Mix-in 制作工具类时进行多重继承</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#要点-1"><span class="nav-number">3.1.</span> <span class="nav-text">要点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、多使用-public-属性"><span class="nav-number">4.</span> <span class="nav-text">四、多使用 public 属性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#要点-2"><span class="nav-number">4.1.</span> <span class="nav-text">要点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、继承-collections-abc-以实现自定义的容器类型"><span class="nav-number">5.</span> <span class="nav-text">五、继承 collections.abc 以实现自定义的容器类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#要点-3"><span class="nav-number">5.1.</span> <span class="nav-text">要点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

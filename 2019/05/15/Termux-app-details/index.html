@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Tools,Android,Software,Fun," />
+
+
+<meta name="description" content="最近换了新手机，系统是基于 Android Pie（即 Android 9）定制的 MIUI 10 。Android 相对而言算得上是比较开放的平台，如此说来，不趁此机会乱搞一下难免有些说不过去。。。额，新手机，刷机Root来一套有点舍不得，好在有 Termux 这个应用。来，耍一耍看上去能够彰显“硬核”范儿的东西。  一、简介Termux 是 Android 平台上的一个终端模拟器，它将众多">
+<meta name="keywords" content="Linux,Admin,Tools,Android,Software,Fun">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Termux 详解—— Android 平台上完美移植的 Linux 工具集">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/05/15/Termux-app-details/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="最近换了新手机，系统是基于 Android Pie（即 Android 9）定制的 MIUI 10 。Android 相对而言算得上是比较开放的平台，如此说来，不趁此机会乱搞一下难免有些说不过去。。。额，新手机，刷机Root来一套有点舍不得，好在有 Termux 这个应用。来，耍一耍看上去能够彰显“硬核”范儿的东西。  一、简介Termux 是 Android 平台上的一个终端模拟器，它将众多">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-4f8e9c498379cf74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-cba8150619048f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-af7e579ea093af00.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-6cd69cd2c1bbd4de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-6811a06e8248b916.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-ddda73700ca49283.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-2242605a2b42ee9b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-ae324a46380a4402.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a068e565c95f33bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-cdf74770fe0a56fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-fdb87acc915a0eab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-06-07T19:53:10.598Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Termux 详解—— Android 平台上完美移植的 Linux 工具集">
+<meta name="twitter:description" content="最近换了新手机，系统是基于 Android Pie（即 Android 9）定制的 MIUI 10 。Android 相对而言算得上是比较开放的平台，如此说来，不趁此机会乱搞一下难免有些说不过去。。。额，新手机，刷机Root来一套有点舍不得，好在有 Termux 这个应用。来，耍一耍看上去能够彰显“硬核”范儿的东西。  一、简介Termux 是 Android 平台上的一个终端模拟器，它将众多">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-4f8e9c498379cf74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/05/15/Termux-app-details/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Termux 详解—— Android 平台上完美移植的 Linux 工具集 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/05/15/Termux-app-details/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Termux 详解—— Android 平台上完美移植的 Linux 工具集</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-15T00:00:00+08:00">2019-05-15</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tools/" itemprop="url" rel="index"><span itemprop="name">Tools</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/05/15/Termux-app-details/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/05/15/Termux-app-details/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/05/15/Termux-app-details/" class="leancloud_visitors" data-flag-title="Termux 详解—— Android 平台上完美移植的 Linux 工具集">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">4k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:04</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>最近换了新手机，系统是基于 <a href="https://www.android.com/versions/pie-9-0/" target="_blank" rel="noopener">Android Pie</a>（即 Android 9）定制的 <a href="http://www.miui.com/" target="_blank" rel="noopener">MIUI 10</a> 。<br>Android 相对而言算得上是比较开放的平台，如此说来，不趁此机会乱搞一下难免有些说不过去。。。<br>额，新手机，刷机Root来一套有点舍不得，好在有 <a href="https://termux.com/" target="_blank" rel="noopener">Termux</a> 这个应用。来，耍一耍看上去能够彰显“硬核”范儿的东西。</p>
+</blockquote>
+<h4 id="一、简介"><a href="#一、简介" class="headerlink" title="一、简介"></a>一、简介</h4><p><a href="https://wiki.termux.com/wiki/Main_Page" target="_blank" rel="noopener">Termux</a> 是 Android 平台上的一个<strong>终端模拟器</strong>，它将众多 Linux 上运行的软件和工具近乎完美的移植到了手机端。<br>无需任何复杂的安装和配置过程，软件装好以后即会自动配置一个基本的运行环境，用以执行一些常见的 Linux 命令。<br>最为关键的是，它还内置了功能健全的<strong>包管理工具</strong>，可以使用类似于 Ubuntu 系统的 <code>apt</code> （或 <code>pkg</code>）命令安装额外的软件包。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-4f8e9c498379cf74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="termux"></p>
+<p>之所以称它为“模拟器”而非“虚拟机”，是因为它并非像 PC 端的 <a href="https://www.virtualbox.org/" target="_blank" rel="noopener">VirtualBox</a> 等虚拟机软件那样，在宿主机中虚拟出一个完全<strong>独立且完整</strong>的系统环境，而是类似于 <a href="http://www.mingw.org/" target="_blank" rel="noopener">Mingw</a> 等软件，只是提供一个接口，以安装和运行面向新环境<strong>交叉编译</strong>后的程序。</p>
+<p>也可以将此时的手机看作是安装了 Linux 系统的树莓派，可以像 PC 端系统那样运行各种类型的软件，只不过这些软件都是针对特定的 CPU 架构和硬件设备编译过的（交叉编译或者在树莓派系统中本地编译）。<br>需要注意的是，由于移动端和 PC 端硬件设备的巨大差异，加上 Android 内核和操作系统的限制，能够直接运行的程序毕竟是少数。不过我刚刚算了一下，实际上可直接安装运行的软件足足有 <strong>910</strong> 个！<br><img src="https://upload-images.jianshu.io/upload_images/6875152-cba8150619048f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="apt list"></p>
+<h4 id="二、软件包"><a href="#二、软件包" class="headerlink" title="二、软件包"></a>二、软件包</h4><p>前面提到的可供安装的<strong>近一千个</strong>（算上为数众多的基础工具、库文件和开发版软件包）程序和软件，数量虽然远不及桌面系统，面对日常使用、学习任务甚至很多高阶应用也已经算得上绰绰有余了。<br>举个例子来说，Termux 是可以直接安装配置 Python 编程环境的。想想 Python 社区里浩如烟海的第三方库，甚至还可以根据特定的需求自行编写程序源代码。这里面包含着无限的可能性。</p>
+<p>当然这也只是 <a href="https://www.python.org/" target="_blank" rel="noopener">Python</a> 罢了，那么 <a href="https://www.perl.org/" target="_blank" rel="noopener">Perl</a>、<a href="https://www.ruby-lang.org/zh_cn/" target="_blank" rel="noopener">Ruby</a>、<a href="https://nodejs.org/zh-cn/" target="_blank" rel="noopener">Nodejs</a>、<a href="http://www.lua.org/" target="_blank" rel="noopener">Lua</a>、C/C++、<a href="https://golang.org/" target="_blank" rel="noopener">Golang</a>、<a href="https://www.rust-lang.org/" target="_blank" rel="noopener">Rust</a>……<br>我不会拿它去对标电脑上完备的系统环境，单说这种似乎无限的可能性，就已经很值得玩味了。</p>
+<p> 这里简单的列举下我所熟悉的部分软件：</p>
+<ul>
+<li><strong>基础工具</strong>：apt、bash、busybox、dpkg、git、htop、make、zsh ……</li>
+<li><strong>编程语言</strong>：binutils、clang、dart、erlang、golang、lua、nodejs、perl、php、python、ruby、rust ……</li>
+<li><strong>服务器软件</strong>：apache2、lighttpd、nginx、openssh ……</li>
+<li><strong>数据库软件</strong>：mariadb、memcached、mosquitto、postgresql、redis、sqlite ……</li>
+<li><strong>文本工具和编辑器</strong>：emacs、gawk、nano、sed、vim ……</li>
+<li><strong>媒体工具</strong>：ffmpeg、imagemagick、mpv、sox ……</li>
+<li><strong>网络工具</strong>：curl、httping、nmap、wget ……</li>
+<li><strong>游戏和娱乐</strong>：bastet、cmatrix、cowsay、fortune、moon-buggy、nsnake、sl ……</li>
+</ul>
+<h4 id="三、有趣的-Terminal-小命令"><a href="#三、有趣的-Terminal-小命令" class="headerlink" title="三、有趣的 Terminal 小命令"></a>三、有趣的 Terminal 小命令</h4><p>就先不说具体的环境搭建的步骤了，包含的东西很多，实际上跟电脑端的操作并没有太大的区别。<br>就简单列举一些我个人非常喜欢的好玩儿的小命令吧。</p>
+<ul>
+<li>fortune：输出一段格言警句、名著节选或者小笑话等</li>
+<li>cowsay：将输出的文字内容包含在由 ASCII 字符组成的动物形象的气泡内</li>
+<li>lolcat：将苍白的输出文字变成绚丽的彩虹色</li>
+</ul>
+<p><strong>安装方法</strong>：</p>
+<ul>
+<li>fortune：<code>$ apt install fortune</code></li>
+<li>cowsay：<code>$ apt install cowsay</code> 或者 <code>$ gem install cowsay</code></li>
+<li>lolcat：<code>$ gem install lolcat</code></li>
+</ul>
+<p>其中 apt 版本的 cowsay 依赖 Perl ，安装包整个算起来有点大。所以我比较倾向于使用 <code>gem</code> 命令安装，即作为 Ruby 的第三方库。当然为了使用 <code>gem</code> 命令是要先安装好 Ruby 的：<br><code>$ apt install ruby</code></p>
+<p><strong>效果截图</strong>：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-af7e579ea093af00.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="fortune cowsay lolcat"></p>
+<p>虽然名字叫 cowsay ，但它所包含的动物形象事实上不只“牛”这一种。<br>可以使用 <code>cowsay -l</code> 命令列出所有可供选择的动物形象，并通过 <code>cowsay -f animal_name</code> 手动指定另一种动物。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-6cd69cd2c1bbd4de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="cowsay -f"></p>
+<p>另外，其实 cowsay 的每个动物形象都是由对应的 cow 文件（基本就是 ASCII Art 形式的文本文件）定义的，可以自己扩充，篇幅有限不赘述。<br>类似的小玩意儿还有 <code>sl</code>（突突的小火车）、<code>cmatrix</code>（全屏滚动乱码），试试就知道了。</p>
+<h5 id="配置-ssh-服务"><a href="#配置-ssh-服务" class="headerlink" title="配置 ssh 服务"></a>配置 ssh 服务</h5><p>前面的截图，估计已经暴露了。。。<br>我是在电脑上截的图，但程序确实是在手机上运行的。只是在手机端 Termux 上安装了 SSH 服务，远程登录而已。步骤也非常简单：</p>
+<ul>
+<li>软件安装：<code>$ apt install openssh</code></li>
+<li>设置远程登录密码：<code>$ passwd</code></li>
+<li>电脑端登录：<code>$ ssh phone_ip -p 8022</code></li>
+</ul>
+<p>电脑上的 ssh 客户端可自行选择，尤其要注意，这里 SSH 服务监听的<strong>端口</strong>是 <strong>8022</strong> 。<br>呃，差点忘记了。远程连接之前，先在手机端运行下 <code>sshd</code> 命令启动 SSH 服务。。。</p>
+<h4 id="四、高端的命令行游戏"><a href="#四、高端的命令行游戏" class="headerlink" title="四、高端的命令行游戏"></a>四、高端的命令行游戏</h4><h5 id="moon-buggy"><a href="#moon-buggy" class="headerlink" title="moon-buggy"></a>moon-buggy</h5><p><a href="https://www.seehuhn.de/pages/moon-buggy" target="_blank" rel="noopener">moon-buggy</a> 是一个非常“酷炫”的命令行版本的跑酷游戏。<br>虽说游戏界面完全由 ASCII 字符构成，它仍然具备了一个跑酷游戏必需的所有的基本要素。玩下就懂了，蛮神奇的。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-6811a06e8248b916.gif?imageMogr2/auto-orient/strip" alt="moon-buggy GIF"></p>
+<p>玩儿到后面貌似还有迎面飞来的障碍物，还可以发射武器弹药？记不太清楚了。。。</p>
+<h5 id="nsnake"><a href="#nsnake" class="headerlink" title="nsnake"></a>nsnake</h5><p>嗯，不多说了，看名字就知道，贪吃蛇。。。<br>初始的移动速度有点慢，建议在游戏选项里面改一下。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-ddda73700ca49283.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="nsnake"></p>
+<h5 id="bastet"><a href="#bastet" class="headerlink" title="bastet"></a>bastet</h5><p>就是大名鼎鼎的俄罗斯方块啦。看图：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-2242605a2b42ee9b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="bastet"></p>
+<h4 id="五、oh-my-zsh"><a href="#五、oh-my-zsh" class="headerlink" title="五、oh-my-zsh"></a>五、oh-my-zsh</h4><p>手机端输入命令总觉得有点别扭，可能还是不习惯吧。<br>这时候有个 <a href="https://ohmyz.sh/" target="_blank" rel="noopener">oh-my-zsh</a> 就显得很有必要了。反正我个人觉得挺好用的，尤其搭配上 <code>zsh-completions</code>、<code>zsh-autosuggestions</code>、<code>zsh-syntax-highlighting</code> 等插件。<br>可以对命令行中输入的命令进行<strong>语法高亮</strong>、<strong>自动补全</strong>等，极大地提高了输入效率。</p>
+<p><strong>软件安装</strong></p>
+<ul>
+<li><p>oh-my-zsh</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ apt install zsh curl</span><br><span class="line">$ sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><a href="https://github.com/zsh-users/zsh-autosuggestions" target="_blank" rel="noopener">zsh-autosuggestions</a><br><code>$ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions</code></p>
+</li>
+<li><p><a href="https://github.com/zsh-users/zsh-completions" target="_blank" rel="noopener">zsh-completions</a><br><code>$ git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions</code></p>
+</li>
+<li><p><a href="https://github.com/zsh-users/zsh-syntax-highlighting" target="_blank" rel="noopener">zsh-syntax-highlighting</a><br><code>$ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting</code></p>
+</li>
+</ul>
+<p><strong>软件配置</strong>：<br>编辑 <code>~/.zshrc</code> 文件，将上述插件添加到 <code>plugins</code> 项后面：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-ae324a46380a4402.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=".zshrc"></p>
+<p><strong>PS</strong>：Termux 貌似是没有默认 SHELL 的配置的，所以安装好 oh-my-zsh 以后，打开软件还是直接进入 Bash 界面。<br>我没有特别去找配置文件的位置，而是用了另外一种方案，，，手动输入 <code>zsh</code> 命令进入，或者，在 <code>~/.bashrc</code> 文件中加入 <code>zsh</code> 一行内容。。。</p>
+<h4 id="六、访问手机文件及-Termux-Api"><a href="#六、访问手机文件及-Termux-Api" class="headerlink" title="六、访问手机文件及 Termux-Api"></a>六、访问手机文件及 Termux-Api</h4><p>根据默认的 Android 系统的权限设定，Termux 是无法访问手机存储的。当然可以使用命令进行修改。<br>只需要输入 <code>termux-setup-storage</code> 命令，即会弹出授权窗口，允许即可。<br>该命令会在用户主目录下生成 <code>storage</code> 文件夹，里面即包含了到系统主要资源（如手机内存、外置存储卡、Downloads 文件夹、照片等）的链接。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-a068e565c95f33bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="storage"></p>
+<p>Termux-Api 是 Termux 软件的一个插件，需要安装额外的 APK 包。并且命令行中也需要使用 <code>$ apt install termux-api</code> 命令安装具体的工具。<br>它提供了一种以 API 的形式直接访问 Android 系统硬件和资源（如<strong>相机</strong>、<strong>电池</strong>、<strong>WiFi</strong>、<strong>短信</strong>、<strong>通讯录</strong>、<strong>指纹</strong>、<strong>GPS</strong>等）的途径。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-cdf74770fe0a56fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Termux-Api"></p>
+<p>如获取电池状态和 WiFi 连接信息：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-fdb87acc915a0eab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="battery &amp; wifi"></p>
+<p>这个感觉可以深挖，用好了可以达到曾经的安卓神器 <strong>Tasker</strong> 的效果。</p>
+<p>今天也不早了，，，就先这样吧。熬，附个软件链接吧。。<br><a href="https://pan.baidu.com/s/1e4libdvax5btfiXhNc4oQA" target="_blank" rel="noopener">Termux and Termux-Api</a> <strong>提取码</strong>：i37y<br>By the way，录了段蛮简陋的<a href="https://www.bilibili.com/video/av52504097/" target="_blank" rel="noopener">视频演示</a>，额，第一次剪。。。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://wiki.termux.com/wiki/Main_Page" target="_blank" rel="noopener">Termux Wiki</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/Software/" rel="tag"># Software</a>
+          
+            <a href="/tags/Fun/" rel="tag"># Fun</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/11/python-capture-keyboard-events/" rel="next" title="Python Tricks —— 使用 keyboard 录制键盘事件">
+                <i class="fa fa-chevron-left"></i> Python Tricks —— 使用 keyboard 录制键盘事件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/17/python-snowboy-voice-arousal/" rel="prev" title="树莓派使用 snowboy 配置语音唤醒">
+                树莓派使用 snowboy 配置语音唤醒 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、简介"><span class="nav-number">1.</span> <span class="nav-text">一、简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、软件包"><span class="nav-number">2.</span> <span class="nav-text">二、软件包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、有趣的-Terminal-小命令"><span class="nav-number">3.</span> <span class="nav-text">三、有趣的 Terminal 小命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置-ssh-服务"><span class="nav-number">3.1.</span> <span class="nav-text">配置 ssh 服务</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、高端的命令行游戏"><span class="nav-number">4.</span> <span class="nav-text">四、高端的命令行游戏</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#moon-buggy"><span class="nav-number">4.1.</span> <span class="nav-text">moon-buggy</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#nsnake"><span class="nav-number">4.2.</span> <span class="nav-text">nsnake</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bastet"><span class="nav-number">4.3.</span> <span class="nav-text">bastet</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、oh-my-zsh"><span class="nav-number">5.</span> <span class="nav-text">五、oh-my-zsh</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#六、访问手机文件及-Termux-Api"><span class="nav-number">6.</span> <span class="nav-text">六、访问手机文件及 Termux-Api</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">7.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

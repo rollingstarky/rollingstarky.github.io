@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,Shell,Programming," />
+
+
+<meta name="description" content="中级篇一、结构化命令在基础篇的示例中，Shell 大多数情况下都以顺序的方式依次执行脚本中的每一条指令。但是在实际情况中，很多程序都需要对脚本中命令的逻辑流进行控制。即根据某些条件和状态完成判断，再决定其后的程序该以怎样的规则执行。Shell 脚本支持一部分结构化指令，如 if-then、case 等，用于修改程序的执行流程。 1. if-then最基本的结构化语句即 if-then，其格式如下：">
+<meta name="keywords" content="Linux,Admin,Shell,Programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shell 脚本编程（中级篇）">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/11/15/shell-script-programming-medium/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="中级篇一、结构化命令在基础篇的示例中，Shell 大多数情况下都以顺序的方式依次执行脚本中的每一条指令。但是在实际情况中，很多程序都需要对脚本中命令的逻辑流进行控制。即根据某些条件和状态完成判断，再决定其后的程序该以怎样的规则执行。Shell 脚本支持一部分结构化指令，如 if-then、case 等，用于修改程序的执行流程。 1. if-then最基本的结构化语句即 if-then，其格式如下：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-12-02T20:00:54.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Shell 脚本编程（中级篇）">
+<meta name="twitter:description" content="中级篇一、结构化命令在基础篇的示例中，Shell 大多数情况下都以顺序的方式依次执行脚本中的每一条指令。但是在实际情况中，很多程序都需要对脚本中命令的逻辑流进行控制。即根据某些条件和状态完成判断，再决定其后的程序该以怎样的规则执行。Shell 脚本支持一部分结构化指令，如 if-then、case 等，用于修改程序的执行流程。 1. if-then最基本的结构化语句即 if-then，其格式如下：">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/11/15/shell-script-programming-medium/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Shell 脚本编程（中级篇） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/11/15/shell-script-programming-medium/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Shell 脚本编程（中级篇）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-15T00:00:00+08:00">2018-11-15</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/15/shell-script-programming-medium/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/11/15/shell-script-programming-medium/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/11/15/shell-script-programming-medium/" class="leancloud_visitors" data-flag-title="Shell 脚本编程（中级篇）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">13k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:13</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="中级篇"><a href="#中级篇" class="headerlink" title="中级篇"></a>中级篇</h3><h4 id="一、结构化命令"><a href="#一、结构化命令" class="headerlink" title="一、结构化命令"></a>一、结构化命令</h4><p>在<a href="https://www.jianshu.com/p/7ea3df7c0806" target="_blank" rel="noopener">基础篇</a>的示例中，Shell 大多数情况下都以<strong>顺序</strong>的方式依次执行脚本中的每一条指令。<br>但是在实际情况中，很多程序都需要对脚本中命令的<strong>逻辑流</strong>进行控制。即根据某些条件和状态完成判断，再决定其后的程序该以怎样的规则执行。<br>Shell 脚本支持一部分<strong>结构化指令</strong>，如 <code>if-then</code>、<code>case</code> 等，用于修改程序的执行流程。</p>
+<h5 id="1-if-then"><a href="#1-if-then" class="headerlink" title="1. if-then"></a>1. if-then</h5><p>最基本的结构化语句即 <code>if-then</code>，其格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if command</span><br><span class="line">then</span><br><span class="line">    commands</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>Bash Shell 中的 <code>if-then</code> 语句和其他编程语言中的类似语句稍有些不同，其作用如下：</p>
+<ul>
+<li>首先执行 <code>if</code> 后面跟随的命令 <code>command</code></li>
+<li>如果该命令 <code>command</code> 的<strong>结束状态</strong>（exit status）为 0（即该命令执行成功），则 <code>then</code> 后面的命令依次被执行</li>
+<li>如果该命令 <code>command</code> 的结束状态为任何非 0 的值（该命令非正常退出），则不执行 <code>then</code> 后面的命令，Bash Shell 移动到脚本中的下一条命令（即 <code>fi</code> 后面的内容）</li>
+</ul>
+<p>如下面的两个示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ cat if1.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if pwd</span><br><span class="line">then</span><br><span class="line">    echo &quot;It worked&quot;</span><br><span class="line">fi</span><br><span class="line">echo &quot;We are outside the if statement&quot;</span><br><span class="line">$ ./if1.sh</span><br><span class="line">/Users/starky/program/scripts/shell</span><br><span class="line">It worked</span><br><span class="line">We are outside the if statement</span><br><span class="line">$ cat if2.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if IamNotaCommand</span><br><span class="line">then</span><br><span class="line">    echo &quot;It worked&quot;</span><br><span class="line">fi</span><br><span class="line">echo &quot;We are outside the if statement&quot;</span><br><span class="line">$ ./if2.sh</span><br><span class="line">./if2.sh: line 3: IamNotaCommand: command not found</span><br><span class="line">We are outside the if statement</span><br></pre></td></tr></table></figure></p>
+<p>在上面的示例中，<code>if1.sh</code> 脚本里 <code>if</code> 后面的命令（<code>pwd</code>）成功执行，则 <code>then</code> 后面的 <code>echo</code> 命令也跟着执行。<br>而 <code>if2.sh</code> 脚本里 <code>if</code> 后面的命令（<code>IamNotaCommand</code>）执行出错，则 <code>then</code> 后面的 <code>echo</code> 命令不会被执行。<br>无论如何，判断结束后都会继续执行 <code>fi</code> 后面的语句。</p>
+<h5 id="2-if-else-then"><a href="#2-if-else-then" class="headerlink" title="2. if-else-then"></a>2. if-else-then</h5><p><code>if-else-then</code> 语句的格式为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if command</span><br><span class="line">then</span><br><span class="line">    commands</span><br><span class="line">else</span><br><span class="line">    commands</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>当 <code>if</code> 后面的命令执行后返回值为 0 时，则 <code>then</code> 后面的命令被执行。<br>如果 <code>if</code> 后面的命令执行后返回值不为 0，则执行 <code>else</code> 后面的命令。</p>
+<p>示例（<code>if3.sh</code>）如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">testuser=starky</span><br><span class="line">if ls -d /Users/$testuser</span><br><span class="line">then</span><br><span class="line">    echo &quot;The bash files for user $testuser are:&quot;</span><br><span class="line">    ls -a /Users/$testuser/.b*</span><br><span class="line">    echo</span><br><span class="line">else</span><br><span class="line">    echo &quot;The user $testuser does not exist on this system.&quot;</span><br><span class="line">    echo</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ chmod +x if3.sh</span><br><span class="line">$ ./if3.sh</span><br><span class="line">/Users/starky</span><br><span class="line">The bash files for user starky are:</span><br><span class="line">/Users/starky/.bash_history /Users/starky/.bash_profile</span><br><span class="line">/Users/starky/.bash_sessions:</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>但是将上述脚本中 <code>testuser</code> 变量的值改为系统中并不存在的用户时（如 <code>NoSuchUser</code>），则运行效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ cat if3.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">testuser=NoSuchUser</span><br><span class="line">if ls -d /Users/$testuser</span><br><span class="line">then</span><br><span class="line">    echo &quot;The bash files for user $testuser are:&quot;</span><br><span class="line">    ls -a /Users/$testuser/.b*</span><br><span class="line">    echo</span><br><span class="line">else</span><br><span class="line">    echo &quot;The user $testuser does not exist on this system.&quot;</span><br><span class="line">    echo</span><br><span class="line">fi</span><br><span class="line">$ ./if3.sh</span><br><span class="line">ls: /Users/NoSuchUser: No such file or directory</span><br><span class="line">The user NoSuchUser does not exist on this system.</span><br></pre></td></tr></table></figure></p>
+<p>其他结构形式的 <code>if-else-then</code> 语句还包括：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">if command1</span><br><span class="line">then</span><br><span class="line">    commands</span><br><span class="line">elif</span><br><span class="line">    command2</span><br><span class="line">then</span><br><span class="line">    more commands</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>当然理论上讲可以使用足够的 <code>if-then-elif-then</code> 语句，只不过类似情况下多使用更为恰当的 <code>case</code> 语句。</p>
+<h5 id="3-test-命令"><a href="#3-test-命令" class="headerlink" title="3. test 命令"></a>3. test 命令</h5><p>上面提到的 <code>if-then</code> 语句，大多是这样的形式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if command</span><br><span class="line">then</span><br><span class="line">    commands</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>即 <code>if</code> 后面跟的是一条普通的 Shell 命令，根据该命令是否成功执行，来确定 <code>then</code> 后面的命令是否执行。</p>
+<p>可以借助 <code>test</code> 命令，使用如下形式的 <code>if-then</code> 语句：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if test condition</span><br><span class="line">then</span><br><span class="line">    commands</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>如果 <code>test</code> 命令后面的 condition 计算后为 TRUE，则 <code>test</code> 命令退出并返回一个值为 0 的状态值。<code>then</code> 后面的命令被执行。<br>如果 <code>test</code> 命令后面的 condition 计算后为 FALSE，则 <code>test</code> 命令退出并返回一个非零的状态值。跳出当前的 <code>if-then</code> 并继续执行后面的内容。</p>
+<p>如下面的两个例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ cat test_condition.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">my_variable=&quot;Full&quot;</span><br><span class="line"></span><br><span class="line">if test $my_variable</span><br><span class="line">then</span><br><span class="line">    echo &quot;The $my_variable expression returns a True&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;The $my_variable expression returns a False&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./test_condition.sh</span><br><span class="line">The Full expression returns a True</span><br><span class="line">$ cat test_condition2.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">my_variable=&quot;&quot;</span><br><span class="line"></span><br><span class="line">if test $my_variable</span><br><span class="line">then</span><br><span class="line">    echo &quot;The $my_variable expression returns a True&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;The $my_variable expression returns a False&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./test_condition2.sh</span><br><span class="line">The  expression returns a False</span><br></pre></td></tr></table></figure></p>
+<p>Bash Shell 还提供了另外一种不需要使用 <code>test</code> 命令来完成条件检查的 <code>if-then</code> 语句：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if [ condition ]</span><br><span class="line">then</span><br><span class="line">    commands</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>方括号中的内容用来定义判断条件。注意方括号和 <strong>condition</strong> 之间的<strong>空格</strong>。<br>支持三种形式的判断条件：</p>
+<ul>
+<li>数字比较</li>
+<li>字符串比较</li>
+<li>文件比较</li>
+</ul>
+<h6 id="数字比较"><a href="#数字比较" class="headerlink" title="数字比较"></a>数字比较</h6><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n1 -eq n2</td>
+<td>检查 n1 是否等于 n2</td>
+</tr>
+<tr>
+<td>n1 -ge n2</td>
+<td>检查 n1 是否大于或等于 n2</td>
+</tr>
+<tr>
+<td>n1 -gt n2</td>
+<td>检查 n1 是否大于 n2</td>
+</tr>
+<tr>
+<td>n1 -le n2</td>
+<td>检查 n1 是否小于或等于 n2</td>
+</tr>
+<tr>
+<td>n1 -lt n2</td>
+<td>检查 n1 是否 小于 n2</td>
+</tr>
+<tr>
+<td>n1 -ne n2</td>
+<td>检查 n1 是否不等于 n2</td>
+</tr>
+</tbody>
+</table>
+<p>示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ cat numeric_test.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">value1=10</span><br><span class="line">value2=11</span><br><span class="line"></span><br><span class="line">if [ $value1 -gt 5 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The test value $value1 is greater than 5&quot;</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if [ $value1 -eq $value2 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The values are equal&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;The values are different&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./numeric_test.sh</span><br><span class="line">The test value 10 is greater than 5</span><br><span class="line">The values are different</span><br></pre></td></tr></table></figure></p>
+<h6 id="字符串比较"><a href="#字符串比较" class="headerlink" title="字符串比较"></a>字符串比较</h6><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>str1 = str2</td>
+<td>检查 str1 和 str2 是否相同</td>
+</tr>
+<tr>
+<td>str1 != str2</td>
+<td>检查 str1 和 str2 是否不相同</td>
+</tr>
+<tr>
+<td>str1 &lt; str2</td>
+<td>检查 str1 是否小于 str2</td>
+</tr>
+<tr>
+<td>str1 &gt; str2</td>
+<td>检查 str1 是否大于 str2</td>
+</tr>
+<tr>
+<td>-n str1</td>
+<td>检查 str1 是否长度大于 0（不为空）</td>
+</tr>
+<tr>
+<td>-z str1</td>
+<td>检查 str1 是否长度为 0（为空）</td>
+</tr>
+</tbody>
+</table>
+<p>示例1：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat welcome.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">testuser=starky</span><br><span class="line"></span><br><span class="line">if [ $USER = $testuser ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;Welcome $testuser&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;This is not $testuser&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./welcome.sh</span><br><span class="line">Welcome starky</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p><strong>PS</strong>：在使用 <code>str1 &gt; str2</code> 或 <code>str1 &lt; str2</code> 这种类型的条件时，需加上<strong>转义符号</strong>。否则大于号或小于号会被当作<strong>重定向</strong>处理。</p>
+<p>示例2：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ cat compare.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">val1=Testing</span><br><span class="line">val2=testing</span><br><span class="line"></span><br><span class="line">if [ $val1 \&gt; $val2 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;$val1 is greater than $val2&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;$val1 is less than $val2&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./compare.sh</span><br><span class="line">Testing is less than testing</span><br></pre></td></tr></table></figure></p>
+<p><strong>PS</strong>：<code>if</code> 条件中的比较依据的是基本 <strong>ASCII 顺序</strong>，通过每个字符（从首字母开始）的 ASCII 值的比较来判断大小顺序。</p>
+<hr>
+<p><code>-n</code> 和 <code>-z</code> 常常用来确定指定字符串是否为空。<br>示例3：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">$ cat empty.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">val1=testing</span><br><span class="line">val2=&apos;&apos;</span><br><span class="line"></span><br><span class="line">if [ -n $val1 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The string &apos;$val1&apos; is not empty&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;The string &apos;$val1&apos; is empty&quot;</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if [ -z $val2 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The string &apos;$val2&apos; is empty&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;The string &apos;$val2&apos; is not empty&quot;</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if [ -z $val3 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The string &apos;$val3&apos; is empty&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;The string &apos;$val3&apos; is not empty&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./empty.sh</span><br><span class="line">The string &apos;testing&apos; is not empty</span><br><span class="line">The string &apos;&apos; is empty</span><br><span class="line">The string &apos;&apos; is empty</span><br></pre></td></tr></table></figure></p>
+<p>上述脚本中 <code>val3</code> 变量自始至终没有被定义，被自动判断为空字符串。</p>
+<h6 id="文件比较"><a href="#文件比较" class="headerlink" title="文件比较"></a>文件比较</h6><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-d file</td>
+<td>检查 file 是否存在且是一个目录</td>
+</tr>
+<tr>
+<td>-e file</td>
+<td>检查 file 是否存在</td>
+</tr>
+<tr>
+<td>-f file</td>
+<td>检查 file 是否存在且是一个文件</td>
+</tr>
+<tr>
+<td>-r file</td>
+<td>检查 file 是否存在且可读</td>
+</tr>
+<tr>
+<td>-s file</td>
+<td>检查 file 是否存在且不为空</td>
+</tr>
+<tr>
+<td>-w file</td>
+<td>检查 file 是否存在且可写</td>
+</tr>
+<tr>
+<td>-x file</td>
+<td>检查 file 是否存在且可执行</td>
+</tr>
+<tr>
+<td>-O file</td>
+<td>检查 file 是否存在且其属主为当前用户</td>
+</tr>
+<tr>
+<td>-G file</td>
+<td>检查 file 是否存在且其默认数组和当前用户相同</td>
+</tr>
+<tr>
+<td>file1 -nt file2</td>
+<td>检查 file1 是否比 file2 更新（newer than）</td>
+</tr>
+<tr>
+<td>file1 -ot file2</td>
+<td>检查 file1 是否比 file2 更老（older than）</td>
+</tr>
+</tbody>
+</table>
+<p>示例1，目录检查：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ cat check_dir.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">directory=/Users/starky</span><br><span class="line">if [ -d $directory ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The $directory directory exists&quot;</span><br><span class="line">    cd $directory</span><br><span class="line">    ls</span><br><span class="line">else</span><br><span class="line">    echo &quot;The $directory directory does not exist&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./check_dir.sh</span><br><span class="line">The /Users/starky directory exists</span><br><span class="line">Applications    Downloads   Music       extract.sh  program</span><br><span class="line">Desktop     Library     Pictures    id_rsa.pub  software</span><br><span class="line">Documents   Movies      Public      miniconda3  vim.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>示例2，删除空文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">$ cat check_empty.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">file_name=empty</span><br><span class="line"></span><br><span class="line"># 检查该文件是否存在</span><br><span class="line">if [ -f $file_name ]</span><br><span class="line">then</span><br><span class="line">    # 该文件存在，则继续检查其内容是否非空</span><br><span class="line">    if [ -s $file_name ]</span><br><span class="line">    then</span><br><span class="line">        # 内容不为空</span><br><span class="line">        echo &quot;The $file_name file exists and has data in it.&quot;</span><br><span class="line">        echo &quot;Will not remove this file&quot;</span><br><span class="line">    else</span><br><span class="line">        # 内容为空</span><br><span class="line">        echo &quot;The $file_name file exists, but is empty.&quot;</span><br><span class="line">        echo &quot;Deleting empty file...&quot;</span><br><span class="line">        rm $file_name</span><br><span class="line">    fi</span><br><span class="line">else</span><br><span class="line">    # 该文件不存在</span><br><span class="line">    echo &quot;File, $file_name, does not exist.&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./check_empty.sh</span><br><span class="line">File, empty, does not exist.</span><br><span class="line">$ touch empty</span><br><span class="line">$ ls empty</span><br><span class="line">empty</span><br><span class="line">$ ./check_empty.sh</span><br><span class="line">The empty file exists, but is empty.</span><br><span class="line">Deleting empty file...</span><br><span class="line">$ ls empty</span><br><span class="line">ls: empty: No such file or directory</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-组合判断"><a href="#4-组合判断" class="headerlink" title="4. 组合判断"></a>4. 组合判断</h5><p><code>if-then</code> 语句允许使用<strong>布尔逻辑</strong>来完成多个条件的组合判断。</p>
+<ul>
+<li><code>[ condition1 ] &amp;&amp; [ condition2 ]</code> 逻辑与</li>
+<li><code>[ condition1 ] || [ condition2 ]</code> 逻辑或</li>
+</ul>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">cat compound_test.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if [ -d $HOME ] &amp;&amp; [ -w $HOME/testing ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;The file exists and you can write to it&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;I cannot write to the file&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./compound_test.sh</span><br><span class="line">I cannot write to the file</span><br><span class="line">$ touch ~/testing</span><br><span class="line">$ ./compound_test.sh</span><br><span class="line">The file exists and you can write to it</span><br></pre></td></tr></table></figure></p>
+<h5 id="if-then-中的双括号"><a href="#if-then-中的双括号" class="headerlink" title="if-then 中的双括号"></a>if-then 中的双括号</h5><p>Bash Shell 在 <code>if-then</code> 语句中还提供了一些更高级的特性：</p>
+<ul>
+<li>双小括号（数学表达式）</li>
+<li>双中括号（字符串处理函数）</li>
+</ul>
+<h6 id="使用双小括号"><a href="#使用双小括号" class="headerlink" title="使用双小括号"></a>使用双小括号</h6><p><strong>双小括号</strong>允许在条件测试时使用（相对于 test 命令）更高级的数学表达式。<br>格式：<code>(( expression ))</code><br>其中 <code>expression</code> 除了支持前面提到过的基本的数学操作符外，还支持以下操作符：</p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>val++</td>
+<td>Post-increment</td>
+</tr>
+<tr>
+<td>val–</td>
+<td>Post-decrement</td>
+</tr>
+<tr>
+<td>++val</td>
+<td>Pre-increment</td>
+</tr>
+<tr>
+<td>–val</td>
+<td>Pre-decrement</td>
+</tr>
+<tr>
+<td>!</td>
+<td>逻辑非</td>
+</tr>
+<tr>
+<td>~</td>
+<td>按位否定</td>
+</tr>
+<tr>
+<td>**</td>
+<td>幂</td>
+</tr>
+<tr>
+<td>&lt;&lt;</td>
+<td>向左按位移位</td>
+</tr>
+<tr>
+<td>&gt;&gt;</td>
+<td>向右按位移位</td>
+</tr>
+<tr>
+<td>&amp;</td>
+<td>按位逻辑与</td>
+</tr>
+<tr>
+<td>管道符</td>
+<td>按位逻辑或</td>
+</tr>
+<tr>
+<td>&amp;&amp;</td>
+<td>逻辑与</td>
+</tr>
+<tr>
+<td>双管道符</td>
+<td>逻辑或</td>
+</tr>
+</tbody>
+</table>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat parenthesis.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">val1=10</span><br><span class="line"></span><br><span class="line">if (( $val1 ** 2 &gt; 90 ))</span><br><span class="line">then</span><br><span class="line">    (( val2 = $val1 ** 2 ))</span><br><span class="line">    echo &quot;The square of $val1 is $val2&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./parenthesis.sh</span><br><span class="line">The square of 10 is 100</span><br></pre></td></tr></table></figure></p>
+<h6 id="使用双中括号"><a href="#使用双中括号" class="headerlink" title="使用双中括号"></a>使用双中括号</h6><p>双中括号为 test 命令中的字符串比较提供了更高级的特性，尤其是支持 <strong>模式匹配</strong>。<br>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">cat pattern.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if [[ $USER == s* ]]</span><br><span class="line">then</span><br><span class="line">    echo &quot;Hello $USER&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;Sorry, I do not know you&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./pattern.sh</span><br><span class="line">Hello starky</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-case-命令"><a href="#4-case-命令" class="headerlink" title="4. case 命令"></a>4. case 命令</h5><p>很多时候，某个作为判断条件的变量有多个可能的取值，而你需要根据不同的取值指导程序去做对应的操作。<br>如果使用 <code>if-then-else</code> 语句，代码免不了会拉得有些长。。。</p>
+<p>不同于 if 语句（通过 if、elif 依次检查同一个变量的所有取值），case 命令以<strong>类似列表</strong>的形式检查同一个变量的所有取值：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">case variable in</span><br><span class="line">    pattern1 | pattern2) commands1;;</span><br><span class="line">    pattern3) commands2;;</span><br><span class="line">    *) default commands;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure></p>
+<p>case 命令将指定的变量与多个不同的<strong>模式</strong>进行比对，如果匹配，则执行该模式后面的命令。<br>可以在同一行中定义多个模式（使用 <code>|</code> 符号分隔）。<br>星号表示当之前的所有模式都不能被匹配时，默认执行的命令。</p>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ cat case_user.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">case $USER in</span><br><span class="line">    rich | barbara)</span><br><span class="line">        echo &quot;Welcome, $USER&quot;</span><br><span class="line">        echo &quot;Please enjoy your visit&quot;;;</span><br><span class="line">    testing)</span><br><span class="line">        echo &quot;Special testing account&quot;;;</span><br><span class="line">    jessica)</span><br><span class="line">        echo &quot;Do not forget to logout when you&apos;re done&quot;;;</span><br><span class="line">    *)</span><br><span class="line">        echo &quot;Sorry, you are not allowed here&quot;;;</span><br><span class="line">esac</span><br><span class="line">$ ./case_user.sh</span><br><span class="line">Sorry, you are not allowed here</span><br></pre></td></tr></table></figure></p>
+<p>上面的脚本等同于使用如下的 if 语句：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ cat if_user.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">if [[ $USER = &quot;rich&quot; || $USER = &quot;barbara&quot; ]]</span><br><span class="line">then</span><br><span class="line">    echo &quot;Welcome $USER&quot;</span><br><span class="line">    echo &quot;Please enjoy your visit&quot;</span><br><span class="line">elif [ $USER = &quot;testing&quot; ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;Special testing account&quot;</span><br><span class="line">elif [ $USER = &quot;jessica&quot; ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;Do not forget to logout when you&apos;re done&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;Sorry, you are not allowed here&quot;</span><br><span class="line">fi</span><br><span class="line">$ ./if_user.sh</span><br><span class="line">Sorry, you are not allowed here</span><br></pre></td></tr></table></figure></p>
+<h4 id="二、更多结构化命令"><a href="#二、更多结构化命令" class="headerlink" title="二、更多结构化命令"></a>二、更多结构化命令</h4><h5 id="1-for-命令"><a href="#1-for-命令" class="headerlink" title="1. for 命令"></a>1. for 命令</h5><p>很多时候，需要重复地执行一系列命令直到某个特定的情况出现。<br><code>for</code> 命令允许创建一个循环来遍历某些值，并在循环过程中使用遍历到的值执行一系列特定的指令。语法格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for var in list</span><br><span class="line">do</span><br><span class="line">    commands</span><br><span class="line">done</span><br></pre></td></tr></table></figure></p>
+<h6 id="遍历列表"><a href="#遍历列表" class="headerlink" title="遍历列表"></a>遍历列表</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat for_list.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line">for state in Alabama Alaska Arizona</span><br><span class="line">do</span><br><span class="line">    echo The next state is $state</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo &quot;The last state we visited was $state&quot;</span><br><span class="line">$ ./for_list.sh</span><br><span class="line">The next state is Alabama</span><br><span class="line">The next state is Alaska</span><br><span class="line">The next state is Arizona</span><br><span class="line">The last state we visited was Arizona</span><br></pre></td></tr></table></figure>
+<p>每次 <code>for</code> 命令遍历由后面列表（<code>Alabama Alaska Arizona</code>）提供的值时，会把列表中当前项目的值赋值给 <code>$state</code> 变量（即第一次遍历把 <code>Alabama</code> 赋值给 <code>$state</code>，第二次是 <code>Alaska</code>），该 <code>$state</code> 变量可以在后面的 <code>do ... done</code> 结构中使用。</p>
+<p><code>for</code> 循环结束后 <code>$state</code> 变量<strong>依旧有效</strong>，即保留最后一次遍历时得到的值（列表的最后一项 <code>Arizona</code>）而不会被销毁。</p>
+<h6 id="遍历字符串中的列表"><a href="#遍历字符串中的列表" class="headerlink" title="遍历字符串中的列表"></a>遍历字符串中的列表</h6><p>Bash Shell 中的<code>for</code> 循环可以直接接收单个<strong>字符串</strong>作为参数，并通过其中的<strong>空格</strong>将该字符串分割成多个遍历的项目。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ cat for_variable.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">states=&quot;Alabama Alaska Arizona&quot;</span><br><span class="line">states=$states&quot; Arkansas&quot;</span><br><span class="line"></span><br><span class="line">for state in $states</span><br><span class="line">do</span><br><span class="line">    echo &quot;Have you ever visited $state?&quot;</span><br><span class="line">done</span><br><span class="line">$ ./for_variable.sh</span><br><span class="line">Have you ever visited Alabama?</span><br><span class="line">Have you ever visited Alaska?</span><br><span class="line">Have you ever visited Arizona?</span><br><span class="line">Have you ever visited Arkansas?</span><br></pre></td></tr></table></figure></p>
+<p>脚本中 <code>state=$state&quot; Arkansas&quot;</code> 可以用来在 <code>$state</code> 变量中的字符串末尾添加新的字符串，也等同于在列表末尾添加了新的项目。</p>
+<h6 id="从命令中获取遍历的列表"><a href="#从命令中获取遍历的列表" class="headerlink" title="从命令中获取遍历的列表"></a>从命令中获取遍历的列表</h6><p>可以通过<strong>命令替换</strong>将命令的输出作为 <code>for</code> 命令循环遍历的列表：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat states.txt</span><br><span class="line">Alabama Alaska Arizona</span><br><span class="line">$ cat for_command.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">for state in $(cat states.txt)</span><br><span class="line">do</span><br><span class="line">    echo &quot;Visit beautiful $state&quot;</span><br><span class="line">done</span><br><span class="line">$ ./for_command.sh</span><br><span class="line">Visit beautiful Alabama</span><br><span class="line">Visit beautiful Alaska</span><br><span class="line">Visit beautiful Arizona</span><br></pre></td></tr></table></figure></p>
+<h6 id="遍历文件目录"><a href="#遍历文件目录" class="headerlink" title="遍历文件目录"></a>遍历文件目录</h6><p>可以使用 <code>for</code> 命令直接循环目录中的文件（结合 * 符号）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ cat for_dir.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">for file in /Users/starky/.vim* /Users/starky/badtest</span><br><span class="line">do</span><br><span class="line">    if [ -d &quot;$file&quot; ]</span><br><span class="line">    then</span><br><span class="line">        echo &quot;$file is a directory&quot;</span><br><span class="line">    elif [ -f &quot;$file&quot; ]</span><br><span class="line">    then</span><br><span class="line">        echo &quot;$file is a file&quot;</span><br><span class="line">    else</span><br><span class="line">        echo &quot;$file doesn&apos;t exit&quot;</span><br><span class="line">    fi</span><br><span class="line">done</span><br><span class="line">$ ./for_dir.sh</span><br><span class="line">/Users/starky/.vim is a directory</span><br><span class="line">/Users/starky/.viminfo is a file</span><br><span class="line">/Users/starky/.vimrc is a file</span><br><span class="line">/Users/starky/badtest doesn&apos;t exit</span><br></pre></td></tr></table></figure></p>
+<p>注意脚本中的 <code>if [ -d &quot;$file&quot; ]</code> 段代码， <code>&quot;$file&quot;</code> 被双引号包裹了起来。<br>原因是文件名中包含<strong>空格</strong>是合法的，但是在 Shell 脚本中，如果 <code>$file</code> 变量的值包含空格，则不能直接在 <code>if [ -d ... ]</code> 中使用，所以这里使用了双引号。</p>
+<h5 id="2-C-语法的-for-命令"><a href="#2-C-语法的-for-命令" class="headerlink" title="2. C 语法的 for 命令"></a>2. C 语法的 for 命令</h5><p>Bash Shell 也支持语法类似于 C 语言形式的 for 循环：<br><code>for (( variable assignment ; condition ; iteration process ))</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ cat for_c.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">for (( i=1; i &lt;= 10; i++ ))</span><br><span class="line">do</span><br><span class="line">    echo &quot;The next number is $i&quot;</span><br><span class="line">done</span><br><span class="line">$ ./for_c.sh</span><br><span class="line">The next number is 1</span><br><span class="line">The next number is 2</span><br><span class="line">The next number is 3</span><br><span class="line">The next number is 4</span><br><span class="line">The next number is 5</span><br><span class="line">The next number is 6</span><br><span class="line">The next number is 7</span><br><span class="line">The next number is 8</span><br><span class="line">The next number is 9</span><br><span class="line">The next number is 10</span><br></pre></td></tr></table></figure>
+<h5 id="3-while-命令"><a href="#3-while-命令" class="headerlink" title="3. while 命令"></a>3. while 命令</h5><p><code>while</code> 命令允许用户定义一个判断指令，然后循环执行一系列命令，并在每次执行前检查判断指令的返回值（exit status）。直到判断指令的返回值不为 0，终止循环。</p>
+<p><code>while</code> 命令的格式为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">while test command</span><br><span class="line">do</span><br><span class="line">    other commands</span><br><span class="line">done</span><br></pre></td></tr></table></figure></p>
+<p>示例程序如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ cat while.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">var=5</span><br><span class="line">while [ $var -gt 0 ]</span><br><span class="line">do</span><br><span class="line">    echo $var</span><br><span class="line">    var=$[ $var -1 ]</span><br><span class="line">done</span><br><span class="line">$ ./while.sh</span><br><span class="line">5</span><br><span class="line">4</span><br><span class="line">3</span><br><span class="line">2</span><br><span class="line">1</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-break-命令"><a href="#4-break-命令" class="headerlink" title="4. break 命令"></a>4. break 命令</h5><p><code>break</code> 命令用于跳出循环</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ cat break.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">for var in 1 2 3 4 5 6 7 8 9 10</span><br><span class="line">do</span><br><span class="line">    if [ $var -eq 5 ]</span><br><span class="line">    then</span><br><span class="line">        break</span><br><span class="line">    fi</span><br><span class="line">    echo &quot;Iteration number: $var&quot;</span><br><span class="line">done</span><br><span class="line">echo &quot;The for loop is completed&quot;</span><br><span class="line">$ ./break.sh</span><br><span class="line">Iteration number: 1</span><br><span class="line">Iteration number: 2</span><br><span class="line">Iteration number: 3</span><br><span class="line">Iteration number: 4</span><br><span class="line">The for loop is completed</span><br></pre></td></tr></table></figure>
+<h5 id="5-处理循环的输出"><a href="#5-处理循环的输出" class="headerlink" title="5. 处理循环的输出"></a>5. 处理循环的输出</h5><p>可以使用<strong>管道</strong>或<strong>重定向</strong>处理循环的输出信息，直接将管道或重定向命令加在循环语句块的末尾即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ cat output.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">for (( a = 1; a &lt; 5; a++ ))</span><br><span class="line">do</span><br><span class="line">    echo &quot;The number is $a&quot;</span><br><span class="line">done &gt; numbers.txt</span><br><span class="line"></span><br><span class="line">echo &quot;The command is finished&quot;</span><br><span class="line">$ ./output.sh</span><br><span class="line">The command is finished</span><br><span class="line">$ cat numbers.txt</span><br><span class="line">The number is 1</span><br><span class="line">The number is 2</span><br><span class="line">The number is 3</span><br><span class="line">The number is 4</span><br></pre></td></tr></table></figure>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://a.co/d/dLeNg5O" target="_blank" rel="noopener">Linux Command Line and Shell Scripting Bible 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/Shell/" rel="tag"># Shell</a>
+          
+            <a href="/tags/Programming/" rel="tag"># Programming</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/11/raspberry-pi-fm-emitter-and-webcam-server/" rel="next" title="树莓派作为 FM 发射台和 Webcam 服务器（视频监控）">
+                <i class="fa fa-chevron-left"></i> 树莓派作为 FM 发射台和 Webcam 服务器（视频监控）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/15/shell-script-programming-basic/" rel="prev" title="Shell 脚本编程（基础篇）">
+                Shell 脚本编程（基础篇） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#中级篇"><span class="nav-number">1.</span> <span class="nav-text">中级篇</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、结构化命令"><span class="nav-number">1.1.</span> <span class="nav-text">一、结构化命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-if-then"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. if-then</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-if-else-then"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. if-else-then</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-test-命令"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. test 命令</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数字比较"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">数字比较</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#字符串比较"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">字符串比较</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#文件比较"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">文件比较</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-组合判断"><span class="nav-number">1.1.4.</span> <span class="nav-text">4. 组合判断</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#if-then-中的双括号"><span class="nav-number">1.1.5.</span> <span class="nav-text">if-then 中的双括号</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#使用双小括号"><span class="nav-number">1.1.5.1.</span> <span class="nav-text">使用双小括号</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#使用双中括号"><span class="nav-number">1.1.5.2.</span> <span class="nav-text">使用双中括号</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-case-命令"><span class="nav-number">1.1.6.</span> <span class="nav-text">4. case 命令</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、更多结构化命令"><span class="nav-number">1.2.</span> <span class="nav-text">二、更多结构化命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-for-命令"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. for 命令</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#遍历列表"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">遍历列表</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#遍历字符串中的列表"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">遍历字符串中的列表</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#从命令中获取遍历的列表"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">从命令中获取遍历的列表</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#遍历文件目录"><span class="nav-number">1.2.1.4.</span> <span class="nav-text">遍历文件目录</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-C-语法的-for-命令"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. C 语法的 for 命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-while-命令"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. while 命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-break-命令"><span class="nav-number">1.2.4.</span> <span class="nav-text">4. break 命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-处理循环的输出"><span class="nav-number">1.2.5.</span> <span class="nav-text">5. 处理循环的输出</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">1.3.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

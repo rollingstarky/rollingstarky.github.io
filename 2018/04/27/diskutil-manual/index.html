@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Admin,System,Tools,Hardware,MacOS," />
+
+
+<meta name="description" content="电脑上的操作系统、应用程序和应用数据一般都需要保存在永久存储器中（通常就是硬盘），这样电脑断电后应用数据等就不会丢失。为了更有效地组织磁盘上的数据信息，通常将磁盘预先划分成一个或多个磁盘分区，创建对应的文件系统，以方便计算机对各分区分别进行管理。MacOS 系统自带一个图形化的磁盘管理工具（Disk Utility），同时还有一个命令行版本的 diskutil。通过该命令的使用，可以很快捷地对本">
+<meta name="keywords" content="Admin,System,Tools,Hardware,MacOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MacOS 磁盘管理工具 diskutil 介绍">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/04/27/diskutil-manual/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="电脑上的操作系统、应用程序和应用数据一般都需要保存在永久存储器中（通常就是硬盘），这样电脑断电后应用数据等就不会丢失。为了更有效地组织磁盘上的数据信息，通常将磁盘预先划分成一个或多个磁盘分区，创建对应的文件系统，以方便计算机对各分区分别进行管理。MacOS 系统自带一个图形化的磁盘管理工具（Disk Utility），同时还有一个命令行版本的 diskutil。通过该命令的使用，可以很快捷地对本">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-625b890ef2d3ad0d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-ea1696891824dc09.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0501beb9453d575e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-4c65890e245e0cb8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8184654971815e70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-1d42f13798fa0c24.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-b668018feed5acfa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a2272b0c5fb09016.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0676e6db70d75265.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-05-17T02:30:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MacOS 磁盘管理工具 diskutil 介绍">
+<meta name="twitter:description" content="电脑上的操作系统、应用程序和应用数据一般都需要保存在永久存储器中（通常就是硬盘），这样电脑断电后应用数据等就不会丢失。为了更有效地组织磁盘上的数据信息，通常将磁盘预先划分成一个或多个磁盘分区，创建对应的文件系统，以方便计算机对各分区分别进行管理。MacOS 系统自带一个图形化的磁盘管理工具（Disk Utility），同时还有一个命令行版本的 diskutil。通过该命令的使用，可以很快捷地对本">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-625b890ef2d3ad0d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/04/27/diskutil-manual/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>MacOS 磁盘管理工具 diskutil 介绍 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/04/27/diskutil-manual/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MacOS 磁盘管理工具 diskutil 介绍</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-27T00:00:00+08:00">2018-04-27</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MacOS/" itemprop="url" rel="index"><span itemprop="name">MacOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/04/27/diskutil-manual/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/04/27/diskutil-manual/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/04/27/diskutil-manual/" class="leancloud_visitors" data-flag-title="MacOS 磁盘管理工具 diskutil 介绍">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">18k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:18</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>电脑上的<strong>操作系统</strong>、<strong>应用程序</strong>和<strong>应用数据</strong>一般都需要保存在<strong>永久存储</strong>器中（通常就是<strong>硬盘</strong>），这样电脑断电后应用数据等就不会丢失。<br>为了更有效地组织磁盘上的数据信息，通常将磁盘预先划分成一个或多个<a href="https://en.wikipedia.org/wiki/Disk_partitioning" target="_blank" rel="noopener"><strong>磁盘分区</strong></a>，创建对应的<a href="https://en.wikipedia.org/wiki/File_system" target="_blank" rel="noopener"><strong>文件系统</strong></a>，以方便计算机对各分区分别进行管理。<br>MacOS 系统自带一个图形化的磁盘管理工具（Disk Utility），同时还有一个命令行版本的 <strong>diskutil</strong>。通过该命令的使用，可以很快捷地对本地磁盘进行擦除数据、调整分区大小、格式化等操作。</p>
+</blockquote>
+<h4 id="一、verb"><a href="#一、verb" class="headerlink" title="一、verb"></a>一、verb</h4><p><strong>diskutil</strong> 命令的格式为：<code>diskutil &lt;verb&gt; &lt;options&gt;</code><br>不带任何选项的 <strong>diskutil</strong> 命令会列出该命令支持的 <em>verb</em> 及其对应的介绍：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ diskutil</span><br><span class="line">Disk Utility Tool</span><br><span class="line">Utility to manage local disks and volumes</span><br><span class="line"></span><br><span class="line">Usage:  diskutil [quiet] &lt;verb&gt; &lt;options&gt;, where &lt;verb&gt; is as follows:</span><br><span class="line"></span><br><span class="line">     list                 (List the partitions of a disk)</span><br><span class="line">     info[rmation]        (Get information on a specific disk or partition)</span><br><span class="line">     listFilesystems      (List file systems available for formatting)</span><br><span class="line">     activity             (Continuous log of system-wide disk arbitration)</span><br><span class="line"></span><br><span class="line">     u[n]mount            (Unmount a single volume)</span><br><span class="line">     unmountDisk          (Unmount an entire disk (all volumes))</span><br><span class="line">     eject                (Eject a disk)</span><br><span class="line">     mount                (Mount a single volume)</span><br><span class="line">     mountDisk            (Mount an entire disk (all mountable volumes))</span><br><span class="line"></span><br><span class="line">     rename[Volume]       (Rename a volume)</span><br><span class="line"></span><br><span class="line">     verifyVolume         (Verify the file system data structures of a volume)</span><br><span class="line">     repairVolume         (Repair the file system data structures of a volume)</span><br><span class="line">     verifyDisk           (Verify the components of a partition map of a disk)</span><br><span class="line">     repairDisk           (Repair the components of a partition map of a disk)</span><br><span class="line"></span><br><span class="line">     eraseDisk            (Erase an existing disk, removing all volumes)</span><br><span class="line">     eraseVolume          (Erase an existing volume)</span><br><span class="line">     reformat             (Erase an existing volume with same name and type)</span><br><span class="line">     eraseOptical         (Erase optical media (CD/RW, DVD/RW, etc.))</span><br><span class="line">     zeroDisk             (Erase a disk, writing zeros to the media)</span><br><span class="line">     randomDisk           (Erase a disk, writing random data to the media)</span><br><span class="line">     secureErase          (Securely erase a disk or freespace on a volume)</span><br><span class="line"></span><br><span class="line">     partitionDisk        ((re)Partition a disk, removing all volumes)</span><br><span class="line">     resizeVolume         (Resize a volume, increasing or decreasing its size)</span><br><span class="line">     splitPartition       (Split an existing partition into two or more)</span><br><span class="line">     mergePartitions      (Combine two or more existing partitions into one)</span><br><span class="line"></span><br><span class="line">     appleRAID &lt;verb&gt;     (Perform additional verbs related to AppleRAID)</span><br><span class="line">     coreStorage &lt;verb&gt;   (Perform additional verbs related to CoreStorage)</span><br><span class="line">     apfs &lt;verb&gt;          (Perform additional verbs related to APFS)</span><br><span class="line"></span><br><span class="line">diskutil &lt;verb&gt; with no options will provide help on that verb</span><br></pre></td></tr></table></figure></p>
+<p>上面列出的 <em>verb</em> 主要分为以下几类：</p>
+<ul>
+<li>获取磁盘和分区信息：如 <strong>list</strong>、<strong>info</strong>、<strong>activity</strong> 等</li>
+<li>挂（卸）载磁盘或卷：如 <strong>mount</strong>、<strong>eject</strong>、<strong>mountDisk</strong> 等</li>
+<li>验证、修复磁盘分区或文件系统：如 <strong>verifyVolume</strong>、<strong>repairDisk</strong> 等</li>
+<li>分区操作：如 <strong>splitPartitions</strong>、<strong>mergePartitions</strong> 等</li>
+<li>其他：如 <strong>appleRAID</strong>、<strong>apfs</strong> 等</li>
+</ul>
+<p>如不清楚某个 <em>verb</em> 的具体命令格式，可以直接使用 diskutil 命令加上该 <em>verb</em> 并且不带任何其他选项，命令行即输出该 <em>verb</em> 的使用介绍。如 <em>eraseDisk</em> 的使用介绍：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ diskutil eraseDisk</span><br><span class="line">Usage:  diskutil eraseDisk format name [APM[Format]|MBR[Format]|GPT[Format]]</span><br><span class="line">        MountPoint|DiskIdentifier|DeviceNode</span><br><span class="line"></span><br><span class="line">Completely erase an existing whole disk.  All volumes on this disk will be</span><br><span class="line">destroyed.  Ownership of the affected disk is required.</span><br><span class="line"></span><br><span class="line">Format is the specific file system name you want to erase it as (HFS+, etc.).</span><br><span class="line"></span><br><span class="line">Example: diskutil eraseDisk JHFS+ UntitledUFS disk3</span><br></pre></td></tr></table></figure></p>
+<h4 id="二、获取磁盘分区信息"><a href="#二、获取磁盘分区信息" class="headerlink" title="二、获取磁盘分区信息"></a>二、获取磁盘分区信息</h4><h5 id="1-list"><a href="#1-list" class="headerlink" title="1. list"></a>1. list</h5><p>可以使用 <em>list</em> 选项简要列出 MacOS 系统的磁盘及分区信息，包括分区类型（<strong>TYPE</strong>）、分区名（<strong>NAME</strong>）、容量大小（<strong>SIZE</strong>）和标志符（<strong>IDENTIFIER</strong>）等。如此时系统挂载了 dmg 映像文件，其信息也会显示在列表中（下表中的 <strong>disk3</strong> ）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ diskutil list</span><br><span class="line">/dev/disk0 (internal, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      GUID_partition_scheme                        *121.3 GB   disk0</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk0s1</span><br><span class="line">   2:                 Apple_APFS Container disk1         121.1 GB   disk0s2</span><br><span class="line"></span><br><span class="line">/dev/disk1 (synthesized):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      APFS Container Scheme -                      +121.1 GB   disk1</span><br><span class="line">                                 Physical Store disk0s2</span><br><span class="line">   1:                APFS Volume Mac OS                  78.4 GB    disk1s1</span><br><span class="line">   2:                APFS Volume Preboot                 22.5 MB    disk1s2</span><br><span class="line">   3:                APFS Volume Recovery                517.8 MB   disk1s3</span><br><span class="line">   4:                APFS Volume VM                      3.2 GB     disk1s4</span><br><span class="line"></span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:     FDisk_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:             Windows_FAT_32 UNTITLED                7.8 GB     disk2s1</span><br><span class="line"></span><br><span class="line">/dev/disk3 (disk image):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:     Apple_partition_scheme                        +39.1 MB    disk3</span><br><span class="line">   1:        Apple_partition_map                         32.3 KB    disk3s1</span><br><span class="line">   2:                  Apple_HFS Wireshark               39.1 MB    disk3s2</span><br></pre></td></tr></table></figure></p>
+<p>其中的 <strong>/dev/disk0</strong> 为内置磁盘，<strong>/dev/disk2</strong> 为外置磁盘（U 盘，已在 Windows系统下格式化为 FAT32 格式），<strong>/dev/disk3</strong> 为 DMG 映像文件。而 <strong>/dev/disk1</strong> 其实就是 <strong>disk0s2</strong> 作为 APFS 文件系统容器的具体信息。</p>
+<h5 id="2-info"><a href="#2-info" class="headerlink" title="2. info"></a>2. info</h5><p><em>info</em> 选项可以列出指定磁盘或分区的详细信息。如查看 <strong>disk2</strong> （即 8 G 优盘）的信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">~ diskutil info disk2</span><br><span class="line">  Device Identifier:        disk2</span><br><span class="line">  Device Node:              /dev/disk2</span><br><span class="line">  Whole:                    Yes</span><br><span class="line">  Part of Whole:            disk2</span><br><span class="line">  Device / Media Name:      DataTraveler 2.0</span><br><span class="line"></span><br><span class="line">  Volume Name:              Not applicable (no file system)</span><br><span class="line">  Mounted:                  Not applicable (no file system)</span><br><span class="line">  File System:              None</span><br><span class="line"></span><br><span class="line">  Content (IOContent):      FDisk_partition_scheme</span><br><span class="line">  OS Can Be Installed:      No</span><br><span class="line">  Media Type:               Generic</span><br><span class="line">  Protocol:                 USB</span><br><span class="line">  SMART Status:             Not Supported</span><br><span class="line"></span><br><span class="line">  Disk Size:                7.8 GB (7807696896 Bytes) (exactly 15249408 512-Byte-Units)</span><br><span class="line">  Device Block Size:        512 Bytes</span><br><span class="line"></span><br><span class="line">  Read-Only Media:          No</span><br><span class="line">  Read-Only Volume:         Not applicable (no file system)</span><br><span class="line"></span><br><span class="line">  Device Location:          External</span><br><span class="line">  Removable Media:          Removable</span><br><span class="line">  Media Removal:            Software-Activated</span><br><span class="line"></span><br><span class="line">  Virtual:                  No</span><br></pre></td></tr></table></figure></p>
+<p>输出的信息包括设备标志符（<strong>Device Identifier</strong>）、设备节点（<strong>Device Node</strong>）、设备名（<strong>Device / Media Name</strong>）、容量大小（<strong>Disk Size</strong>）、块大小（<strong>Block Size</strong>）等。</p>
+<p>也可以查看某个分区的详细信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">~ diskutil info disk1s1</span><br><span class="line">  Device Identifier:        disk1s1</span><br><span class="line">  Device Node:              /dev/disk1s1</span><br><span class="line">  Whole:                    No</span><br><span class="line">  Part of Whole:            disk1</span><br><span class="line"></span><br><span class="line">  Volume Name:              Mac OS</span><br><span class="line">  Mounted:                  Yes</span><br><span class="line">  Mount Point:              /</span><br><span class="line"></span><br><span class="line">  Partition Type:           41504653-0000-11AA-AA11-00306543ECAC</span><br><span class="line">  File System Personality:  APFS</span><br><span class="line">  Type (Bundle):            apfs</span><br><span class="line">  Name (User Visible):      APFS</span><br><span class="line">  Owners:                   Enabled</span><br><span class="line"></span><br><span class="line">  OS Can Be Installed:      Yes</span><br><span class="line">  Booter Disk:              disk1s2</span><br><span class="line">  Recovery Disk:            disk1s3</span><br><span class="line">  Media Type:               Generic</span><br><span class="line">  Protocol:                 PCI</span><br><span class="line">  SMART Status:             Verified</span><br><span class="line">  Volume UUID:              E9D63DEC-29D7-3EE0-B9BB-3614E31EA747</span><br><span class="line">  Disk / Partition UUID:    E9D63DEC-29D7-3EE0-B9BB-3614E31EA747</span><br><span class="line"></span><br><span class="line">  Disk Size:                121.1 GB (121123069952 Bytes) (exactly 236568496 512-Byte-Units)</span><br><span class="line">  Device Block Size:        4096 Bytes</span><br><span class="line"></span><br><span class="line">  Volume Total Space:       121.1 GB (121123069952 Bytes) (exactly 236568496 512-Byte-Units)</span><br><span class="line">  Volume Used Space:        80.0 GB (79982071808 Bytes) (exactly 156214984 512-Byte-Units) (66.0%)</span><br><span class="line">  Volume Free Space:        41.1 GB (41140998144 Bytes) (exactly 80353512 512-Byte-Units) (34.0%)</span><br><span class="line">  Allocation Block Size:    4096 Bytes</span><br><span class="line"></span><br><span class="line">  Read-Only Media:          No</span><br><span class="line">  Read-Only Volume:         No</span><br><span class="line"></span><br><span class="line">  Device Location:          Internal</span><br><span class="line">  Removable Media:          Fixed</span><br><span class="line"></span><br><span class="line">  Solid State:              Yes</span><br><span class="line">  Hardware AES Support:     No</span><br></pre></td></tr></table></figure></p>
+<h4 id="三、擦除磁盘或分区"><a href="#三、擦除磁盘或分区" class="headerlink" title="三、擦除磁盘或分区"></a>三、擦除磁盘或分区</h4><p><em>eraseDisk</em> 选项用于擦除整个磁盘并重新格式化。该命令的格式为：<br><code>diskutil eraseDisk &lt;format&gt; &lt;name&gt; [APM|MBR|GPT] MountPoint|DiskIdentifier|DeviceNode</code><br><em>format</em> 用于指定擦除数据后需要重新建立的文件系统类型。可以为 <em>%noformat%</em> 来跳过初始化文件系统的操作。其他支持的类型可以通过 <em>listFilesystems</em> 选项查看。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ diskutil listFilesystems</span><br><span class="line">Formattable file systems</span><br><span class="line"></span><br><span class="line">These file system personalities can be used for erasing and partitioning.</span><br><span class="line">When specifying a personality as a parameter to a verb, case is not considered.</span><br><span class="line"></span><br><span class="line">-------------------------------------------------------------------------------</span><br><span class="line">PERSONALITY                     USER VISIBLE NAME</span><br><span class="line">-------------------------------------------------------------------------------</span><br><span class="line">APFS                            APFS</span><br><span class="line">  (or) APFSI</span><br><span class="line">Case-sensitive APFS             APFS (Case-sensitive)</span><br><span class="line">ExFAT                           ExFAT</span><br><span class="line">Free Space                      Free Space</span><br><span class="line">  (or) FREE</span><br><span class="line">MS-DOS                          MS-DOS (FAT)</span><br><span class="line">MS-DOS FAT12                    MS-DOS (FAT12)</span><br><span class="line">MS-DOS FAT16                    MS-DOS (FAT16)</span><br><span class="line">MS-DOS FAT32                    MS-DOS (FAT32)</span><br><span class="line">  (or) FAT32</span><br><span class="line">HFS+                            Mac OS Extended</span><br><span class="line">Case-sensitive HFS+             Mac OS Extended (Case-sensitive)</span><br><span class="line">  (or) HFSX</span><br><span class="line">Case-sensitive Journaled HFS+   Mac OS Extended (Case-sensitive, Journaled)</span><br><span class="line">  (or) JHFSX</span><br><span class="line">Journaled HFS+                  Mac OS Extended (Journaled)</span><br><span class="line">  (or) JHFS+</span><br></pre></td></tr></table></figure></p>
+<p>用来测试的优盘如下所示，已在 Windows 下格式化为 FAT32 格式。<img src="https://upload-images.jianshu.io/upload_images/6875152-625b890ef2d3ad0d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="U 盘 FAT32"><br>可以使用 <code>diskutil eraseDisk ExFAT StarkyDisk disk2</code> 命令将优盘数据擦除并格式化为 ExFAT 格式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ diskutil eraseDisk ExFAT StarkyDisk disk2</span><br><span class="line">Started erase on disk2</span><br><span class="line">Unmounting disk</span><br><span class="line">Creating the partition map</span><br><span class="line">Waiting for partitions to activate</span><br><span class="line">Formatting disk2s2 as ExFAT with name StarkyDisk</span><br><span class="line">Volume name      : StarkyDisk</span><br><span class="line">Partition offset : 411648 sectors (210763776 bytes)</span><br><span class="line">Volume size      : 14835712 sectors (7595884544 bytes)</span><br><span class="line">Bytes per sector : 512</span><br><span class="line">Bytes per cluster: 32768</span><br><span class="line">FAT offset       : 2048 sectors (1048576 bytes)</span><br><span class="line"># FAT sectors    : 2048</span><br><span class="line">Number of FATs   : 1</span><br><span class="line">Cluster offset   : 4096 sectors (2097152 bytes)</span><br><span class="line"># Clusters       : 231744</span><br><span class="line">Volume Serial #  : 5ad7f879</span><br><span class="line">Bitmap start     : 2</span><br><span class="line">Bitmap file size : 28968</span><br><span class="line">Upcase start     : 3</span><br><span class="line">Upcase file size : 5836</span><br><span class="line">Root start       : 4</span><br><span class="line">Mounting disk</span><br><span class="line">Finished erase on disk2</span><br></pre></td></tr></table></figure></p>
+<p>此时的优盘信息为：<img src="https://upload-images.jianshu.io/upload_images/6875152-ea1696891824dc09.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="U 盘 ExFAT"><br>分区表变为 GPT 类型，且多了一个 EFI 分区。</p>
+<p>也可以在擦除磁盘时指定分区表类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo diskutil eraseDisk ExFAT StarkyDisk MBR disk2</span><br><span class="line">Password:</span><br><span class="line">Started erase on disk2</span><br><span class="line">Unmounting disk</span><br><span class="line">Creating the partition map</span><br><span class="line">Waiting for partitions to activate</span><br><span class="line">Formatting disk2s1 as ExFAT with name StarkyDisk</span><br><span class="line">Volume name      : StarkyDisk</span><br><span class="line">Partition offset : 2 sectors (1024 bytes)</span><br><span class="line">Volume size      : 15249406 sectors (7807695872 bytes)</span><br><span class="line">Bytes per sector : 512</span><br><span class="line">Bytes per cluster: 32768</span><br><span class="line">FAT offset       : 2048 sectors (1048576 bytes)</span><br><span class="line"># FAT sectors    : 2048</span><br><span class="line">Number of FATs   : 1</span><br><span class="line">Cluster offset   : 4096 sectors (2097152 bytes)</span><br><span class="line"># Clusters       : 238207</span><br><span class="line">Volume Serial #  : 5ad80e37</span><br><span class="line">Bitmap start     : 2</span><br><span class="line">Bitmap file size : 29776</span><br><span class="line">Upcase start     : 3</span><br><span class="line">Upcase file size : 5836</span><br><span class="line">Root start       : 4</span><br><span class="line">Mounting disk</span><br><span class="line">Finished erase on disk2</span><br></pre></td></tr></table></figure></p>
+<p>此时的优盘分区表变为 MBR 类型：<img src="https://upload-images.jianshu.io/upload_images/6875152-0501beb9453d575e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="U 盘 MBR"></p>
+<p>其他擦除命令如 <strong>eraseVolume</strong> （完全擦除整个磁盘或某个磁盘分区，创建新的文件系统）、<strong>zeroDisk</strong> （向整个磁盘或某个分区全部写入 ‘0’）<br>使用 <strong>zeroDisk</strong> 命令擦除磁盘（该过程会花费很长的时间，我试了）后，该磁盘上的全部信息被抹除，同时也不再包含分区和文件系统信息：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-4c65890e245e0cb8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="zeroDisk"><br>则再次插入此优盘会提示你『初始化』或『格式化』该磁盘。<img src="https://upload-images.jianshu.io/upload_images/6875152-8184654971815e70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="zeroDisk"></p>
+<h4 id="四、创建磁盘分区"><a href="#四、创建磁盘分区" class="headerlink" title="四、创建磁盘分区"></a>四、创建磁盘分区</h4><p>可以通过 <em>partionDisk</em> 选项完成对磁盘的分区操作。该命令的格式为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">diskutil partitionDisk MountPoint|DiskIdentifier|DeviceNode</span><br><span class="line">        [numberOfPartitions] [APM|MBR|GPT]</span><br><span class="line">        [part1Format part1Name part1Size part2Format part2Name part2Size</span><br><span class="line">         part3Format part3Name part3Size ...]</span><br></pre></td></tr></table></figure></p>
+<p>命令选项中的 <strong>Size</strong> 用来指定分区的大小（以<strong>扇区</strong>数计量），合法的值包括带有指定后缀的浮点数。其中的<strong>后缀</strong>有 B(ytes), S(512-byte-<br>blocks), K(ilobytes), M(egabytes), G(igabytes), T(erabytes), P(etabytes)，也可以是 % 来表示对整个磁盘的占比。<br>最后一个分区会自动扩展到占用整个磁盘的剩余空间，如果想为最后一个分区指定固定的大小，可在其后再创建一个类型为『free space』的分区。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo diskutil partitionDisk disk2 3 MBR MS-DOS F01 3G JHFS+ F02 3G &quot;Free Space&quot; F03 0</span><br><span class="line">Started partitioning on disk2</span><br><span class="line">Unmounting disk</span><br><span class="line">Creating the partition map</span><br><span class="line">Waiting for partitions to activate</span><br><span class="line">Formatting disk2s1 as MS-DOS (FAT) with name F01</span><br><span class="line">512 bytes per physical sector</span><br><span class="line">/dev/rdisk2s1: 5847920 sectors in 730990 FAT32 clusters (4096 bytes/cluster)</span><br><span class="line">bps=512 spc=8 res=32 nft=2 mid=0xf8 spt=32 hds=255 hid=2 drv=0x80 bsec=5859376 bspf=5711 rdcl=2 infs=1 bkbs=6</span><br><span class="line">Mounting disk</span><br><span class="line">Formatting disk2s2 as Mac OS Extended (Journaled) with name F02</span><br><span class="line">Initialized /dev/rdisk2s2 as a 3 GB case-insensitive HFS Plus volume with a 8192k journal</span><br><span class="line">Mounting disk</span><br><span class="line">Finished partitioning on disk2</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:     FDisk_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                 DOS_FAT_32 F01                     3.0 GB     disk2s1</span><br><span class="line">   2:                  Apple_HFS F02                     3.0 GB     disk2s2</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令在优盘（disk2）上创建了 3 个分区，第一个（F01）格式为 FAT32，大小是 3 Gb。第二个（F02）格式为 JHFS+，大小为 3 Gb。最后一个是『自由空间』，大小为剩余的容量。所以实际上只是分了两个区，整体的分区表类型为 MBR。</p>
+<h4 id="五、分割-合并磁盘分区"><a href="#五、分割-合并磁盘分区" class="headerlink" title="五、分割/合并磁盘分区"></a>五、分割/合并磁盘分区</h4><p><em>splitPartition</em> 选项可以用来将已存在的某个分区再分割成数个更小的分区，注意原分区上的所有数据都会丢失。<br>该选项的第一个参数为需要分割的分区的挂载点/标志符/设备节点，其余参数和使用 <em>partitionDisk</em> 时相同。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo diskutil list | grep disk2</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:                  Apple_HFS starky                  7.5 GB     disk2s2</span><br><span class="line">➜  ~ sudo diskutil splitPartition disk2s2 2 MS-DOS F01 3g JHFS+ F02 3g</span><br><span class="line">Started partitioning on disk2s2 starky</span><br><span class="line">Splitting</span><br><span class="line">Unmounting disk</span><br><span class="line">Waiting for partitions to activate</span><br><span class="line">Formatting disk2s2 as MS-DOS (FAT) with name F01</span><br><span class="line">512 bytes per physical sector</span><br><span class="line">/dev/rdisk2s2: 5845824 sectors in 730728 FAT32 clusters (4096 bytes/cluster)</span><br><span class="line">bps=512 spc=8 res=32 nft=2 mid=0xf8 spt=32 hds=255 hid=411648 drv=0x80 bsec=5857280 bspf=5709 rdcl=2 infs=1 bkbs=6</span><br><span class="line">Mounting disk</span><br><span class="line">Formatting disk2s3 as Mac OS Extended (Journaled) with name F02</span><br><span class="line">Initialized /dev/rdisk2s3 as a 4 GB case-insensitive HFS Plus volume with a 8192k journal</span><br><span class="line">Mounting disk</span><br><span class="line">Finished partitioning on disk2s2 starky</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:       Microsoft Basic Data F01                     3.0 GB     disk2s2</span><br><span class="line">   3:                  Apple_HFS F02                     4.5 GB     disk2s3</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令将优盘的第二个分区（disk2s2）又分割成了两个更小的分区，分别是 FAT32 格式的 F01（disk2s2），和 JHFS+ 格式的 F02（disk2s3）。虽然命令中指定了 F02 的大小是 3G，因为是最后一个分区，所以自动扩展到占用剩余的磁盘空间。最后它的实际大小是 4.5G。</p>
+<hr>
+<p><em>mergePartitions</em> 选项用来将多个已存在的分区合并为一个大的分区。该选项的格式为：<br><code>diskutil mergePartitions [force] format name DiskIdentifier|DeviceNode DiskIdentifier|DeviceNode</code><br>第一个分区参数为起始分区，第二个分区参数为结束分区。这两个分区<strong>之间</strong>的所有分区都将被合并。<br>如果 <em>force</em> 选项没有被指定，且合并前的第一个分区是可调整大小的文件系统（如 JHFS+），则第一个分区上的数据会保留到合并后的分区。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo diskutil list | grep disk2</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:                  Apple_HFS F01                     2.9 GB     disk2s2</span><br><span class="line">   3:       Microsoft Basic Data F02                     4.5 GB     disk2s4</span><br><span class="line">➜  ~ sudo diskutil mergePartitions JHFS+ Starky disk2s2 disk2s4</span><br><span class="line">Merging partitions into a new partition</span><br><span class="line">     Start partition: disk2s2 F01</span><br><span class="line">     Finish partition: disk2s4 F02</span><br><span class="line">Started partitioning on disk2</span><br><span class="line">Merging partitions</span><br><span class="line">Waiting for partitions to activate</span><br><span class="line">Growing disk</span><br><span class="line">Finished partitioning on disk2</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:                  Apple_HFS F01                     7.5 GB     disk2s2</span><br></pre></td></tr></table></figure>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-1d42f13798fa0c24.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mergePatitions 合并前"><br><img src="https://upload-images.jianshu.io/upload_images/6875152-b668018feed5acfa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mergePatitions 合并后"></p>
+<h4 id="六、调整分区大小（无损）"><a href="#六、调整分区大小（无损）" class="headerlink" title="六、调整分区大小（无损）"></a>六、调整分区大小（无损）</h4><p><em>resizeVolume</em> 选项可以<strong>无损</strong>调整（增加或缩减）分区大小。</p>
+<p>将 disk2s2 分区缩减为 4g 大小，腾出的空间作为『free space』：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ diskutil list | grep disk2</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:                  Apple_HFS F01                     7.5 GB     disk2s2</span><br><span class="line">➜  ~ sudo diskutil resizeVolume disk2s2 4g</span><br><span class="line">Resizing to 4000000000 bytes</span><br><span class="line">Started partitioning on disk2s2 F01</span><br><span class="line">Verifying the disk</span><br><span class="line">Verifying file system</span><br><span class="line">Volume was successfully unmounted</span><br><span class="line">Performing fsck_hfs -fn -x /dev/rdisk2s2</span><br><span class="line">Checking Journaled HFS Plus volume</span><br><span class="line">Checking extents overflow file</span><br><span class="line">Checking catalog file</span><br><span class="line">Checking multi-linked files</span><br><span class="line">Checking catalog hierarchy</span><br><span class="line">Checking extended attributes file</span><br><span class="line">Checking volume bitmap</span><br><span class="line">Checking volume information</span><br><span class="line">The volume F01 appears to be OK</span><br><span class="line">File system check exit code is 0</span><br><span class="line">Restoring the original state found as mounted</span><br><span class="line">Resizing</span><br><span class="line">Shrinking file system</span><br><span class="line">Modifying partition map</span><br><span class="line">Finished partitioning on disk2s2 F01</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:                  Apple_HFS F01                     4.0 GB     disk2s2</span><br></pre></td></tr></table></figure></p>
+<p>此时 disk2s2 内的文件如下：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-a2272b0c5fb09016.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="resizeVolume"></p>
+<p>将 disk2s2 分区扩展，并尽可能占用所有可用的自由空间。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo diskutil resizeVolume disk2s2 R</span><br><span class="line">Resizing to full size (fit to fill)</span><br><span class="line">Started partitioning on disk2s2 F01</span><br><span class="line">Verifying the disk</span><br><span class="line">Verifying file system</span><br><span class="line">Volume was successfully unmounted</span><br><span class="line">Performing fsck_hfs -fn -x /dev/rdisk2s2</span><br><span class="line">Checking Journaled HFS Plus volume</span><br><span class="line">Checking extents overflow file</span><br><span class="line">Checking catalog file</span><br><span class="line">Checking multi-linked files</span><br><span class="line">Checking catalog hierarchy</span><br><span class="line">Checking extended attributes file</span><br><span class="line">Checking volume bitmap</span><br><span class="line">Checking volume information</span><br><span class="line">The volume F01 appears to be OK</span><br><span class="line">File system check exit code is 0</span><br><span class="line">Restoring the original state found as mounted</span><br><span class="line">Resizing</span><br><span class="line">Modifying partition map</span><br><span class="line">Growing file system</span><br><span class="line">Finished partitioning on disk2s2 F01</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      GUID_partition_scheme                        *7.8 GB     disk2</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk2s1</span><br><span class="line">   2:                  Apple_HFS F01                     7.5 GB     disk2s2</span><br></pre></td></tr></table></figure></p>
+<p>此时 disk2s2 内的文件如下：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-0676e6db70d75265.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="resizeVolume"></p>
+<h4 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h4><p><code>man diskutil</code></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/System/" rel="tag"># System</a>
+          
+            <a href="/tags/Tools/" rel="tag"># Tools</a>
+          
+            <a href="/tags/Hardware/" rel="tag"># Hardware</a>
+          
+            <a href="/tags/MacOS/" rel="tag"># MacOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/10/ubuntu-1604-NFS-server/" rel="next" title="Ubuntu 16.04 搭建 NFS 文件共享服务器">
+                <i class="fa fa-chevron-left"></i> Ubuntu 16.04 搭建 NFS 文件共享服务器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/14/create-startup-disk-using-dd/" rel="prev" title="MacOS 系统使用 dd 命令创建 Linux 启动U盘">
+                MacOS 系统使用 dd 命令创建 Linux 启动U盘 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、verb"><span class="nav-number">1.</span> <span class="nav-text">一、verb</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、获取磁盘分区信息"><span class="nav-number">2.</span> <span class="nav-text">二、获取磁盘分区信息</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-list"><span class="nav-number">2.1.</span> <span class="nav-text">1. list</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-info"><span class="nav-number">2.2.</span> <span class="nav-text">2. info</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、擦除磁盘或分区"><span class="nav-number">3.</span> <span class="nav-text">三、擦除磁盘或分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、创建磁盘分区"><span class="nav-number">4.</span> <span class="nav-text">四、创建磁盘分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、分割-合并磁盘分区"><span class="nav-number">5.</span> <span class="nav-text">五、分割/合并磁盘分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#六、调整分区大小（无损）"><span class="nav-number">6.</span> <span class="nav-text">六、调整分区大小（无损）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文章"><span class="nav-number">7.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

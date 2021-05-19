@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Media,Audio,Raspberrypi,SecretAgent,sox,VoIP," />
+
+
+<meta name="description" content="从网上看到一本关于树莓派的电子书 Raspberry Pi for Secret Agents，利用树莓派打造“特工装备”。其中有一章讲到音频设备的配置和几个相关的应用场景（比如录音、监听、搭建电话系统等），感觉比较有意思。  一、音频系统简单配置1. ALSAALSA (Advanced Linux Sound Architecture) 是一个承载树莓派上音频系统的底层框架，为树莓派及其外接">
+<meta name="keywords" content="Media,Audio,Raspberrypi,SecretAgent,sox,VoIP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="树莓派3 音频配置及其应用场景（录音、VoIP 电话等）">
+<meta property="og:url" content="https://rollingstarky.github.io/2019/01/06/raspberry-pi-audio-configuration-and-applications/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="从网上看到一本关于树莓派的电子书 Raspberry Pi for Secret Agents，利用树莓派打造“特工装备”。其中有一章讲到音频设备的配置和几个相关的应用场景（比如录音、监听、搭建电话系统等），感觉比较有意思。  一、音频系统简单配置1. ALSAALSA (Advanced Linux Sound Architecture) 是一个承载树莓派上音频系统的底层框架，为树莓派及其外接">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-e9e0c26a5963212e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-41f5545c2023fc02.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-99009bb0f045207a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-fc6eeac0f99aebc0.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-4625f82731d2ae6f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-e8f5bd26d45fa1b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-dac6926466914601.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-930b7cad919c31cd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-7e44aa29934a7f1b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-01-05T19:33:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="树莓派3 音频配置及其应用场景（录音、VoIP 电话等）">
+<meta name="twitter:description" content="从网上看到一本关于树莓派的电子书 Raspberry Pi for Secret Agents，利用树莓派打造“特工装备”。其中有一章讲到音频设备的配置和几个相关的应用场景（比如录音、监听、搭建电话系统等），感觉比较有意思。  一、音频系统简单配置1. ALSAALSA (Advanced Linux Sound Architecture) 是一个承载树莓派上音频系统的底层框架，为树莓派及其外接">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-e9e0c26a5963212e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2019/01/06/raspberry-pi-audio-configuration-and-applications/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>树莓派3 音频配置及其应用场景（录音、VoIP 电话等） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2019/01/06/raspberry-pi-audio-configuration-and-applications/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">树莓派3 音频配置及其应用场景（录音、VoIP 电话等）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-06T00:00:00+08:00">2019-01-06</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IoT/" itemprop="url" rel="index"><span itemprop="name">IoT</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/01/06/raspberry-pi-audio-configuration-and-applications/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/01/06/raspberry-pi-audio-configuration-and-applications/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2019/01/06/raspberry-pi-audio-configuration-and-applications/" class="leancloud_visitors" data-flag-title="树莓派3 音频配置及其应用场景（录音、VoIP 电话等）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">8.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:08</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>从网上看到一本关于树莓派的电子书 <a href="https://www.amazon.com/dp/1786463547/ref=cm_sw_r_tw_dp_U_x_0ZjjCb6E0XBD8" target="_blank" rel="noopener">Raspberry Pi for Secret Agents</a>，利用树莓派打造“特工装备”。<br>其中有一章讲到音频设备的配置和几个相关的应用场景（比如<strong>录音</strong>、<strong>监听</strong>、搭建<strong>电话系统</strong>等），感觉比较有意思。</p>
+</blockquote>
+<h4 id="一、音频系统简单配置"><a href="#一、音频系统简单配置" class="headerlink" title="一、音频系统简单配置"></a>一、音频系统简单配置</h4><h5 id="1-ALSA"><a href="#1-ALSA" class="headerlink" title="1. ALSA"></a>1. ALSA</h5><p><a href="https://en.wikipedia.org/wiki/Advanced_Linux_Sound_Architecture" target="_blank" rel="noopener">ALSA (Advanced Linux Sound Architecture)</a> 是一个承载树莓派上音频系统的底层框架，为树莓派及其外接的播放或录制设备提供内核驱动程序。同时该框架也包含用于制作音频应用的程序代码，和一些方便的命令行实用程序。</p>
+<p>在 ALSA 的定义里，系统中的每一个音频设备都称作“<strong>声卡</strong>”。可以使用如下命令列出所有已连接的音频设备：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/asound/cards</span><br><span class="line"> 0 [ALSA           ]: bcm2835_alsa - bcm2835 ALSA</span><br><span class="line">                      bcm2835 ALSA</span><br></pre></td></tr></table></figure></p>
+<p>可以看到此时系统中只有树莓派默认的<strong>声卡 0</strong> <code>bcm2835 ALSA</code>。</p>
+<h5 id="2-调节音量大小"><a href="#2-调节音量大小" class="headerlink" title="2. 调节音量大小"></a>2. 调节音量大小</h5><p>可以使用 <code>alsamixer</code> 命令打开 <strong>AlsaMixer</strong> 实用程序，对音量等声音系统参数进行调节：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-e9e0c26a5963212e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="alsamixer"></p>
+<p>界面中 <code>View</code> 选项后面的 <code>Playback</code>、<code>Capture</code>、<code>All</code> 分别对应<strong>播放</strong>、<strong>录制</strong>和<strong>全部</strong>。<br>可以按键盘上的 <code>TAB</code> 键切换到对应的界面。按下 <code>fn+F6</code> 或 <code>S</code> 键切换声卡设备（此时只有一个声卡）</p>
+<p>使用 <code>↑ ↓ 方向键</code>调节音量，设置完成后按 <strong>ESC</strong> 键退出 AlsaMixer。</p>
+<h5 id="3-切换音频输出"><a href="#3-切换音频输出" class="headerlink" title="3. 切换音频输出"></a>3. 切换音频输出</h5><p>树莓派提供两种音频输出接口：<strong>3.5mm 模拟音频接口</strong>和 <strong>HDMI</strong>。<br>可以通过 <code>$sudo raspi-config</code> 命令（选择 <code>Advanced Options</code> - <code>Audio</code>）配置音频输出方向，使音频输出固定使用 3.5mm 接口或 HDMI：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-41f5545c2023fc02.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="raspi-config"></p>
+<p>类似的操作也可以直接通过 <code>amixer</code> 命令完成：<br><code>$ amixer cset numid=3 1</code> ：指定音频输出接口为 3.5mm 耳机接口<br><code>$ amixer cset numid=3 2</code> ：指定音频输出接口为 HDMI<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ amixer cset numid=3 1</span><br><span class="line">numid=3,iface=MIXER,name=&apos;PCM Playback Route&apos;</span><br><span class="line">  ; type=INTEGER,access=rw------,values=1,min=0,max=2,step=0</span><br><span class="line">  : values=1</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-播放测试"><a href="#4-播放测试" class="headerlink" title="4. 播放测试"></a>4. 播放测试</h5><p>可以使用 <code>$ speaker-test -c2 -t wav</code> 命令测试音频播放是否正常。<br>如一切顺利，则会依次从左耳耳机（或音箱）听到 <em>Front Left</em>，从右耳耳机听到 <em>Front Right</em> 的女声语音，直到按下 <code>Ctrl + C</code> 终止测试。</p>
+<h4 id="二、音频录制设备"><a href="#二、音频录制设备" class="headerlink" title="二、音频录制设备"></a>二、音频录制设备</h4><h5 id="1-USB声卡"><a href="#1-USB声卡" class="headerlink" title="1. USB声卡"></a>1. USB声卡</h5><p>树莓派提供的音频接口是<strong>不支持语音输入</strong>的。<br>使用 <code>alsamixer</code> 命令进入 AlsaMixer 程序，按下 <code>TAB</code> 键切换到 <code>Caputre</code> 界面，可以看到<strong>此设备无音频采集控制</strong>的提示：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-99009bb0f045207a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="bcm2835 ALSA Capture"></p>
+<p>为了录制音频，需要使用外接的音频输入设备。可以从网上购买一个便携式的 USB 免驱动声卡。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-fc6eeac0f99aebc0.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="USB声卡及线控耳机"><br>插入USB声卡后，通过 <code>$ cat /proc/asound/cards</code> 命令查看当前系统检测到的音频设备：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/asound/cards</span><br><span class="line"> 0 [ALSA           ]: bcm2835_alsa - bcm2835 ALSA</span><br><span class="line">                      bcm2835 ALSA</span><br><span class="line"> 1 [Device         ]: USB-Audio - USB Audio Device</span><br><span class="line">                      GeneralPlus USB Audio Device at usb-3f980000.usb-1.3, full speed</span><br></pre></td></tr></table></figure></p>
+<p>此时输出信息中多了一个序号为 1 的声卡设备 <code>USB-Audio</code>。<br>可以使用 <code>$ speaker-test -D plughw:1 -c2 -t wav</code> 测试 USB 声卡的音频播放是否正常（注意命令中的 <code>-D plughw:1</code>）。</p>
+<p>使用 <code>alsamixer -c1</code> 命令调节新声卡的具体参数。其中 <code>-c1</code> 选项用于指定编号为 1 的声卡设备，即新插入的 USB 声卡。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-4625f82731d2ae6f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="alsamixer -c1"></p>
+<p>按下 <code>fn+F4</code> 或 <code>TAB</code> 键将视图切换到 <code>Capture</code> 界面，确保 Mic 上方有出现 <code>CAPTURE</code> 字样（说明已开启录制功能，可以使用<code>空格键</code>切换开关状态）：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-e8f5bd26d45fa1b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Capture"></p>
+<h5 id="2-麦克风测试"><a href="#2-麦克风测试" class="headerlink" title="2. 麦克风测试"></a>2. 麦克风测试</h5><p>首先安装 <a href="http://sox.sourceforge.net/" target="_blank" rel="noopener">SoX</a> 工具及其 mp3 格式支持：<code>$sudo apt-get install sox libsox-fmt-mp3</code><br>SoX 是 Linux 系统上一个强大的音频处理工具，详细使用方法可以参考这篇文章：<a href="https://www.jianshu.com/p/be8977de4a6b" target="_blank" rel="noopener">SoX — 音频处理工具里的瑞士军刀</a>。</p>
+<p>sox 命令的基本格式为 <code>sox &lt;input&gt; &lt;output&gt;</code> 。其中的 <code>&lt;input&gt;</code> 和 <code>&lt;output&gt;</code> 既可以是某个具体的音频文件，也可以是某个特定的<strong>音频设备</strong>。<br>所以可以简单的理解为，<code>sox</code> 工具就是对音频进行<strong>“传导”</strong>：</p>
+<ul>
+<li>从文件到设备即为播放 <code>sox music.mp3 &lt;device&gt;</code></li>
+<li>从设备到文件即为录制 <code>sox &lt;device&gt; myrec.wav</code></li>
+<li>从文件到文件即为转码 <code>sox input.wav output.mp3</code></li>
+</ul>
+<p>可以使用 <code>$ sox -t alsa plughw:1 -t alsa plughw:1</code> 命令对麦克风进行测试。<br>其中 <code>-t alsa plughw:1</code> 表示 ALSA 声卡设备 1（即USB声卡）。<br>上述命令表示既使用USB声卡（麦克风） 作为音频输入，又用它（耳机）作为音频输出。</p>
+<p>如一切正常，此时可以通过耳机听到自己对着麦克风讲话的声音。</p>
+<h5 id="3-切换默认的音频设备"><a href="#3-切换默认的音频设备" class="headerlink" title="3. 切换默认的音频设备"></a>3. 切换默认的音频设备</h5><p>可以通过修改配置文件，将树莓派默认用于播放和录制的音频设备（即树莓派内置声卡），改为当前插入的USB声卡。<br>编辑 <code>~/.asoundrc</code> 文件，改为如下内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">pcm.!default &#123;</span><br><span class="line">    type hw</span><br><span class="line">    card 1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ctl.!default &#123;</span><br><span class="line">    type hw</span><br><span class="line">    card 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其实就是将配置文件中的 <code>card 0</code> 改为 <code>card 1</code>。</p>
+<p>此时可直接使用 <code>$ sox -d -d</code> 命令测试USB声卡上连接的麦克风和耳机，无需再通过 <code>-t alsa plughw:1</code> 选项手动指定USB声卡（<code>-d</code> 选项表示默认音频设备，即已配置成默认的USB声卡）。</p>
+<h5 id="4-录制与播放"><a href="#4-录制与播放" class="headerlink" title="4. 录制与播放"></a>4. 录制与播放</h5><p>默认音频设备切换为USB声卡后，可以使用以下命令录制一段音频并将其保存在 <code>myrec.mp3</code> 文件中：<br><code>$ sox -d myrec.mp3</code> 或 <code>$ rec myrec.mp3</code></p>
+<p>播放前面录制的音频文件可使用如下命令：<br><code>$ sox myrec.mp3 -d</code> 或 <code>$ play myrec.mp3</code></p>
+<p>如<strong>未能</strong>配置USB声卡为默认音频设备或配置不成功，也可以使用如下命令进行录制与播放：<br>录制：<code>$ sox -t alsa plughw:1 myrec.mp3</code><br>播放：<code>$ sox myrec.mp3 -t alsa plughw:1</code></p>
+<p>录制固定长度的音频片段（如 30 分钟）并保存在指定文件中：<br><code>$ sox -t alsa plughw:1 myrec.wav trim 0 00:30:00</code></p>
+<p>持续录制很长时间的音频，保存在几个不同的文件中，每隔一小时保存一次：<br><code>$ sox -t alsa plughw:1 myrec.wav trim 0 01:00:00 : newfile : restart</code></p>
+<h4 id="三、远程监听"><a href="#三、远程监听" class="headerlink" title="三、远程监听"></a>三、远程监听</h4><p>可以通过树莓派的 SSH 服务，在另一台电脑上<strong>远程收听</strong>树莓派通过USB声卡收集到的音频数据。<br>也就是说，用树莓派的麦克风录制周围环境的声音，<strong>同时</strong>在远程的另一台电脑上<strong>实时</strong>地（有短暂延迟）收听录制的内容，达到<strong>监听</strong>的效果。</p>
+<p>在电脑端（也需要安装 <code>sox</code> 程序）执行如下命令即可：<br><code>$ ssh pi@[IP address] sox -t alsa plughw:1 -t sox - | sox -q -t sox - -d</code><br><img src="https://upload-images.jianshu.io/upload_images/6875152-dac6926466914601.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sox"></p>
+<p>对于 Windows 系统，除安装 SoX 工具外，还需要先下载完整版 <a href="https://www.putty.org/" target="_blank" rel="noopener">PuTTY</a> 工具，并确保这两个工具的安装路径都已添加至 <strong>PATH</strong> 环境变量。</p>
+<p>则可以使用如下命令通过树莓派进行远程监听：<br><code>plink pi@[IP address] -pw [password] sox -t alsa plughw:1 -t sox - | sox -q -t sox - -t waveaudio default</code></p>
+<p>可以使用如下命令，将<strong>远程</strong>树莓派收集到的音频数据直接保存在<strong>本地</strong>文件中：<br><code>$ ssh pi@[IP address] sox -t alsa plughw:1 -t mp3 - &gt; ~/Desktop/myrec.mp3</code><br>或 <code>plink pi@[IP address] sox -t alsa plughw:1 -t mp3 - &gt; D:\myrec.mp3</code> （Windows 系统）</p>
+<p>使用如下命令，让本地电脑作为音频输入源，将其麦克风收集到的音频数据，通过 SSH 发送到远程树莓派上进行播放。<br>也就是将自己对着本地电脑讲的话通过树莓派进行<strong>远程广播</strong>：<br><code>$ sox -d -t sox - | ssh pi@[IP address] sox -q -t sox - -d</code><br>或 <code>sox -t waveaudio default -t sox - | plink pi@[IP address] -pw [password] sox -q -t sox - -d</code> （Windows 系统）</p>
+<p>同样的原理，也可以将本地磁盘上的音频文件直接发送到远程的树莓派上进行播放：<br><code>$ cat ~/Desktop/media/audios/Faded.wav | ssh pi@[IP address] sox -t wav - -d</code><br>或 <code>type D:\myrec.mp3 | plink pi@[IP address] -pw [password] sox -t mp3 - -d</code> （Windows 系统）</p>
+<h4 id="四、蓝牙耳机"><a href="#四、蓝牙耳机" class="headerlink" title="四、蓝牙耳机"></a>四、蓝牙耳机</h4><p>树莓派 3 代 B+ 自带了 WIFI 和蓝牙功能，可以直接通过蓝牙连接音频设备。</p>
+<h5 id="1-使用-hciconfig-命令获取蓝牙模块的相关信息："><a href="#1-使用-hciconfig-命令获取蓝牙模块的相关信息：" class="headerlink" title="1. 使用 hciconfig 命令获取蓝牙模块的相关信息："></a>1. 使用 <code>hciconfig</code> 命令获取蓝牙模块的相关信息：</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ hciconfig -a</span><br><span class="line">hci0:   Type: Primary  Bus: UART</span><br><span class="line">    BD Address: B8:27:EB:C3:38:31  ACL MTU: 1021:8  SCO MTU: 64:1</span><br><span class="line">    UP RUNNING</span><br><span class="line">    RX bytes:4181 acl:136 sco:0 events:135 errors:0</span><br><span class="line">    TX bytes:5065 acl:128 sco:0 commands:60 errors:0</span><br><span class="line">    Features: 0xbf 0xfe 0xcf 0xfe 0xdb 0xff 0x7b 0x87</span><br><span class="line">    Packet type: DM1 DM3 DM5 DH1 DH3 DH5 HV1 HV2 HV3</span><br><span class="line">    Link policy: RSWITCH SNIFF</span><br><span class="line">    Link mode: SLAVE ACCEPT</span><br><span class="line">    Name: &apos;raspberrypi&apos;</span><br><span class="line">    Class: 0x480000</span><br><span class="line">    Service Classes: Capturing, Telephony</span><br><span class="line">    Device Class: Miscellaneous,</span><br><span class="line">    HCI Version: 4.2 (0x8)  Revision: 0xfc</span><br><span class="line">    LMP Version: 4.2 (0x8)  Subversion: 0x6119</span><br><span class="line">    Manufacturer: Broadcom Corporation (15)</span><br></pre></td></tr></table></figure>
+<h5 id="2-使用-hcitool-scan-命令扫描附近可供连接的蓝牙设备，并记下蓝牙耳机对应的-MAC-地址"><a href="#2-使用-hcitool-scan-命令扫描附近可供连接的蓝牙设备，并记下蓝牙耳机对应的-MAC-地址" class="headerlink" title="2. 使用 hcitool scan 命令扫描附近可供连接的蓝牙设备，并记下蓝牙耳机对应的 MAC 地址"></a>2. 使用 <code>hcitool scan</code> 命令扫描附近可供连接的蓝牙设备，并记下蓝牙耳机对应的 MAC 地址</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hcitool scan</span><br><span class="line">Scanning ...</span><br><span class="line">    FC:58:FA:F4:67:33   A2</span><br><span class="line">    50:8F:4C:0D:31:3A   Starky</span><br></pre></td></tr></table></figure>
+<h5 id="3-通过-MAC-地址与蓝牙耳机进行配对"><a href="#3-通过-MAC-地址与蓝牙耳机进行配对" class="headerlink" title="3. 通过 MAC 地址与蓝牙耳机进行配对"></a>3. 通过 MAC 地址与蓝牙耳机进行配对</h5><p>使用 <code>bluetoothctl</code> 命令进入<em>蓝牙控制台</em>，依次通过 <code>power on</code> 、<code>agent on</code> 、<code>scan on</code> 、<code>pair</code> 、<code>trust</code> 、<code>connect</code> 等命令连接蓝牙设备。</p>
+<p>注意此处连接蓝牙使用的是蓝牙设备的 <strong>MAC 地址</strong>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ bluetoothctl</span><br><span class="line">[NEW] Controller B8:27:EB:C3:38:31 raspberrypi [default]</span><br><span class="line">[NEW] Device 50:8F:4C:0D:31:3A Starky</span><br><span class="line">...</span><br><span class="line">[bluetooth]# power on</span><br><span class="line">Changing power on succeeded</span><br><span class="line">[bluetooth]# agent on</span><br><span class="line">Agent registered</span><br><span class="line">[bluetooth]# scan on</span><br><span class="line">Discovery started</span><br><span class="line">[bluetooth]# pair FC:58:FA:F4:67:33</span><br><span class="line">Attempting to pair with FC:58:FA:F4:67:33</span><br><span class="line">Pairing successful</span><br><span class="line">[bluetooth]# trust FC:58:FA:F4:67:33</span><br><span class="line">[CHG] Device FC:58:FA:F4:67:33 Trusted: yes</span><br><span class="line">Changing FC:58:FA:F4:67:33 trust succeeded</span><br><span class="line">[bluetooth]# connect FC:58:FA:F4:67:33</span><br><span class="line">Attempting to connect to FC:58:FA:F4:67:33</span><br><span class="line">[CHG] Device FC:58:FA:F4:67:33 Connected: yes</span><br><span class="line">Connection successful</span><br><span class="line">[A2]#</span><br></pre></td></tr></table></figure></p>
+<p>退出蓝牙控制台，使用 <code>hcitool con</code> 命令查看当前已连接的蓝牙设备，确认连接成功：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ hcitool con</span><br><span class="line">Connections:</span><br><span class="line">    &gt; ACL FC:58:FA:F4:67:33 handle 11 state 1 lm SLAVE AUTH ENCRYPT</span><br></pre></td></tr></table></figure></p>
+<h5 id="4-将音频输出设备切换为蓝牙耳机"><a href="#4-将音频输出设备切换为蓝牙耳机" class="headerlink" title="4. 将音频输出设备切换为蓝牙耳机"></a>4. 将音频输出设备切换为蓝牙耳机</h5><p>首先安装 <code>PulseAudio</code> 软件包：<br><code>$ sudo apt-get install pulseaudio pulseaudio-module-bluetooth</code></p>
+<p>启动 PulseAudio 守护进程：<br><code>$ pulseaudio --start</code></p>
+<p>列出 PulseAudio 检测到的音频设备名称：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ pacmd list-sinks short | grep -e &apos;name:&apos;</span><br><span class="line"></span><br><span class="line">    name: &lt;alsa_output.platform-soc_audio.analog-mono&gt;</span><br><span class="line">    name: &lt;bluez_sink.FC_58_FA_F4_67_33.headset_head_unit&gt;</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>pactl</code> 命令将蓝牙耳机作为默认的音频设备：<br><code>$ pactl set-default-sink bluez_sink.FC_58_FA_F4_67_33.headset_head_unit</code></p>
+<p>此时，即可直接使用 <code>play</code> 命令通过蓝牙耳机播放音频文件：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-930b7cad919c31cd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果需要将音频输出切换回系统默认，运行如下命令即可：<br><code>$ pactl set-default-sink alsa_output.platform-soc_audio.analog-mono</code></p>
+<p>或者自己对当前的音频配置有点混乱了。。。可以使用如下命令重置：<br><code>$ sudo /etc/init.d/alsa-utils reset</code></p>
+<h5 id="5-注意事项"><a href="#5-注意事项" class="headerlink" title="5. 注意事项"></a>5. 注意事项</h5><p>经过测试，发现蓝牙耳机连接后<strong>音质相差太大</strong>，播放速度明显放缓，未确定是哪里的问题。</p>
+<p>同时我的蓝牙耳机开启后会自动连接至树莓派，如无法自动连接或者连接以后并没有被 <strong>PulseAudio</strong> 检测到，可以先使用 <code>bluetoothctl</code> 命令进入蓝牙控制台：<br>依次输入 <code>power off</code>、<code>power on</code> 命令重启蓝牙，使用 <code>connect &lt;MAC address&gt;</code> 命令重新连接蓝牙耳机（无需再配对和信任，直接连接）。</p>
+<p>蓝牙耳机为默认音频设备后，之前配置 USB 声卡为默认的操作不再生效（除非断开蓝牙或关闭蓝牙耳机）。<br>可以在播放或录制时通过 <code>-t alsa plughw:1</code> 选项手动指定 USB 声卡。<br>如 <code>$ sox -t alsa plughw:1 -d</code> ：使用 USB 声卡作为音频输入源，再将采集到的音频输出到默认设备（蓝牙耳机）</p>
+<p>这一章的蓝牙介绍只供参考，推荐使用 USB 声卡进行音频的录制和播放。</p>
+<h4 id="五、配置-VoIP-服务器"><a href="#五、配置-VoIP-服务器" class="headerlink" title="五、配置 VoIP 服务器"></a>五、配置 VoIP 服务器</h4><p><a href="https://en.wikipedia.org/wiki/Voice_over_IP" target="_blank" rel="noopener">VoIP</a> 即 Voice over Internet Protocol ，就是将声音信号经过压缩与封包之后，以数据封包的形式在IP网络间进行传输。通俗地说也就是互联网电话或IP电话。</p>
+<p>这里使用 Linux 平台上的 <a href="https://www.gnu.org/software/sipwitch/" target="_blank" rel="noopener">SIP Witch</a> 软件作为 VoIP 系统的服务端。</p>
+<h5 id="1-安装-SIP-Witch"><a href="#1-安装-SIP-Witch" class="headerlink" title="1. 安装 SIP Witch"></a>1. 安装 SIP Witch</h5><p><code>$ sudo apt-get install sipwitch</code></p>
+<h5 id="2-编辑配置文件"><a href="#2-编辑配置文件" class="headerlink" title="2. 编辑配置文件"></a>2. 编辑配置文件</h5><p><code>/etc/default/sipwtich</code> ：找到 <code>PLUGINS</code> 选项，删除该行前面的注释</p>
+<p><code>/etc/sipwitch.conf</code> ：编辑文件内容，在 <code>&lt;provision&gt;</code> 标签下添加用户注册信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;user id=&quot;phone1&quot;&gt;</span><br><span class="line">  &lt;extension&gt;201&lt;/extension&gt;</span><br><span class="line">  &lt;secret&gt;SecretSauce201&lt;/secret&gt;</span><br><span class="line">  &lt;display&gt;Agent 201&lt;/display&gt;</span><br><span class="line">&lt;/user&gt;</span><br><span class="line">&lt;user id=&quot;phone2&quot;&gt;</span><br><span class="line">  &lt;extension&gt;202&lt;/extension&gt;</span><br><span class="line">  &lt;secret&gt;SecretSauce202&lt;/secret&gt;</span><br><span class="line">  &lt;display&gt;Agent 202&lt;/display&gt;</span><br><span class="line">&lt;/user&gt;</span><br></pre></td></tr></table></figure></p>
+<p>其中的 <code>id</code> 表示注册用户登录时需要输入的用户名，<code>&lt;secret&gt;</code> 表示登录时使用的密码。</p>
+<p>找到 <code>&lt;stack&gt;</code> 标签，并在其后添加如下一行配置，用于指定 VoIP 服务器的IP地址：<br><code>&lt;localnames&gt;[Your Pi&#39;s IP address]&lt;/localnames&gt;</code></p>
+<p>编辑完成后，重启 <code>sipwitch</code> 服务：<br><code>$ sudo systemctl restart sipwitch</code></p>
+<h5 id="3-客户端配置"><a href="#3-客户端配置" class="headerlink" title="3. 客户端配置"></a>3. 客户端配置</h5><p>Windows 系统“软电话”可使用 <a href="https://www.microsip.org/downloads" target="_blank" rel="noopener">MicroSIP</a> 软件，Android 客户端可使用 <a href="https://play.google.com/store/apps/details?id=com.csipsimple" target="_blank" rel="noopener">CSipSimple</a>，Mac 客户端有 <a href="https://itunes.apple.com/cn/app/telephone/id406825478?l=en&amp;mt=12" target="_blank" rel="noopener">Telephone</a>。</p>
+<p>使用 <code>/etc/sipwitch.conf</code> 文件中定义的用户ID、密码以及服务器地址完成用户注册，各客户端之间即可直接拨打语音电话。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-7e44aa29934a7f1b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="MicroSIP"></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.amazon.com/dp/1786463547/ref=cm_sw_r_tw_dp_U_x_0ZjjCb6E0XBD8" target="_blank" rel="noopener">Raspberry Pi for Secret Agents - Third Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Media/" rel="tag"># Media</a>
+          
+            <a href="/tags/Audio/" rel="tag"># Audio</a>
+          
+            <a href="/tags/Raspberrypi/" rel="tag"># Raspberrypi</a>
+          
+            <a href="/tags/SecretAgent/" rel="tag"># SecretAgent</a>
+          
+            <a href="/tags/sox/" rel="tag"># sox</a>
+          
+            <a href="/tags/VoIP/" rel="tag"># VoIP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/28/programming-esp8266-with-micropython/" rel="next" title="NodeMCU 开发板刷入 MicroPython 固件并通过 Atom 进行编程">
+                <i class="fa fa-chevron-left"></i> NodeMCU 开发板刷入 MicroPython 固件并通过 Atom 进行编程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/11/programming-esp8266-with-arduino-ide/" rel="prev" title="Arduino IDE 搭建 ESP8266 开发环境及项目演示">
+                Arduino IDE 搭建 ESP8266 开发环境及项目演示 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、音频系统简单配置"><span class="nav-number">1.</span> <span class="nav-text">一、音频系统简单配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-ALSA"><span class="nav-number">1.1.</span> <span class="nav-text">1. ALSA</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-调节音量大小"><span class="nav-number">1.2.</span> <span class="nav-text">2. 调节音量大小</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-切换音频输出"><span class="nav-number">1.3.</span> <span class="nav-text">3. 切换音频输出</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-播放测试"><span class="nav-number">1.4.</span> <span class="nav-text">4. 播放测试</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、音频录制设备"><span class="nav-number">2.</span> <span class="nav-text">二、音频录制设备</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-USB声卡"><span class="nav-number">2.1.</span> <span class="nav-text">1. USB声卡</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-麦克风测试"><span class="nav-number">2.2.</span> <span class="nav-text">2. 麦克风测试</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-切换默认的音频设备"><span class="nav-number">2.3.</span> <span class="nav-text">3. 切换默认的音频设备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-录制与播放"><span class="nav-number">2.4.</span> <span class="nav-text">4. 录制与播放</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、远程监听"><span class="nav-number">3.</span> <span class="nav-text">三、远程监听</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、蓝牙耳机"><span class="nav-number">4.</span> <span class="nav-text">四、蓝牙耳机</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-使用-hciconfig-命令获取蓝牙模块的相关信息："><span class="nav-number">4.1.</span> <span class="nav-text">1. 使用 hciconfig 命令获取蓝牙模块的相关信息：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-使用-hcitool-scan-命令扫描附近可供连接的蓝牙设备，并记下蓝牙耳机对应的-MAC-地址"><span class="nav-number">4.2.</span> <span class="nav-text">2. 使用 hcitool scan 命令扫描附近可供连接的蓝牙设备，并记下蓝牙耳机对应的 MAC 地址</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-通过-MAC-地址与蓝牙耳机进行配对"><span class="nav-number">4.3.</span> <span class="nav-text">3. 通过 MAC 地址与蓝牙耳机进行配对</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-将音频输出设备切换为蓝牙耳机"><span class="nav-number">4.4.</span> <span class="nav-text">4. 将音频输出设备切换为蓝牙耳机</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-注意事项"><span class="nav-number">4.5.</span> <span class="nav-text">5. 注意事项</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、配置-VoIP-服务器"><span class="nav-number">5.</span> <span class="nav-text">五、配置 VoIP 服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-安装-SIP-Witch"><span class="nav-number">5.1.</span> <span class="nav-text">1. 安装 SIP Witch</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-编辑配置文件"><span class="nav-number">5.2.</span> <span class="nav-text">2. 编辑配置文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-客户端配置"><span class="nav-number">5.3.</span> <span class="nav-text">3. 客户端配置</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

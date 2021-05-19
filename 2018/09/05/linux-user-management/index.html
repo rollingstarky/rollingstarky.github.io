@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Admin,System," />
+
+
+<meta name="description" content="一、创建用户Linux 系统可以使用 useradd 命令创建新用户：$ sudo useradd -m -c &amp;#39;description&amp;#39; &amp;lt;username&amp;gt;  -m 选项表示创建用户的同时自动在 /home 目录下创建该用户的主目录（/home/&amp;lt;username&amp;gt;） -c 选项用于给新用户添加描述，该描述将保存在 /etc/passwd 文件中  默认">
+<meta name="keywords" content="Linux,Admin,System">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 用户管理简介">
+<meta property="og:url" content="https://rollingstarky.github.io/2018/09/05/linux-user-management/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="一、创建用户Linux 系统可以使用 useradd 命令创建新用户：$ sudo useradd -m -c &amp;#39;description&amp;#39; &amp;lt;username&amp;gt;  -m 选项表示创建用户的同时自动在 /home 目录下创建该用户的主目录（/home/&amp;lt;username&amp;gt;） -c 选项用于给新用户添加描述，该描述将保存在 /etc/passwd 文件中  默认">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a692dafd8ed2a8d8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-09-05T06:31:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux 用户管理简介">
+<meta name="twitter:description" content="一、创建用户Linux 系统可以使用 useradd 命令创建新用户：$ sudo useradd -m -c &amp;#39;description&amp;#39; &amp;lt;username&amp;gt;  -m 选项表示创建用户的同时自动在 /home 目录下创建该用户的主目录（/home/&amp;lt;username&amp;gt;） -c 选项用于给新用户添加描述，该描述将保存在 /etc/passwd 文件中  默认">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-a692dafd8ed2a8d8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2018/09/05/linux-user-management/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Linux 用户管理简介 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2018/09/05/linux-user-management/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux 用户管理简介</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-05T00:00:00+08:00">2018-09-05</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/09/05/linux-user-management/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/09/05/linux-user-management/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/09/05/linux-user-management/" class="leancloud_visitors" data-flag-title="Linux 用户管理简介">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">6.5k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:06</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="一、创建用户"><a href="#一、创建用户" class="headerlink" title="一、创建用户"></a>一、创建用户</h4><p>Linux 系统可以使用 <code>useradd</code> 命令创建新用户：<br><code>$ sudo useradd -m -c &#39;description&#39; &lt;username&gt;</code></p>
+<ul>
+<li><code>-m</code> 选项表示创建用户的同时自动在 <code>/home</code> 目录下创建该用户的主目录（<code>/home/&lt;username&gt;</code>）</li>
+<li><code>-c</code> 选项用于给新用户添加描述，该描述将保存在 <code>/etc/passwd</code> 文件中</li>
+</ul>
+<p>默认情况下，新创建的用户并未分配密码，需要使用 <code>passwd &lt;username&gt;</code> 命令为新用户设置密码。</p>
+<p><strong>PS</strong>：在为新用户自动创建主目录时，可以同时复制一部分初始文件（如 <code>.bashrc</code>、<code>.vimrc</code> 等）到该目录下，复制的源文件默认位于 <code>/etc/skel</code> 目录下。<br>即创建新用户时，<code>/etc/skel/</code> 目录下的所有文件都将自动复制到新用户的主目录中。</p>
+<blockquote>
+<p>在 Ubuntu 系统中，useradd 命令默认不自动创建用户主目录，所以需要带上 <code>-m</code> 选项。而 Centos 系统中，useradd 命令默认会自动创建用户主目录，可以加上 <code>-M</code> 选项表示不创建用户主目录。</p>
+</blockquote>
+<p><code>useradd</code> 的部分命令选项：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-c, –comment</td>
+<td>添加用户描述</td>
+</tr>
+<tr>
+<td>-d, –home-dir</td>
+<td>指定用户的主目录位置</td>
+</tr>
+<tr>
+<td>-m, –create-home</td>
+<td>自动创建用户的主目录</td>
+</tr>
+<tr>
+<td>-M, –no-create-home</td>
+<td>不自动创建用户主目录（CentOS）</td>
+</tr>
+<tr>
+<td>-N, –no-user-group</td>
+<td>不创建同名的组</td>
+</tr>
+<tr>
+<td>-s, –shell</td>
+<td>指定用户使用的 shell</td>
+</tr>
+<tr>
+<td>-g, –gid</td>
+<td>指定新账户主组的名称或 ID</td>
+</tr>
+<tr>
+<td>-G, –groups</td>
+<td>指定新账户的附加组列表</td>
+</tr>
+<tr>
+<td>-e, –expiredate</td>
+<td>指定新账户的过期日期</td>
+</tr>
+<tr>
+<td>-f, –inactive</td>
+<td>用户密码过期后的重置密码期限</td>
+</tr>
+<tr>
+<td>-r, –system</td>
+<td>创建一个系统账户</td>
+</tr>
+<tr>
+<td>-k, –skel</td>
+<td>指定骨架目录（默认为 /etc/skel）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PS</strong>：其中的 <strong>INACTIVE</strong> 和 <strong>EXPIRE</strong> 选项用于设置用户账号的过期时间。INACTIVE 用于指定一个期限（单位为<strong>天</strong>），在该期限内，密码失效后的用户可以重置自己的密码。该选项值为 <strong>-1</strong> 时则禁用此特性。<br>EXPIRE 用于指定一个截止日期（格式为 YYYY-MM-DD），超过该期限后用户账号即被禁用。</p>
+<p><code>$ sudo useradd -e 2018-10-01 temp_account    # 创建一个临时账户</code></p>
+<h5 id="用户默认设置"><a href="#用户默认设置" class="headerlink" title="用户默认设置"></a>用户默认设置</h5><p>新用户在创建时会使用一些预先定义的默认设置，<code>useradd</code> 命令从 <code>/etc/default/useradd</code> 文件中获取这些默认设置。当前的默认配置可以通过 <code>useradd -D</code> 命令显示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ useradd -D</span><br><span class="line">GROUP=100</span><br><span class="line">HOME=/home</span><br><span class="line">INACTIVE=-1</span><br><span class="line">EXPIRE=</span><br><span class="line">SHELL=/bin/bash</span><br><span class="line">SKEL=/etc/skel</span><br><span class="line">CREATE_MAIL_SPOOL=no</span><br></pre></td></tr></table></figure></p>
+<p>可以直接通过 <code>useradd -D</code> 命令修改 <strong>useradd</strong> 的默认设置，如：<br><code>$ sudo useradd -D -s /bin/bash    # 将新建用户的默认 shell 设置为 /bin/bash</code></p>
+<h4 id="二、用户组"><a href="#二、用户组" class="headerlink" title="二、用户组"></a>二、用户组</h4><p>在 Linux 系统中，任何一个用户都必须属于<strong>至少一个</strong>用户组。对于大多数 Linux 发行版，创建新用户时会自动创建一个同名的用户组。<br>初始创建的同名用户组叫做<strong>基础属组</strong>（primary group），用户还可以同时属于其他用户组，这些用户组叫做<strong>附加属组</strong>（supplementary group）。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ id starky</span><br><span class="line">uid=1000(starky) gid=1000(starky) 组=1000(starky),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),116(lpadmin),122(sambashare)</span><br></pre></td></tr></table></figure></p>
+<p>每一个用户和用户组在创建时都会关联于一个<strong>唯一</strong>的 UID 和 GID。UID 和 GID 的取值范围都是 0-65535 。root 用户的 UID 和 GID 永远都是 0 。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ id root</span><br><span class="line">uid=0(root) gid=0(root) 组=0(root</span><br></pre></td></tr></table></figure></p>
+<p>Ubuntu 系统中 <strong>1-99</strong> 的 ID 只用于分配给系统用户（如运行服务的 <strong>www-data</strong>），<strong>100-999</strong> 则<strong>动态</strong>地分配给系统守护进程的用户（在创建用户时使用 <code>--system</code> 选项）。而第一个普通用户则分配值为 1000 的 UID 和 GID。</p>
+<p>使用 <strong>useradd</strong> 命令创建新用户时，可以同时为该用户关联附加属组。用户创建完成后也可以使用 <strong>usermod</strong> 命令修改该用户的附加属组。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ sudo useradd test -G lpadmin,sambashare    # 创建用户 test 并将其添加至 lpadmin 和 sambashare 组</span><br><span class="line">$ id test</span><br><span class="line">uid=1004(test) gid=1004(test) 组=1004(test),116(lpadmin),122(sambashare)</span><br><span class="line">$</span><br><span class="line">$ sudo usermod test -a -G sudo    # 将用户 test 添加（-a）至 sudo 用户组</span><br><span class="line">$ id test</span><br><span class="line">uid=1004(test) gid=1004(test) 组=1004(test),27(sudo),116(lpadmin),122(sambashare)</span><br></pre></td></tr></table></figure></p>
+<p><strong>usermod</strong> 命令用于修改已经存在的用户。常用命令选项如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ usermod</span><br><span class="line">用法：usermod [选项] 登录</span><br><span class="line"></span><br><span class="line">选项：</span><br><span class="line">  -c, --comment 注释            GECOS 字段的新值</span><br><span class="line">  -d, --home HOME_DIR           用户的新主目录</span><br><span class="line">  -e, --expiredate EXPIRE_DATE  设定帐户过期的日期为 EXPIRE_DATE</span><br><span class="line">  -f, --inactive INACTIVE       过期 INACTIVE 天数后，设定密码为失效状态</span><br><span class="line">  -g, --gid GROUP               强制使用 GROUP 为新主组</span><br><span class="line">  -G, --groups GROUPS           新的附加组列表 GROUPS</span><br><span class="line">  -a, --append GROUP            将用户追加至上边 -G 中提到的附加组中，</span><br><span class="line">                                并不从其它组中删除此用户</span><br><span class="line">  -h, --help                    显示此帮助信息并退出</span><br><span class="line">  -l, --login LOGIN             新的登录名称</span><br><span class="line">  -L, --lock                    锁定用户帐号</span><br><span class="line">  -m, --move-home               将家目录内容移至新位置 (仅与 -d 一起使用)</span><br><span class="line">  -o, --non-unique              允许使用重复的(非唯一的) UID</span><br><span class="line">  -p, --password PASSWORD       将加密过的密码 (PASSWORD) 设为新密码</span><br><span class="line">  -R, --root CHROOT_DIR         chroot 到的目录</span><br><span class="line">  -s, --shell SHELL             该用户帐号的新登录 shell</span><br><span class="line">  -u, --uid UID                 用户帐号的新 UID</span><br><span class="line">  -U, --unlock                  解锁用户帐号</span><br><span class="line">  -Z, --selinux-user  SEUSER    用户账户的新 SELinux 用户映射</span><br></pre></td></tr></table></figure></p>
+<p>具体可参考命令：<code>man usermod</code></p>
+<h4 id="三、删除用户（组）"><a href="#三、删除用户（组）" class="headerlink" title="三、删除用户（组）"></a>三、删除用户（组）</h4><p><strong>userdel</strong> 命令可用于删除用户，<strong>groupdel</strong> 命令可用于删除用户组。<br>默认不带选项的 <strong>userdel</strong> 命令只会删除用户，并不会同时删除该用户的主目录（可以通过加上 <strong>-r</strong> 选项强制删除用户主目录）。</p>
+<p>删除某个用户后，所有原本属于该用户的文件都将失去属主，而被对应的 UID 所代替。如果之后又新建一个用户，而该用户使用了之前已删除账户的 UID，则新账户会替代已删除的账户并获取其文件的权限。</p>
+<blockquote>
+<p>可以使用 <code>find / -user UID -o -group GID</code> 命令定位已删除账户拥有的所有文件</p>
+</blockquote>
+<h4 id="四、密码"><a href="#四、密码" class="headerlink" title="四、密码"></a>四、密码</h4><p>使用 <strong>useradd</strong> 命令创建新用户时，是不自动提示创建密码的（Ubuntu系统中的 <strong>adduser</strong> 命令可以交互地创建新用户）。<br>需要使用 <strong>passwd</strong> 命令为用户设置或修改密码。</p>
+<h5 id="密码时效"><a href="#密码时效" class="headerlink" title="密码时效"></a>密码时效</h5><p>可以使用 <strong>chage</strong> 命令设置用户密码的有效期限，如：<br><code>$ sudo chage -M 30 test</code><br>30 天后，用户 test 的密码将会过期，并收到提示需要输入新的密码。</p>
+<p>chage 命令的常用选项：<br>|选项|描述|<br>|-|-|<br>|-m days|设置用户修改密码的最小间隔时间，值为 0 时表示可以在任何时间修改密码|<br>|-M days|设置密码保持有效的最长期限，即修改密码的最大间隔时间|<br>|-E date|设置用户账户过期并自动被禁用的日期|<br>|-W days|设置密码过期前多少天用户被警告需要修改密码|<br>|-I days|设置密码失效多长时间后账户被锁定|</p>
+<p>不带任何选项的 chage 命令可以交互地修改密码时效：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ sudo chage test</span><br><span class="line">正在为 test 修改年龄信息</span><br><span class="line">请输入新值，或直接敲回车键以使用默认值</span><br><span class="line"></span><br><span class="line">	最小密码年龄 [0]:</span><br><span class="line">	最大密码年龄 [99999]: 60</span><br><span class="line">	最近一次密码修改时间 (YYYY-MM-DD) [2018-09-03]:</span><br><span class="line">	密码过期警告 [7]:</span><br><span class="line">	密码失效 [-1]:</span><br><span class="line">	帐户过期时间 (YYYY-MM-DD) [-1]:</span><br><span class="line">$</span><br></pre></td></tr></table></figure></p>
+<p>用户可以使用 <code>chage -l</code> 命令查看自己的密码时效设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">chage -l test</span><br><span class="line">最近一次密码修改时间			 ： 9月 03, 2018</span><br><span class="line">密码过期时间					： 11月 02, 2018</span><br><span class="line">密码失效时间					： 从不</span><br><span class="line">帐户过期时间					： 从不</span><br><span class="line">两次改变密码之间相距的最小天数	  ：0</span><br><span class="line">两次改变密码之间相距的最大天数	  ：60</span><br><span class="line">在密码过期之前警告的天数	    ：7</span><br></pre></td></tr></table></figure></p>
+<h5 id="账户禁用"><a href="#账户禁用" class="headerlink" title="账户禁用"></a>账户禁用</h5><p>可以使用 <code>passwd -l &lt;user&gt;</code> 命令禁用用户账号，使用 <code>passwd -u &lt;user&gt;</code> 命令解除账户禁用。<br>但是这个命令并不能完全禁止用户的访问（如该用户还可以通过 SSH 远程登录主机）。</p>
+<p>如需完全禁用某用户，可使用如下命令：<br><code>sudo usermod --expiredate 1 &lt;user&gt;</code><br>该命令会将用户账号的失效日期设置为 1970 年 1月 1 日（即立即禁用）。</p>
+<p>或者将用户登录时的 shell 修改为 <code>/bin/false</code> 或 <code>/usr/sbin/nologin</code>。<br><code>$ sudo usermod -s /bin/false &lt;user&gt;</code><br>该命令不会锁定账户，但该账户对 shell 的访问已被限制。</p>
+<h4 id="五、用户信息"><a href="#五、用户信息" class="headerlink" title="五、用户信息"></a>五、用户信息</h4><p>Linux 系统将用户、群组等信息保存在以下三个文件中：<br><code>/etc/passwd</code>、<code>/etc/shadow</code>、<code>/etc/group</code>。</p>
+<p>/etc/passwd 文件中包含了所有用户的列表及详细信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">...</span><br><span class="line">starky:x:1000:1000:starky,,,:/home/starky:/bin/bash</span><br><span class="line">sshd:x:112:65534::/run/sshd:/usr/sbin/nologin</span><br><span class="line">postgres:x:113:123:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash</span><br><span class="line">skitar:x:1001:1001::/home/skitar:/bin/bash</span><br><span class="line">mysql:x:114:124:MySQL Server,,,:/nonexistent:/bin/false</span><br></pre></td></tr></table></figure></p>
+<p>该文件的格式为：<code>username:password:UID:GID:GECOS:Home:Shell</code><br>其中的 password 项都为 x ，而实际的密码保存在 <code>/etc/shadow</code> 文件中。</p>
+<p>/etc/group 文件的格式为：<code>groupname:password:GID:member,member</code></p>
+<h4 id="六、sudo"><a href="#六、sudo" class="headerlink" title="六、sudo"></a>六、sudo</h4><p><strong>sudo</strong> 命令可以使普通用户以 root 用户身份执行命令。<br>使用 useradd 命令新建的用户默认没有使用 sudo 命令的权限，需要先将其加入 <strong>sudo 用户组</strong>。<br><code>$ sudo usermod &lt;user&gt; -a -G sudo</code></p>
+<blockquote>
+<p>sudo 的本意是以其他用户的身份执行命令。可以使用 <code>-u</code> 选项指定“其他”身份。默认即为 root 用户。</p>
+</blockquote>
+<h5 id="配置-sudo"><a href="#配置-sudo" class="headerlink" title="配置 sudo"></a>配置 sudo</h5><p>sudo 命令通过检查 <code>/etc/sudoers</code> 中的配置来确定授权规则。可以通过编辑 sudoers 文件将 sudo 的授权限制为指定的用户，指定的主机，或只能执行特定的命令。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-a692dafd8ed2a8d8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sudoers"><br>sudoers 文件的格式为：<code>username host = command</code><br>如：<code>test ALL=/bin/userdel,/bin/useradd</code></p>
+<p>可以将授权使用的命令限定为某个目录中的所有命令（但不包含其子目录），如：<br><code>test ALL=/bin/*,/sbin/*</code></p>
+<p>有些时候需要将使用某个命令的权限授予一个用户，但该命令又需要使用另外一个用户的身份执行（如 MySQL 的系统守护进程）。可以使用下面的格式：<br><code>test ALL=(mysql) /usr/bin/mysqld</code></p>
+<p>还可以通过用户组信息完成对 sudo 的授权：<br><code>%groupname ALL=(ALL) ALL</code><br>上面的配置表示该组的所有用户可以在任何主机使用 sudo 执行任何命令。</p>
+<h6 id="别名设置"><a href="#别名设置" class="headerlink" title="别名设置"></a>别名设置</h6><p><code>/etc/sudoers</code> 文件中允许定义和使用<strong>别名</strong>，包括用户别名（User_Alias）、主机别名（Host_Alias）和命令别名（Cmnd_Alias）。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">User_Alias ADMIN = skitar,test</span><br><span class="line">Cmnd_Alias USER_COMMANDS = /bin/userdel,/bin/useradd</span><br><span class="line">ADMIN ALL=/bin/groupadd,USER_COMMANDS</span><br></pre></td></tr></table></figure></p>
+<p>上面的配置表示用户 skitar 和 test 可以在所有主机上通过 sudo 执行 userdel、useradd 和 groupadd 命令。</p>
+<p>还可以在别名前加上感叹号（!）表示拒绝：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Cmnd_Alias DENIED_COMMANDS = /bin/su,/bin/mount/,/bin/umount</span><br><span class="line">test ALL=/bin/*,!DENIED_COMMANDS</span><br></pre></td></tr></table></figure></p>
+<p>上面的配置表示 test 用户可以在所有主机上通过 sudo 执行除了 su、mount 和 umount 以外的所有 /bin 目录下的命令。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://a.co/d/bv0lwlN" target="_blank" rel="noopener"><strong>Pro Linux System Administration: Learn to Build Systems for Your Business Using Free and Open Source Software</strong> 2nd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Admin/" rel="tag"># Admin</a>
+          
+            <a href="/tags/System/" rel="tag"># System</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/24/use-glances-monitor-system/" rel="next" title="Glances - Linux 上的实时系统监控工具">
+                <i class="fa fa-chevron-left"></i> Glances - Linux 上的实时系统监控工具
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/09/docker-beginning-guide/" rel="prev" title="Docker 初探">
+                Docker 初探 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">158</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、创建用户"><span class="nav-number">1.</span> <span class="nav-text">一、创建用户</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用户默认设置"><span class="nav-number">1.1.</span> <span class="nav-text">用户默认设置</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、用户组"><span class="nav-number">2.</span> <span class="nav-text">二、用户组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、删除用户（组）"><span class="nav-number">3.</span> <span class="nav-text">三、删除用户（组）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、密码"><span class="nav-number">4.</span> <span class="nav-text">四、密码</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#密码时效"><span class="nav-number">4.1.</span> <span class="nav-text">密码时效</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#账户禁用"><span class="nav-number">4.2.</span> <span class="nav-text">账户禁用</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、用户信息"><span class="nav-number">5.</span> <span class="nav-text">五、用户信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#六、sudo"><span class="nav-number">6.</span> <span class="nav-text">六、sudo</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置-sudo"><span class="nav-number">6.1.</span> <span class="nav-text">配置 sudo</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#别名设置"><span class="nav-number">6.1.1.</span> <span class="nav-text">别名设置</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">7.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">17:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '2Lu5Spi4fIRohpGvzX0HdNVf-gzGzoHsz',
+        appKey: 'LmwiBGoyL8F0arTc8XMox1oH',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("S9oqaxWsaNtGwjzVfohjBnp6-gzGzoHsz", "bIaQxX6ioPdsmyDuEpieUyDU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
