@@ -106,7 +106,7 @@
 <meta name="description" content="Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="StarryLand">
-<meta property="og:url" content="https://rollingstarky.github.io/tags/Media/index.html">
+<meta property="og:url" content="https://rollingstarky.github.io/tags/media/index.html">
 <meta property="og:site_name" content="StarryLand">
 <meta property="og:description" content="Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.">
 <meta property="og:locale" content="zh-CN">
@@ -121,7 +121,7 @@
 
 
 
-  <link rel="canonical" href="https://rollingstarky.github.io/tags/Media/"/>
+  <link rel="canonical" href="https://rollingstarky.github.io/tags/media/"/>
 
 
 
@@ -130,7 +130,7 @@
     sidebar: "",
   };
 </script>
-  <title>标签: Media | StarryLand</title>
+  <title>标签: media | StarryLand</title>
   
 
 
@@ -299,7 +299,7 @@
 
     <div id="posts" class="posts-collapse">
       <div class="collection-title">
-        <h1>Media<small>标签</small>
+        <h1>media<small>标签</small>
         </h1>
       </div>
 
@@ -311,37 +311,9 @@
 
       <h2 class="post-title">
         
-            <a class="post-title-link" href="/2019/03/10/ffmpeg-user-manual-and-practical-examples/" itemprop="url">
+            <a class="post-title-link" href="/2018/12/11/my-favorite-opensource-design-software/" itemprop="url">
               
-                <span itemprop="name">视频处理工具 FFmpeg 常用实例详解</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2019-03-10T00:00:00+08:00"
-              content="2019-03-10" >
-          03-10
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/01/06/raspberry-pi-audio-configuration-and-applications/" itemprop="url">
-              
-                <span itemprop="name">树莓派3 音频配置及其应用场景（录音、VoIP 电话等）</span>
+                <span itemprop="name">我喜欢的开源软件合集（设计类）</span>
               
             </a>
         
@@ -349,37 +321,9 @@
 
       <div class="post-meta">
         <time class="post-time" itemprop="dateCreated"
-              datetime="2019-01-06T00:00:00+08:00"
-              content="2019-01-06" >
-          01-06
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/12/18/processing-audio-with-sox/" itemprop="url">
-              
-                <span itemprop="name">SoX — 音频处理工具里的瑞士军刀</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-12-18T00:00:00+08:00"
-              content="2018-12-18" >
-          12-18
+              datetime="2018-12-11T00:00:00+08:00"
+              content="2018-12-11" >
+          12-11
         </time>
       </div>
 
@@ -440,7 +384,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">165</span>
+                    <span class="site-state-item-count">166</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -968,7 +912,13 @@
                     
                       
                     
-                    <span class="site-state-item-count">231</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">234</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1070,7 +1020,7 @@
       <i class="fa fa-coffee"></i>
     </span>
     
-    <span title="站点总阅读时长">18:07</span>
+    <span title="站点总阅读时长">18:19</span>
   
 </div>
 
@@ -1631,6 +1581,70 @@
               },
               error: function(counter, error) {
                 console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+      console.log('Failed to save Visitor num, with error message: ' + error.message);
               }
             });
           } else {
