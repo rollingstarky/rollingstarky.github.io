@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Haskell,GHC,Functional,Pattern,Match,Recursion,Deconstruction," />
+
+
+<meta name="description" content="式匹配包含一系列特定的模式，用来判断数据是否符合规则，且能够通过这些模式把符合要求的数据解构出来。Haskell 中的模式匹配可以应用到任意的数据类型上（数字、字符、列表、元组等等）。 函数中的模式匹配可以在函数体的定义中，用不同的代码行分别指定不同的模式：123456789101112Prelude&amp;gt; :&amp;#123;Prelude| lucky :: (Integral a) =&amp;gt;">
+<meta name="keywords" content="Haskell,GHC,Functional,Pattern,Match,Recursion,Deconstruction">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Haskell 基本语法（二）模式匹配">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/06/25/basic-haskell-pattern-match/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="式匹配包含一系列特定的模式，用来判断数据是否符合规则，且能够通过这些模式把符合要求的数据解构出来。Haskell 中的模式匹配可以应用到任意的数据类型上（数字、字符、列表、元组等等）。 函数中的模式匹配可以在函数体的定义中，用不同的代码行分别指定不同的模式：123456789101112Prelude&amp;gt; :&amp;#123;Prelude| lucky :: (Integral a) =&amp;gt;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-25T14:53:30.547Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Haskell 基本语法（二）模式匹配">
+<meta name="twitter:description" content="式匹配包含一系列特定的模式，用来判断数据是否符合规则，且能够通过这些模式把符合要求的数据解构出来。Haskell 中的模式匹配可以应用到任意的数据类型上（数字、字符、列表、元组等等）。 函数中的模式匹配可以在函数体的定义中，用不同的代码行分别指定不同的模式：123456789101112Prelude&amp;gt; :&amp;#123;Prelude| lucky :: (Integral a) =&amp;gt;">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/06/25/basic-haskell-pattern-match/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Haskell 基本语法（二）模式匹配 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/06/25/basic-haskell-pattern-match/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Haskell 基本语法（二）模式匹配</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-06-25T00:00:00+08:00">2021-06-25</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/06/25/basic-haskell-pattern-match/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/06/25/basic-haskell-pattern-match/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/06/25/basic-haskell-pattern-match/" class="leancloud_visitors" data-flag-title="Haskell 基本语法（二）模式匹配">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">6.2k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:06</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>式匹配包含一系列特定的模式，用来判断数据是否符合规则，且能够通过这些模式把符合要求的数据<strong>解构</strong>出来。<br>Haskell 中的模式匹配可以应用到任意的数据类型上（数字、字符、列表、元组等等）。</p>
+<h4 id="函数中的模式匹配"><a href="#函数中的模式匹配" class="headerlink" title="函数中的模式匹配"></a>函数中的模式匹配</h4><p>可以在函数体的定义中，用不同的代码行分别指定不同的模式：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :&#123;</span><br><span class="line"><span class="type">Prelude</span>| lucky :: (<span class="type">Integral</span> a) =&gt; a -&gt; <span class="type">String</span></span><br><span class="line"><span class="type">Prelude</span>| lucky <span class="number">7</span> = <span class="string">"LUCKY NUMBER SEVEN!"</span></span><br><span class="line"><span class="type">Prelude</span>| lucky x = <span class="string">"Sorry, you're out of luck!"</span></span><br><span class="line"><span class="type">Prelude</span>| :&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt;</span><br><span class="line"><span class="type">Prelude</span>&gt; lucky <span class="number">1</span></span><br><span class="line"><span class="string">"Sorry, you're out of luck!"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; lucky <span class="number">10</span></span><br><span class="line"><span class="string">"Sorry, you're out of luck!"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; lucky <span class="number">7</span></span><br><span class="line"><span class="string">"LUCKY NUMBER SEVEN!"</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>PS</strong>：上述代码是在 Haskell 的交互式解释器（REPL) <code>ghci</code> 中定义和执行函数的效果。<br>像 <code>lucky</code> 这种包含多行代码的函数，在 ghci 解释器中直接定义时，需要把整个函数体用 <code>:{</code> 和 <code>:}</code> 括起来（否则解释器会报错）。实际的 <code>lucky</code> 函数代码应为：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">lucky</span> :: (<span class="type">Integral</span> a) =&gt; a -&gt; <span class="type">String</span>  </span><br><span class="line"><span class="title">lucky</span> <span class="number">7</span> = <span class="string">"LUCKY NUMBER SEVEN!"</span>  </span><br><span class="line"><span class="title">lucky</span> x = <span class="string">"Sorry, you're out of luck, pal!"</span></span><br></pre></td></tr></table></figure></p>
+<p>即 <code>:{</code> 和 <code>:}</code> 从代码的角度讲是多余的，只是 <code>ghci</code> 解释器的缘故，导致必须加上这两个分隔符。若在文件中编写代码，则应该使用第二种形式。</p>
+<p>代码的第一行 <code>lucky :: (Integral a) =&gt; a -&gt; String</code> 是函数的类型签名，也可以省略，解释器会自行推导。<br><code>lucky 7</code> 和 <code>lucky x</code> 两行代码则指定了具体的两个模式：<br>当函数输入为数字 7 时匹配第一个模式，任何其他的数字输入则匹配第二个模式并将该输入值绑定给变量 <code>x</code>。</p>
+<p>一个包含更多个模式的函数：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">sayMe</span> :: (<span class="type">Integral</span> a) =&gt; a -&gt; <span class="type">String</span>  </span><br><span class="line"><span class="title">sayMe</span> <span class="number">1</span> = <span class="string">"One!"</span>  </span><br><span class="line"><span class="title">sayMe</span> <span class="number">2</span> = <span class="string">"Two!"</span>  </span><br><span class="line"><span class="title">sayMe</span> <span class="number">3</span> = <span class="string">"Three!"</span>  </span><br><span class="line"><span class="title">sayMe</span> <span class="number">4</span> = <span class="string">"Four!"</span>  </span><br><span class="line"><span class="title">sayMe</span> <span class="number">5</span> = <span class="string">"Five!"</span>  </span><br><span class="line"><span class="title">sayMe</span> x = <span class="string">"Not between 1 and 5"</span></span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，最后一行代码 <code>sayMe x</code> 必须作为最后一个模式。<br>函数体中的模式会按照<strong>自顶而下</strong>的顺序检查是否匹配，若当前的模式已完成匹配，则忽略后面的检查；若当前模式不匹配，则继续向下逐个进行检查。<br>若 <code>sayMe x</code> 作为顶部的第一个模式（它实际上会匹配所有合法值），则任何输入值都会在第一步就完成匹配，进而忽略后面的 <code>sayMe 1</code>、<code>sayMe 2</code> 等模式，不再进行判断。即输入任何数字都会先匹配 <code>x</code> 并输出 Not between 1 and 5。</p>
+<p>使用模式匹配和递归实现阶乘函数<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">factorial</span> :: (<span class="type">Integral</span> a) =&gt; a -&gt; a  </span><br><span class="line"><span class="title">factorial</span> <span class="number">0</span> = <span class="number">1</span>  </span><br><span class="line"><span class="title">factorial</span> n = n * factorial (n - <span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
+<p>比如当输入为 3 时，<code>factorial</code> 函数会匹配第二个模式，结果为 <code>3 * (factorial 2)</code>。继续迭代，进一步计算结果中的 <code>factorial 2</code>，得到 <code>3 * (2 * (factorial 1))</code>、<code>3 * (2 * (1 * (factorial 0)))</code>。<br>而 <code>factorial 0</code> 会匹配第一个模式得到结果 1，迭代终止，再和前面的数字相乘后得到最终结果。</p>
+<p>假如将 <code>factorial n = n * factorial (n - 1)</code> 作为第一个模式，则 <code>factorial n</code> 会匹配包含数字 0 在内的所有数字，另一个模式 <code>factorial 0 = 1</code> 就永远不会触发。从而导致迭代没有终止条件，一直进行下去。<br>因此，<strong>在模式匹配中，更精确更有指向性的模式总是放在相对通用和宽泛的模式前面</strong>。</p>
+<p>在使用模式匹配时，应该总是包含一个 catch-all 模式，这样就不会出现所有模式都不匹配的情况。若程序的输入与所有模式都不匹配，程序会崩溃掉。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :&#123;</span><br><span class="line"><span class="type">Prelude</span>| charName :: <span class="type">Char</span> -&gt; <span class="type">String</span></span><br><span class="line"><span class="type">Prelude</span>| charName 'a' = <span class="string">"Albert"</span></span><br><span class="line"><span class="type">Prelude</span>| charName 'b' = <span class="string">"Broseph"</span></span><br><span class="line"><span class="type">Prelude</span>| charName 'c' = <span class="string">"Cecil"</span></span><br><span class="line"><span class="type">Prelude</span>| :&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt;</span><br><span class="line"><span class="type">Prelude</span>&gt; charName 'a'</span><br><span class="line"><span class="string">"Albert"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; charName 'b'</span><br><span class="line"><span class="string">"Broseph"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; charName 'h'</span><br><span class="line">*** <span class="type">Exception</span>: &lt;interactive&gt;:(<span class="number">3</span>,<span class="number">1</span>)-(<span class="number">5</span>,<span class="number">22</span>): <span class="type">Non</span>-exhaustive patterns <span class="keyword">in</span> function charName</span><br></pre></td></tr></table></figure></p>
+<h4 id="元组中的模式匹配"><a href="#元组中的模式匹配" class="headerlink" title="元组中的模式匹配"></a>元组中的模式匹配</h4><p>在不使用模式匹配的情况下，实现一个计算两个向量之和的函数：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">addVectors</span> :: (<span class="type">Num</span> a) =&gt; (a, a) -&gt; (a, a) -&gt; (a, a)</span><br><span class="line"><span class="title">addVectors</span> a b = (fst a + fst b, snd a + snd b)</span><br></pre></td></tr></table></figure></p>
+<p>通过模式匹配实现上述功能：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :&#123;</span><br><span class="line"><span class="type">Prelude</span>| addVectors :: (<span class="type">Num</span> a) =&gt; (a, a) -&gt; (a, a) -&gt; (a, a)</span><br><span class="line"><span class="type">Prelude</span>| addVectors (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)</span><br><span class="line"><span class="type">Prelude</span>| :&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt;</span><br><span class="line"><span class="type">Prelude</span>&gt; addVectors (<span class="number">1</span>, <span class="number">2</span>) (<span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line">(<span class="number">4</span>,<span class="number">6</span>)</span><br></pre></td></tr></table></figure></p>
+<p><code>fst</code> 和 <code>snd</code> 函数可以分别用来获取元组中的第一个和第二个元素（但是只针对包含两个元素的元组）。<br>对于有 3 个元素的元组，实际上可以借助模式匹配自己实现：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">first</span> :: (a, b, c) -&gt; a</span><br><span class="line"><span class="title">first</span> (x, _, _) = x</span><br><span class="line">  </span><br><span class="line"><span class="title">second</span> :: (a, b, c) -&gt; b</span><br><span class="line"><span class="title">second</span> (_, y, _) = y</span><br><span class="line">  </span><br><span class="line"><span class="title">third</span> :: (a, b, c) -&gt; c</span><br><span class="line"><span class="title">third</span> (_, _, z) = z</span><br></pre></td></tr></table></figure></p>
+<p>可以在<strong>列表推导</strong>中使用模式匹配：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> xs = [(<span class="number">1</span>,<span class="number">3</span>), (<span class="number">4</span>,<span class="number">3</span>), (<span class="number">2</span>,<span class="number">4</span>), (<span class="number">5</span>,<span class="number">3</span>), (<span class="number">5</span>,<span class="number">6</span>), (<span class="number">3</span>,<span class="number">1</span>)]</span><br><span class="line"><span class="type">Prelude</span>&gt; [a+b | (a,b) &lt;- xs]</span><br><span class="line">[<span class="number">4</span>,<span class="number">7</span>,<span class="number">6</span>,<span class="number">8</span>,<span class="number">11</span>,<span class="number">4</span>]</span><br></pre></td></tr></table></figure></p>
+<p>甚至列表本身也可以用于模式匹配。<br>如模式 <code>x:xs</code> 会将列表的第一个元素绑定给变量 <code>x</code>，把其余元素绑定给 <code>xs</code>。此模式的应用非常普遍，尤其是在递归函数中。<br>如果想提取列表的前 3 个元素并将它们绑定给指定变量，可以使用 <code>x:y:z:zs</code> 形式的模式。</p>
+<p>利用对列表的模式匹配实现自定义的 <code>head</code> 函数（获取列表中的第一个元素）：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :&#123;</span><br><span class="line"><span class="type">Prelude</span>| head' :: [a] -&gt; a</span><br><span class="line"><span class="type">Prelude</span>| head' [] = error <span class="string">"Can't call head on an empty list!"</span></span><br><span class="line"><span class="type">Prelude</span>| head' (x:_) = x</span><br><span class="line"><span class="type">Prelude</span>| :&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt;</span><br><span class="line"><span class="type">Prelude</span>&gt; head' [<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="type">Prelude</span>&gt; head' <span class="string">"Hello"</span></span><br><span class="line">'<span class="type">H'</span></span><br></pre></td></tr></table></figure></p>
+<p>借助递归和模式匹配实现自定义的 <code>length</code> 函数（获取列表的长度）：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">length'</span> :: (<span class="type">Num</span> b) =&gt; [a] -&gt; b</span><br><span class="line"><span class="title">length'</span> [] = <span class="number">0</span></span><br><span class="line"><span class="title">length'</span> (_:xs) = <span class="number">1</span> + length' xs</span><br></pre></td></tr></table></figure></p>
+<p>对于任何一个合法的输入如 <code>&quot;ham&quot;</code>，<code>length&#39;</code> 函数的计算过程如下：<br><code>length&#39; &quot;ham&quot;</code> =&gt; <code>1 + length&#39; &quot;am&quot;</code> =&gt; <code>1 + (1 + length&#39; &quot;m&quot;)</code> =&gt; <code>1 + (1 + (1 + length&#39; []))</code> =&gt; <code>1 + (1 + (1 + 0))</code></p>
+<p>实现自定义的 <code>sum</code> 函数（求列表中各元素之和）：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">sum'</span> :: (<span class="type">Num</span> a) =&gt; [a] -&gt; a</span><br><span class="line"><span class="title">sum'</span> [] = <span class="number">0</span></span><br><span class="line"><span class="title">sum'</span> (x:xs) = x + sum' xs</span><br></pre></td></tr></table></figure></p>
+<h4 id="守卫（guards）"><a href="#守卫（guards）" class="headerlink" title="守卫（guards）"></a>守卫（guards）</h4><p>守卫一般用来测试某个（些）值的特定属性是否为真，很像 if 语句。守卫和模式整合得非常好。</p>
+<p>以下是一个求 BMI（体重指数）的函数定义：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">bmiTell</span> :: (<span class="type">RealFloat</span> a) =&gt; a -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">bmiTell</span> bmi</span><br><span class="line">    | bmi &lt;= <span class="number">18.5</span> = <span class="string">"You're underweight, you emo, you!"</span></span><br><span class="line">    | bmi &lt;= <span class="number">25.0</span> = <span class="string">"You're supposedly normal. Pffft, I bet you're ugly!"</span></span><br><span class="line">    | bmi &lt;= <span class="number">30.0</span> = <span class="string">"You're fat! Lose some weight, fatty!"</span></span><br><span class="line">    | otherwise   = <span class="string">"You're a whale, congratulations!"</span></span><br></pre></td></tr></table></figure></p>
+<p>管道符（<code>|</code>）后面的布尔表达式即为守卫的定义。若该表达式计算结果为 True，则对应的代码被执行。<br>若该表达式计算结果为 False，则继续测试下一个守卫。</p>
+<p>通常情况下，最后一个守卫是 <code>otherwise</code>。它其实是 <code>otherwise = True</code> 的简写形式，会捕获所有剩余的情况。</p>
+<p>守卫可以配合有多个参数的函数使用：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">bmiTell</span> :: (<span class="type">RealFloat</span> a) =&gt; a -&gt; a -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">bmiTell</span> weight height</span><br><span class="line">    | weight / height ^ <span class="number">2</span> &lt;= <span class="number">18.5</span> = <span class="string">"You're underweight, you emo, you!"</span></span><br><span class="line">    | weight / height ^ <span class="number">2</span> &lt;= <span class="number">25.0</span> = <span class="string">"You're supposedly normal. Pffft, I bet you're ugly!"</span></span><br><span class="line">    | weight / height ^ <span class="number">2</span> &lt;= <span class="number">30.0</span> = <span class="string">"You're fat! Lose some weight, fatty!"</span></span><br><span class="line">    | otherwise                 = <span class="string">"You're a whale, congratulations!"</span></span><br></pre></td></tr></table></figure></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; bmiTell <span class="number">65</span> <span class="number">1.75</span></span><br><span class="line"><span class="string">"You're supposedly normal. Pffft, I bet you're ugly!"</span></span><br></pre></td></tr></table></figure>
+<p>通过守卫自定义 <code>max</code> 函数：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">max'</span> :: (<span class="type">Ord</span> a) =&gt; a -&gt; a -&gt; a</span><br><span class="line"><span class="title">max'</span> a b</span><br><span class="line">    | a &gt; b     = a</span><br><span class="line">    | otherwise = b</span><br></pre></td></tr></table></figure></p>
+<p><strong>where</strong><br>可以通过 <code>where</code> 关键字优化上面的 <code>bmiTell</code> 函数：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">bmiTell</span> :: (<span class="type">RealFloat</span> a) =&gt; a -&gt; a -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">bmiTell</span> weight height</span><br><span class="line">    | bmi &lt;= <span class="number">18.5</span> = <span class="string">"You're underweight, you emo, you!"</span></span><br><span class="line">    | bmi &lt;= <span class="number">25.0</span> = <span class="string">"You're supposedly normal. Pffft, I bet you're ugly!"</span></span><br><span class="line">    | bmi &lt;= <span class="number">30.0</span> = <span class="string">"You're fat! Lose some weight, fatty!"</span></span><br><span class="line">    | otherwise   = <span class="string">"You're a whale, congratulations!"</span></span><br><span class="line">    <span class="keyword">where</span> bmi = weight / height ^ <span class="number">2</span></span><br></pre></td></tr></table></figure></p>
+<p>变量 <code>bmi</code> 在这里只计算了一次，不同于之前的 <code>weight / height ^ 2</code> 有可能会被重复计算 3 次。</p>
+<p>更进一步，<code>bmiTell</code> 函数还可以改为如下形式：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">bmiTell</span> :: (<span class="type">RealFloat</span> a) =&gt; a -&gt; a -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">bmiTell</span> weight height</span><br><span class="line">    | bmi &lt;= skinny = <span class="string">"You're underweight, you emo, you!"</span></span><br><span class="line">    | bmi &lt;= normal = <span class="string">"You're supposedly normal. Pffft, I bet you're ugly!"</span></span><br><span class="line">    | bmi &lt;= fat    = <span class="string">"You're fat! Lose some weight, fatty!"</span></span><br><span class="line">    | otherwise     = <span class="string">"You're a whale, congratulations!"</span></span><br><span class="line">    <span class="keyword">where</span> bmi = weight / height ^ <span class="number">2</span></span><br><span class="line">          skinny = <span class="number">18.5</span></span><br><span class="line">          normal = <span class="number">25.0</span></span><br><span class="line">          fat = <span class="number">30.0</span></span><br></pre></td></tr></table></figure></p>
+<p><code>where</code> 语句中也可以定义函数，比如通过由多个包含身高体重的元组组成的列表，计算一系列 BMI 值：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">calcBmis</span> :: (<span class="type">RealFloat</span> a) =&gt; [(a, a)] -&gt; [a]</span><br><span class="line"><span class="title">calcBmis</span> xs = [bmi w h | (w, h) &lt;- xs]</span><br><span class="line">    <span class="keyword">where</span> bmi weight height = weight / height ^ <span class="number">2</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://learnyouahaskell.com/" target="_blank" rel="noopener">Learn You a Haskell for Great Good!</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Haskell/" rel="tag"># Haskell</a>
+          
+            <a href="/tags/GHC/" rel="tag"># GHC</a>
+          
+            <a href="/tags/Functional/" rel="tag"># Functional</a>
+          
+            <a href="/tags/Pattern/" rel="tag"># Pattern</a>
+          
+            <a href="/tags/Match/" rel="tag"># Match</a>
+          
+            <a href="/tags/Recursion/" rel="tag"># Recursion</a>
+          
+            <a href="/tags/Deconstruction/" rel="tag"># Deconstruction</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/06/23/the-rust-programming-language-reading-notes-pattern-match/" rel="next" title="The Rust programming language 读书笔记——模式匹配">
+                <i class="fa fa-chevron-left"></i> The Rust programming language 读书笔记——模式匹配
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">168</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">238</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#函数中的模式匹配"><span class="nav-number">1.</span> <span class="nav-text">函数中的模式匹配</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#元组中的模式匹配"><span class="nav-number">2.</span> <span class="nav-text">元组中的模式匹配</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#守卫（guards）"><span class="nav-number">3.</span> <span class="nav-text">守卫（guards）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">18:33</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
