@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Program,Haskell,Functional,Type,Typeclass,ADT," />
+
+
+<meta name="description" content="ADT (Algebraic data types)类似 Bool、Int、Char 这些都是内置的数据类型，我们可以使用 data 关键字创建自己的类型。 标准库中的 Bool 类型实际上是这样定义的：1data Bool = False | True 其中 = 左边部分指定类型的名称，右边部分叫做 value constructors，用来指定当前类型能够拥有的不同数值。整个语句可以读作“Bo">
+<meta name="keywords" content="Program,Haskell,Functional,Type,Typeclass,ADT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Haskell 基本语法（五）自定义 Types">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/07/06/basic-haskell-user-defined-types/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="ADT (Algebraic data types)类似 Bool、Int、Char 这些都是内置的数据类型，我们可以使用 data 关键字创建自己的类型。 标准库中的 Bool 类型实际上是这样定义的：1data Bool = False | True 其中 = 左边部分指定类型的名称，右边部分叫做 value constructors，用来指定当前类型能够拥有的不同数值。整个语句可以读作“Bo">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-07-06T14:50:37.604Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Haskell 基本语法（五）自定义 Types">
+<meta name="twitter:description" content="ADT (Algebraic data types)类似 Bool、Int、Char 这些都是内置的数据类型，我们可以使用 data 关键字创建自己的类型。 标准库中的 Bool 类型实际上是这样定义的：1data Bool = False | True 其中 = 左边部分指定类型的名称，右边部分叫做 value constructors，用来指定当前类型能够拥有的不同数值。整个语句可以读作“Bo">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/07/06/basic-haskell-user-defined-types/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Haskell 基本语法（五）自定义 Types | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/07/06/basic-haskell-user-defined-types/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Haskell 基本语法（五）自定义 Types</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-07-06T00:00:00+08:00">2021-07-06</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/07/06/basic-haskell-user-defined-types/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/07/06/basic-haskell-user-defined-types/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/07/06/basic-haskell-user-defined-types/" class="leancloud_visitors" data-flag-title="Haskell 基本语法（五）自定义 Types">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">10k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:10</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="ADT-Algebraic-data-types"><a href="#ADT-Algebraic-data-types" class="headerlink" title="ADT (Algebraic data types)"></a>ADT (Algebraic data types)</h4><p>类似 <code>Bool</code>、<code>Int</code>、<code>Char</code> 这些都是内置的数据类型，我们可以使用 <strong><code>data</code></strong> 关键字创建自己的类型。</p>
+<p>标准库中的 <code>Bool</code> 类型实际上是这样定义的：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Bool</span> = <span class="type">False</span> | <span class="type">True</span></span></span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>=</code> 左边部分指定类型的名称，右边部分叫做 <strong>value constructors</strong>，用来指定当前类型能够拥有的不同数值。<br>整个语句可以读作“<code>Bool</code> 类型可以使用 <code>True</code> 或者 <code>False</code> 作为它的值”。</p>
+<p>现在思考下应该用怎样的形式表示一种形状。可以使用元组，比如圆圈可以表示为 <code>(43.1, 55.0, 10.4)</code>。前两项表示圆心的坐标，最后一项表示半径。<br>但这种形式的元组也同样可以表示一个三维向量或者其他对象。更好一点的方法是创建自定义的数据类型。</p>
+<p>假设一个形状对象可以是圆或者矩形，则可以定义如下形式的 <code>Shape</code> 类型：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Shape</span> = <span class="type">Circle</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> | <span class="type">Rectangle</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span></span></span><br></pre></td></tr></table></figure></p>
+<p>可以这样理解，<code>Circle</code> value constructor 包含三个 Float 类型的字段，前两个字段是圆心的坐标，最后一个字段表示半径；<code>Rectangle</code> value constructor 包含四个 Float 类型的字段，前两个字段表示左上角顶点的坐标，后两个字段表示右下角的坐标。</p>
+<p>Value constructor 实际上是一种函数，所谓的“字段”是函数的参数，最终返回特定的数据类型。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :t <span class="type">Circle</span></span><br><span class="line"><span class="type">Circle</span> :: <span class="type">Float</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Shape</span></span><br><span class="line"><span class="type">Prelude</span>&gt; :t <span class="type">Rectangle</span></span><br><span class="line"><span class="type">Rectangle</span> :: <span class="type">Float</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Shape</span></span><br></pre></td></tr></table></figure></p>
+<p>接下来就可以针对 <code>Shape</code> 类型定义一个 <code>surface</code> 函数，用来计算某个 Shape 的面积：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">surface</span> :: <span class="type">Shape</span> -&gt; <span class="type">Float</span>  </span><br><span class="line"><span class="title">surface</span> (<span class="type">Circle</span> _ _ r) = pi * r ^ <span class="number">2</span>  </span><br><span class="line"><span class="title">surface</span> (<span class="type">Rectangle</span> x1 y1 x2 y2) = (abs (x2 - x1)) * (abs (y2 - y1))</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :&#123;</span><br><span class="line"><span class="type">Prelude</span>| surface :: <span class="type">Shape</span> -&gt; <span class="type">Float</span></span><br><span class="line"><span class="type">Prelude</span>| surface (<span class="type">Circle</span> _ _ r) = pi * r ^ <span class="number">2</span></span><br><span class="line"><span class="type">Prelude</span>| surface (<span class="type">Rectangle</span> x1 y1 x2 y2) = (abs (x2 - x1)) * (abs (y2 - y1))</span><br><span class="line"><span class="type">Prelude</span>| :&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt;</span><br><span class="line"><span class="type">Prelude</span>&gt; surface (<span class="type">Circle</span> <span class="number">10</span> <span class="number">20</span> <span class="number">10</span>)</span><br><span class="line"><span class="number">314.15927</span></span><br><span class="line"><span class="type">Prelude</span>&gt; surface (<span class="type">Rectangle</span> <span class="number">0</span> <span class="number">0</span> <span class="number">100</span> <span class="number">100</span>)</span><br><span class="line"><span class="number">10000.0</span></span><br></pre></td></tr></table></figure>
+<p>但是当我们在 <code>ghci</code> 中像调用函数那样直接执行如 <code>Circle 10 20 5</code> 这类命令时，会报出如下错误：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; (<span class="type">Circle</span> <span class="number">10</span> <span class="number">20</span> <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">&lt;interactive&gt;:<span class="number">14</span>:<span class="number">1</span>: error:</span><br><span class="line">    • <span class="type">No</span> <span class="keyword">instance</span> for (<span class="type">Show</span> <span class="type">Shape</span>) arising from a use <span class="keyword">of</span> ‘print’</span><br><span class="line">    • <span class="type">In</span> a stmt <span class="keyword">of</span> an interactive <span class="type">GHCi</span> command: print it</span><br></pre></td></tr></table></figure></p>
+<p>原因是 Haskell 不清楚如何将此处的自定义类型表示为字符串。当在 <code>ghci</code> 中打印一个值时，实际上 Haskell 调用了 <code>show</code> 函数用来获取对应值的字符串形式，并输出到命令行。<br>为了使我们的 <code>Shape</code> 类型支持打印输出，需要令其实现 <code>Show</code> typeclass。语法如下：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Shape</span> = <span class="type">Circle</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> | <span class="type">Rectangle</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br></pre></td></tr></table></figure></p>
+<p>此时 <code>Shape</code> 类型即可支持打印输出操作：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="class"><span class="keyword">data</span> <span class="type">Shape</span> = <span class="type">Circle</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> | <span class="type">Rectangle</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> <span class="type">Float</span> <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Circle</span> <span class="number">10</span> <span class="number">20</span> <span class="number">5</span></span><br><span class="line"><span class="type">Circle</span> <span class="number">10.0</span> <span class="number">20.0</span> <span class="number">5.0</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Rectangle</span> <span class="number">50</span> <span class="number">230</span> <span class="number">60</span> <span class="number">90</span></span><br><span class="line"><span class="type">Rectangle</span> <span class="number">50.0</span> <span class="number">230.0</span> <span class="number">60.0</span> <span class="number">90.0</span></span><br></pre></td></tr></table></figure></p>
+<p>Value constructor 实际上就是函数，也因此支持 <code>map</code>、partially apply 等操作。<br>比如可以使用如下代码创建一系列半径不同的同心圆：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; map (<span class="type">Circle</span> <span class="number">10</span> <span class="number">20</span>) [<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">6</span>]</span><br><span class="line">[<span class="type">Circle</span> <span class="number">10.0</span> <span class="number">20.0</span> <span class="number">4.0</span>,<span class="type">Circle</span> <span class="number">10.0</span> <span class="number">20.0</span> <span class="number">5.0</span>,<span class="type">Circle</span> <span class="number">10.0</span> <span class="number">20.0</span> <span class="number">6.0</span>,<span class="type">Circle</span> <span class="number">10.0</span> <span class="number">20.0</span> <span class="number">6.0</span>]</span><br></pre></td></tr></table></figure></p>
+<p>让我们再定义一个 <code>Point</code> 类型，并令其成为 <code>Shape</code> 类型的一部分，从而更加容易理解：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Point</span> = <span class="type">Point</span> <span class="type">Float</span> <span class="type">Float</span> <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Shape</span> = <span class="type">Circle</span> <span class="type">Point</span> <span class="type">Float</span> | <span class="type">Rectangle</span> <span class="type">Point</span> <span class="type">Point</span> <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br></pre></td></tr></table></figure></p>
+<p>此时的 <code>Circle</code> 类型拥有两个字段，用 <code>Point</code> 类型表示圆圈的圆心，再加一个 <code>Float</code> 类型表示半径。</p>
+<p>重新实现下之前的 <code>surface</code> 函数：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">surface</span> :: <span class="type">Shape</span> -&gt; <span class="type">Float</span></span><br><span class="line"><span class="title">surface</span> (<span class="type">Circle</span> _ r) = pi * r ^ <span class="number">2</span></span><br><span class="line"><span class="title">surface</span> (<span class="type">Rectangle</span> (<span class="type">Point</span> x1 y1) (<span class="type">Point</span> x2 y2)) = (abs (x2 - x1)) * (abs (y2 - y1))</span><br></pre></td></tr></table></figure></p>
+<p>只需要重新定义模式匹配的部分即可。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; surface (<span class="type">Rectangle</span> (<span class="type">Point</span> <span class="number">0</span> <span class="number">0</span>) (<span class="type">Point</span> <span class="number">100</span> <span class="number">100</span>))</span><br><span class="line"><span class="number">10000.0</span></span><br><span class="line"><span class="type">Prelude</span>&gt; surface (<span class="type">Circle</span> (<span class="type">Point</span> <span class="number">0</span> <span class="number">0</span>) <span class="number">24</span>)</span><br></pre></td></tr></table></figure></p>
+<p>还可以创建一个 <code>nudge</code> 函数用来移动某个形状对象的位置。它接收一个形状及其在 x 轴和 y 轴上的偏移量作为参数，返回一个同样大小、不同位置的形状对象。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">nudge</span> :: <span class="type">Shape</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Float</span> -&gt; <span class="type">Shape</span></span><br><span class="line"><span class="title">nudge</span> (<span class="type">Circle</span> (<span class="type">Point</span> x y) r) a b = <span class="type">Circle</span> (<span class="type">Point</span> (x+a) (y+b)) r</span><br><span class="line"><span class="title">nudge</span> (<span class="type">Rectangle</span> (<span class="type">Point</span> x1 y1) (<span class="type">Point</span> x2 y2)) a b = <span class="type">Rectangle</span> (<span class="type">Point</span> (x1+a) (y1+b)) (<span class="type">Point</span> (x2+a) (y2+b))</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; nudge (<span class="type">Circle</span> (<span class="type">Point</span> <span class="number">34</span> <span class="number">34</span>) <span class="number">10</span>) <span class="number">5</span> <span class="number">10</span></span><br><span class="line"><span class="type">Circle</span> (<span class="type">Point</span> <span class="number">39.0</span> <span class="number">44.0</span>) <span class="number">10.0</span></span><br></pre></td></tr></table></figure>
+<h4 id="Record-语法"><a href="#Record-语法" class="headerlink" title="Record 语法"></a>Record 语法</h4><p>假设创建一个名为 <code>Person</code> 的自定义数据类型。它需要包含名字、姓氏、年龄、身高、手机号和最喜欢的冰淇淋种类等字段。<br>可以使用如下代码实现：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="class"><span class="keyword">data</span> <span class="type">Person</span> = <span class="type">Person</span> <span class="type">String</span> <span class="type">String</span> <span class="type">Int</span> <span class="type">Float</span> <span class="type">String</span> <span class="type">String</span> <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> guy = <span class="type">Person</span> <span class="string">"Buddy"</span> <span class="string">"Finklestein"</span> <span class="number">43</span> <span class="number">184.2</span> <span class="string">"526-2928"</span> <span class="string">"Chocolate"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; guy</span><br><span class="line"><span class="type">Person</span> <span class="string">"Buddy"</span> <span class="string">"Finklestein"</span> <span class="number">43</span> <span class="number">184.2</span> <span class="string">"526-2928"</span> <span class="string">"Chocolate"</span></span><br></pre></td></tr></table></figure></p>
+<p>上述代码是可以运行的，但可读性却很差。<br>当我们需要创建函数来获取 Person 对象中的某个字段的值时，可能就需要借助如下形式的代码：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">firstName</span> :: <span class="type">Person</span> -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">firstName</span> (<span class="type">Person</span> firstname _ _ _ _ _) = firstname</span><br><span class="line">  </span><br><span class="line"><span class="title">lastName</span> :: <span class="type">Person</span> -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">lastName</span> (<span class="type">Person</span> _ lastname _ _ _ _) = lastname</span><br><span class="line">  </span><br><span class="line"><span class="title">age</span> :: <span class="type">Person</span> -&gt; <span class="type">Int</span></span><br><span class="line"><span class="title">age</span> (<span class="type">Person</span> _ _ age _ _ _) = age</span><br><span class="line">  </span><br><span class="line"><span class="title">height</span> :: <span class="type">Person</span> -&gt; <span class="type">Float</span></span><br><span class="line"><span class="title">height</span> (<span class="type">Person</span> _ _ _ height _ _) = height</span><br><span class="line">  </span><br><span class="line"><span class="title">phoneNumber</span> :: <span class="type">Person</span> -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">phoneNumber</span> (<span class="type">Person</span> _ _ _ _ number _) = number</span><br><span class="line">  </span><br><span class="line"><span class="title">flavor</span> :: <span class="type">Person</span> -&gt; <span class="type">String</span></span><br><span class="line"><span class="title">flavor</span> (<span class="type">Person</span> _ _ _ _ _ flavor) = flavor</span><br></pre></td></tr></table></figure></p>
+<p>鉴于上述场景中的代码实现有诸多不方便的地方，Haskell 提供了另外一种创建数据类型的方法，即 Record 语法。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Person</span> = <span class="type">Person</span> &#123; <span class="title">firstName</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class">                     , <span class="title">lastName</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class">                     , <span class="title">age</span> :: <span class="type">Int</span></span></span><br><span class="line"><span class="class">                     , <span class="title">height</span> :: <span class="type">Float</span></span></span><br><span class="line"><span class="class">                     , <span class="title">phoneNumber</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class">                     , <span class="title">flavor</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class">                     &#125; <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br></pre></td></tr></table></figure></p>
+<p>通过上述语法，Haskell 会自动创建 <code>firstName</code>、<code>lastName</code>、<code>age</code>、<code>height</code>、<code>phoneNumber</code>、<code>flavor</code> 等函数，用于访问该类型对象中的对应字段。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :t flavor</span><br><span class="line"><span class="title">flavor</span> :: <span class="type">Person</span> -&gt; <span class="type">String</span></span><br><span class="line"><span class="type">Prelude</span>&gt; :t firstName</span><br><span class="line"><span class="title">firstName</span> :: <span class="type">Person</span> -&gt; <span class="type">String</span></span><br></pre></td></tr></table></figure></p>
+<p>Record 语法的另一个好处在于，Value constructor 中涉及到的所有字段都可以拥有一个有意义的名称，方便各字段之间的相互区分。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="class"><span class="keyword">data</span> <span class="type">Car</span> = <span class="type">Car</span> &#123;<span class="title">company</span> :: <span class="type">String</span>, <span class="title">model</span> :: <span class="type">String</span>, <span class="title">year</span> :: <span class="type">Int</span>&#125; <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> car = <span class="type">Car</span> &#123;company=<span class="string">"Ford"</span>, model=<span class="string">"Mustang"</span>, year=<span class="number">1967</span>&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; car</span><br><span class="line"><span class="type">Car</span> &#123;company = <span class="string">"Ford"</span>, model = <span class="string">"Mustang"</span>, year = <span class="number">1967</span>&#125;</span><br></pre></td></tr></table></figure></p>
+<p>比如创建一个用于表示三维向量的数据类型，可以使用 <code>data Vector = Vector Int Int Int</code> 语句。但这样的语法对于前面的 <code>Person</code> 和 <code>Car</code> 来讲，其含义就不如使用 Record 语法来得清晰。</p>
+<h4 id="参数化类型"><a href="#参数化类型" class="headerlink" title="参数化类型"></a>参数化类型</h4><p>Value constructor 可以接收特定数量的参数来生成一个特定类型的值。比如前面的 <code>Car</code> 接收 3 个参数生成一个新的 car。<br><strong>Type constructor</strong> 则可以接收 type 作为参数来生成一个新的类型。</p>
+<p>比如内置的 <code>Maybe</code> 的实现：<br><code>data Maybe a = Nothing | Just a</code></p>
+<p>其中 <code>a</code> 表示类型参数，<code>Maybe</code> 即为 type constructor。我们可以向 <code>Maybe</code> 传入一个 <code>Char</code> 作为类型参数，就可以得到一个新的 <code>Maybe Char</code> 类型。比如值 <code>Just &#39;a&#39;</code> 就属于 <code>Maybe Char</code> 类型。<br>同样的方式可以得到类型 <code>Maybe Int</code>、<code>Maybe String</code> 等等。</p>
+<p><code>Maybe</code> 实际上表示一种<strong>可选项</strong>，它可以是任意某种特定类型的值，也可以什么值都不包含（<code>Nothing</code>）。比如 <code>Maybe Int</code> 类型就表示该类型的值可能包含 <code>Int</code>（值 <code>Just 5</code>），也可能不包含任意类型（<code>Nothing</code>）。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :t <span class="type">Just</span> <span class="string">"Haha"</span></span><br><span class="line"><span class="type">Just</span> <span class="string">"Haha"</span> :: <span class="type">Maybe</span> [<span class="type">Char</span>]</span><br><span class="line"><span class="type">Prelude</span>&gt; :t <span class="type">Just</span> <span class="number">84</span></span><br><span class="line"><span class="type">Just</span> <span class="number">84</span> :: <span class="type">Num</span> a =&gt; <span class="type">Maybe</span> a</span><br><span class="line"><span class="type">Prelude</span>&gt; :t <span class="type">Nothing</span></span><br><span class="line"><span class="type">Nothing</span> :: <span class="type">Maybe</span> a</span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Just</span> <span class="number">10</span> :: <span class="type">Maybe</span> <span class="type">Double</span></span><br><span class="line"><span class="type">Just</span> <span class="number">10.0</span></span><br></pre></td></tr></table></figure>
+<p>实际上还有一种类型涉及到了类型参数，只不过借助了语法糖，其形式稍有不同。该类型就是 list。<br>list 类型可以接收一个类型参数生成更具体的类型。比如 <code>[Int]</code>、<code>[Char]</code> 甚至 <code>[[String]]</code> 等等。<br>但是没有任何值的类型可以是 <code>[]</code>。空列表实际上可以表现得像任意类型的列表，其类型是 <code>[a]</code>，也因此可以使用如下形式的表达式：<code>[1,2,3] ++ []</code>、<code>[&quot;ha&quot;,&quot;ha&quot;,&quot;ha&quot;] ++ []</code>。</p>
+<p>下面的代码实现了一种三维的向量类型：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Vector</span> a = <span class="type">Vector</span> a a a <span class="keyword">deriving</span> (<span class="type">Show</span>)</span></span><br><span class="line">  </span><br><span class="line"><span class="title">vplus</span> :: (<span class="type">Num</span> t) =&gt; <span class="type">Vector</span> t -&gt; <span class="type">Vector</span> t -&gt; <span class="type">Vector</span> t  </span><br><span class="line">(<span class="type">Vector</span> i j k) `vplus` (<span class="type">Vector</span> l m n) = <span class="type">Vector</span> (i+l) (j+m) (k+n)</span><br><span class="line">  </span><br><span class="line"><span class="title">vectMult</span> :: (<span class="type">Num</span> t) =&gt; <span class="type">Vector</span> t -&gt; t -&gt; <span class="type">Vector</span> t  </span><br><span class="line">(<span class="type">Vector</span> i j k) `vectMult` m = <span class="type">Vector</span> (i*m) (j*m) (k*m)</span><br><span class="line">  </span><br><span class="line"><span class="title">scalarMult</span> :: (<span class="type">Num</span> t) =&gt; <span class="type">Vector</span> t -&gt; <span class="type">Vector</span> t -&gt; t  </span><br><span class="line">(<span class="type">Vector</span> i j k) `scalarMult` (<span class="type">Vector</span> l m n) = i*l + j*m + k*n</span><br></pre></td></tr></table></figure></p>
+<p>上述函数可以作用在 <code>Vector Int</code>、<code>Vector Integer</code>、<code>Vector  Float</code> 类型上，只要类型 <code>Vector a</code> 中的 <code>a</code> 属于 <code>Num</code> typeclass。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Vector</span> <span class="number">3</span> <span class="number">5</span> <span class="number">8</span> `vplus` <span class="type">Vector</span> <span class="number">9</span> <span class="number">2</span> <span class="number">8</span></span><br><span class="line"><span class="type">Vector</span> <span class="number">12</span> <span class="number">7</span> <span class="number">16</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Vector</span> <span class="number">3</span> <span class="number">9</span> <span class="number">7</span> `vectMult` <span class="number">10.0</span></span><br><span class="line"><span class="type">Vector</span> <span class="number">30.0</span> <span class="number">90.0</span> <span class="number">70.0</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Vector</span> <span class="number">4</span> <span class="number">9</span> <span class="number">5</span> `scalarMult` <span class="type">Vector</span> <span class="number">9.0</span> <span class="number">2.0</span> <span class="number">4.0</span></span><br><span class="line"><span class="number">74.0</span></span><br></pre></td></tr></table></figure></p>
+<p>类型参数通常用在当 type constructor 中包含的类型对该类型的正常工作并不产生影响时。即我们的自定义类型表现得像某种“盒子”，里面可以放任意的特定类型的值。</p>
+<h4 id="派生实例"><a href="#派生实例" class="headerlink" title="派生实例"></a>派生实例</h4><p><strong>typeclass 是一种定义了某种行为的接口</strong>。若某个类型支持 typeclass 定义的行为，则该类型成为 typeclass 的实例。<br>比如 <code>Eq</code> typeclass 定义了可以被测试是否相等的行为，而整数之间可以比较是否相等，因此 <code>Int</code> 类型是 <code>Eq</code> typeclass 的实例。与此同时，作为 <code>Eq</code> 接口的函数如 <code>==</code> 和 <code>/=</code>，则可以直接调用 <code>Int</code> 类型的值，测试它们是否相等（或不相等）。</p>
+<p>typeclass 经常会与其他语言如 Java 中的类相混淆。实际上在其他语言中，类可以看作创建对象（包含自身状态和行为）的蓝图；而 typeclass 则更像是接口。<br>在 Haskell 中，我们先创建某个数据类型，然后考虑该类型有怎样的行为。若该类型可以被排序，则令其成为 <code>Ord</code> typeclass 的实例。这之后该类型的值就可以被 <code>&gt;</code>、<code>&lt;</code>、<code>compare</code> 等比较大小的函数调用了。</p>
+<p>现在假设两个人可以有相同的姓氏、名字和年龄，则这两个人就是“相等”的。由此创建一个可以比较是否相等的 <code>Person</code> 类型：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Person</span> = <span class="type">Person</span> &#123; <span class="title">firstName</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class">                     , <span class="title">lastName</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class">                     , <span class="title">age</span> :: <span class="type">Int</span></span></span><br><span class="line"><span class="class">                     &#125; <span class="keyword">deriving</span> (<span class="type">Eq</span>)</span></span><br></pre></td></tr></table></figure></p>
+<p>当我们使用 <code>==</code> 比较两个实现了 <code>Eq</code> typeclass  的类型实例时，Haskell 会先用 <code>==</code> 比较两个类型实例的 value constructor 是否相等，再比较类型实例中包含的所有字段的值是否都相等。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> mikeD = <span class="type">Person</span> &#123;firstName = <span class="string">"Michael"</span>, lastName = <span class="string">"Diamond"</span>, age = <span class="number">43</span>&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> adRock = <span class="type">Person</span> &#123;firstName = <span class="string">"Adam"</span>, lastName = <span class="string">"Horovitz"</span>, age = <span class="number">41</span>&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> mca = <span class="type">Person</span> &#123;firstName = <span class="string">"Adam"</span>, lastName = <span class="string">"Yauch"</span>, age = <span class="number">44</span>&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; mca == adRock</span><br><span class="line"><span class="type">False</span></span><br><span class="line"><span class="type">Prelude</span>&gt; mikeD == adRock</span><br><span class="line"><span class="type">False</span></span><br><span class="line"><span class="type">Prelude</span>&gt; mikeD == mikeD</span><br><span class="line"><span class="type">True</span></span><br><span class="line"><span class="type">Prelude</span>&gt; mikeD == <span class="type">Person</span> &#123;firstName = <span class="string">"Michael"</span>, lastName = <span class="string">"Diamond"</span>, age = <span class="number">43</span>&#125;</span><br><span class="line"><span class="type">True</span></span><br></pre></td></tr></table></figure></p>
+<p>由于 <code>Person</code> 类型现在是 <code>Eq</code> typeclass 的实例，因此我们可以将其传给类型约束是 <code>Eq a</code> 的函数，比如 <code>elem</code>：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> beastieBoys = [mca, adRock, mikeD]</span><br><span class="line"><span class="type">Prelude</span>&gt; mikeD `elem` beastieBoys</span><br><span class="line"><span class="type">True</span></span><br></pre></td></tr></table></figure></p>
+<p><code>Show</code> 和 <code>Read</code> typeclass 与类型值的字符串转换有关。<code>Show</code> 表示将类型值转换为 String，<code>Read</code> 则表示将 String 转换为特定类型的值。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; :&#123;</span><br><span class="line"><span class="type">Prelude</span>| <span class="class"><span class="keyword">data</span> <span class="type">Person</span> = <span class="type">Person</span> &#123; <span class="title">firstName</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class"><span class="type">Prelude</span>|                      , <span class="title">lastName</span> :: <span class="type">String</span></span></span><br><span class="line"><span class="class"><span class="type">Prelude</span>|                      , <span class="title">age</span> :: <span class="type">Int</span></span></span><br><span class="line"><span class="class"><span class="type">Prelude</span>|                      &#125; <span class="keyword">deriving</span> (<span class="type">Eq</span>, <span class="type">Show</span>, <span class="type">Read</span>)</span></span><br><span class="line"><span class="type">Prelude</span>| :&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="keyword">let</span> mikeD = <span class="type">Person</span> &#123;firstName = <span class="string">"Michael"</span>, lastName = <span class="string">"Diamond"</span>, age = <span class="number">43</span>&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; mikeD</span><br><span class="line"><span class="type">Person</span> &#123;firstName = <span class="string">"Michael"</span>, lastName = <span class="string">"Diamond"</span>, age = <span class="number">43</span>&#125;</span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="string">"mikeD is: "</span> ++ show mikeD</span><br><span class="line"><span class="string">"mikeD is: Person &#123;firstName = \"Michael\", lastName = \"Diamond\", age = 43&#125;"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; read <span class="string">"Person &#123;firstName =\"Michael\", lastName =\"Diamond\", age = 43&#125;"</span> :: <span class="type">Person</span></span><br><span class="line"><span class="type">Person</span> &#123;firstName = <span class="string">"Michael"</span>, lastName = <span class="string">"Diamond"</span>, age = <span class="number">43</span>&#125;</span><br></pre></td></tr></table></figure></p>
+<p>对于实现了 <code>Ord</code> typeclass 的类型，我们可以根据 value constructor 中值出现的顺序比较同一类型不同值的大小。value constructor 中左侧的值总小于右侧的值。内置的 Bool 类型可以大概视作有如下实现：<br><code>data Bool = False | True deriving (Ord)</code><br>则在比较 <code>False</code> 和 <code>True</code> 时，<code>False</code> 总小于 <code>True</code>。<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="type">False</span> &lt; <span class="type">True</span></span><br><span class="line"><span class="type">True</span></span><br></pre></td></tr></table></figure></p>
+<p>借助 <code>Enum</code> 和 <code>Bounded</code> typeclass，可以很轻松地实现枚举类型的 ADT。比如：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Day</span> = <span class="type">Monday</span> | <span class="type">Tuesday</span> | <span class="type">Wednesday</span> | <span class="type">Thursday</span> | <span class="type">Friday</span> | <span class="type">Saturday</span> | <span class="type">Sunday</span></span></span><br><span class="line">           <span class="keyword">deriving</span> (<span class="type">Eq</span>, <span class="type">Ord</span>, <span class="type">Show</span>, <span class="type">Read</span>, <span class="type">Bounded</span>, <span class="type">Enum</span>)</span><br></pre></td></tr></table></figure></p>
+<p>由于 <code>Day</code> 类型实现了 <code>Show</code> 和 <code>Read</code> typeclass，则可以在此类型与字符串之间进行转换：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Wednesday</span></span><br><span class="line"><span class="type">Wednesday</span></span><br><span class="line"><span class="type">Prelude</span>&gt; show <span class="type">Wednesday</span></span><br><span class="line"><span class="string">"Wednesday"</span></span><br><span class="line"><span class="type">Prelude</span>&gt; read <span class="string">"Saturday"</span> :: <span class="type">Day</span></span><br><span class="line"><span class="type">Saturday</span></span><br></pre></td></tr></table></figure></p>
+<p>又由于 <code>Day</code> 类型实现了 <code>Eq</code> 和 <code>Ord</code> typeclass，则可以在 <code>Day</code> 类型的值之间进行比较：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Saturday</span> == <span class="type">Sunday</span></span><br><span class="line"><span class="type">False</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Saturday</span> == <span class="type">Saturday</span></span><br><span class="line"><span class="type">True</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Saturday</span> &gt; <span class="type">Friday</span></span><br><span class="line"><span class="type">True</span></span><br><span class="line"><span class="type">Prelude</span>&gt; <span class="type">Monday</span> `compare` <span class="type">Wednesday</span></span><br><span class="line"><span class="type">LT</span></span><br></pre></td></tr></table></figure></p>
+<p>又由于 <code>Day</code> 类型实现了 <code>Bounded</code> typeclass，我们可以获取“最低”和最高的 <code>Day</code> 类型值：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; minBound :: <span class="type">Day</span></span><br><span class="line"><span class="type">Monday</span></span><br><span class="line"><span class="type">Prelude</span>&gt; maxBound :: <span class="type">Day</span></span><br><span class="line"><span class="type">Sunday</span></span><br></pre></td></tr></table></figure></p>
+<p>又由于 <code>Day</code> 类型实现了 <code>Enum</code>，因此我们可以对其进行序列类型的操作：<br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Prelude</span>&gt; succ <span class="type">Monday</span></span><br><span class="line"><span class="type">Tuesday</span></span><br><span class="line"><span class="type">Prelude</span>&gt; pred <span class="type">Saturday</span></span><br><span class="line"><span class="type">Friday</span></span><br><span class="line"><span class="type">Prelude</span>&gt; [<span class="type">Thursday</span> .. <span class="type">Sunday</span>]</span><br><span class="line">[<span class="type">Thursday</span>,<span class="type">Friday</span>,<span class="type">Saturday</span>,<span class="type">Sunday</span>]</span><br><span class="line"><span class="type">Prelude</span>&gt; [minBound .. maxBound] :: [<span class="type">Day</span>]</span><br><span class="line">[<span class="type">Monday</span>,<span class="type">Tuesday</span>,<span class="type">Wednesday</span>,<span class="type">Thursday</span>,<span class="type">Friday</span>,<span class="type">Saturday</span>,<span class="type">Sunday</span>]</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="http://learnyouahaskell.com/" target="_blank" rel="noopener">Learn You a Haskell for Great Good!</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Haskell/" rel="tag"># Haskell</a>
+          
+            <a href="/tags/Functional/" rel="tag"># Functional</a>
+          
+            <a href="/tags/Type/" rel="tag"># Type</a>
+          
+            <a href="/tags/Typeclass/" rel="tag"># Typeclass</a>
+          
+            <a href="/tags/ADT/" rel="tag"># ADT</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/06/30/basic-haskell-high-order-function/" rel="next" title="Haskell 基本语法（四）高阶函数">
+                <i class="fa fa-chevron-left"></i> Haskell 基本语法（四）高阶函数
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">171</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">243</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#ADT-Algebraic-data-types"><span class="nav-number">1.</span> <span class="nav-text">ADT (Algebraic data types)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Record-语法"><span class="nav-number">2.</span> <span class="nav-text">Record 语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参数化类型"><span class="nav-number">3.</span> <span class="nav-text">参数化类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#派生实例"><span class="nav-number">4.</span> <span class="nav-text">派生实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">18:53</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
