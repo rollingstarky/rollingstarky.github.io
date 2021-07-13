@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Program,Functional,Pattern,Match,ADT,Rust,Enum," />
+
+
+<meta name="description" content="枚举类型（enum），通常也被简称为枚举，它允许我们列举所有可能的值来定义一个类型。枚举搭配 match 表达式使用模式匹配，可以根据不同的枚举值来执行不同的代码。Rust 中的枚举更类似于 Haskell 这类函数式编程语言中的代数数据类型（ADT）。 定义枚举假设我们需要对 IP 地址进行处理。目前只有两种广泛被使用的 IP 地址标准：IPv4 和 IPv6。我们只需要处理这两种情形，且一个地">
+<meta name="keywords" content="Program,Functional,Pattern,Match,ADT,Rust,Enum">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Rust programming language 读书笔记——枚举类型">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="枚举类型（enum），通常也被简称为枚举，它允许我们列举所有可能的值来定义一个类型。枚举搭配 match 表达式使用模式匹配，可以根据不同的枚举值来执行不同的代码。Rust 中的枚举更类似于 Haskell 这类函数式编程语言中的代数数据类型（ADT）。 定义枚举假设我们需要对 IP 地址进行处理。目前只有两种广泛被使用的 IP 地址标准：IPv4 和 IPv6。我们只需要处理这两种情形，且一个地">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-07-13T13:02:39.454Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Rust programming language 读书笔记——枚举类型">
+<meta name="twitter:description" content="枚举类型（enum），通常也被简称为枚举，它允许我们列举所有可能的值来定义一个类型。枚举搭配 match 表达式使用模式匹配，可以根据不同的枚举值来执行不同的代码。Rust 中的枚举更类似于 Haskell 这类函数式编程语言中的代数数据类型（ADT）。 定义枚举假设我们需要对 IP 地址进行处理。目前只有两种广泛被使用的 IP 地址标准：IPv4 和 IPv6。我们只需要处理这两种情形，且一个地">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>The Rust programming language 读书笔记——枚举类型 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">The Rust programming language 读书笔记——枚举类型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-07-13T00:00:00+08:00">2021-07-13</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/" class="leancloud_visitors" data-flag-title="The Rust programming language 读书笔记——枚举类型">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">6.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:07</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>枚举类型（<strong>enum</strong>），通常也被简称为<strong>枚举</strong>，它允许我们列举所有可能的值来定义一个类型。<br>枚举搭配 <code>match</code> 表达式使用模式匹配，可以根据不同的枚举值来执行不同的代码。<br>Rust 中的枚举更类似于 Haskell 这类函数式编程语言中的<strong>代数数据类型（ADT）</strong>。</p>
+<h4 id="定义枚举"><a href="#定义枚举" class="headerlink" title="定义枚举"></a>定义枚举</h4><p>假设我们需要对 IP 地址进行处理。目前只有两种广泛被使用的 IP 地址标准：IPv4 和 IPv6。<br>我们只需要处理这两种情形，且一个地址要么是 IPv4，要么是 IPv6，因此可以使用枚举将所有可能的值（IPv4 和 IPv6）列举出来，作为一种新的数据类型。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">IpAddrKind</span></span> &#123;</span><br><span class="line">    V4,</span><br><span class="line">    V6,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在，<code>IpAddrKind</code> 就是一个可以在代码中随处使用的自定义数据类型了。</p>
+<h5 id="枚举值"><a href="#枚举值" class="headerlink" title="枚举值"></a>枚举值</h5><p>可以参照下面的代码使用 <code>IpAddrKind</code> 中的两个变体（<code>V4</code> 和 <code>V6</code>）创建实例：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> four = IpAddrKind::V4;</span><br><span class="line"><span class="keyword">let</span> six = IpAddrKind::V6;</span><br></pre></td></tr></table></figure></p>
+<p>由于 <code>IpAddrKind:V4</code> 和 <code>IpAddrKind:V6</code> 拥有相同的类型（都是 <code>IpAddrKind</code>），我们可以定义一个接收 <code>IpAddrKind</code> 类型参数的函数来统一处理它们：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">route</span></span>(ip_type: IpAddrKind) &#123; &#125;</span><br></pre></td></tr></table></figure></p>
+<p>现在，我们可以使用任意一个变体来调用这个函数了：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">route(IpAddrKind::V4);</span><br><span class="line">route(IpAddrKind::V6);</span><br></pre></td></tr></table></figure></p>
+<p>当前定义的枚举类型 <code>IpAddrKind</code>，还只能区分 IP 地址的种类，没有办法去存储实际的 IP 地址数据。<br>可以使用结构体来解决这个问题：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">IpAddrKind</span></span> &#123;</span><br><span class="line">    V4,</span><br><span class="line">    V6,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">IpAddr</span></span> &#123;</span><br><span class="line">    kind: IpAddrKind,</span><br><span class="line">    address: <span class="built_in">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> home = IpAddr &#123;</span><br><span class="line">    kind: IpAddrKind::V4,</span><br><span class="line">    address: <span class="built_in">String</span>::from(<span class="string">"127.0.0.1"</span>),</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> loopback = IpAddr &#123;</span><br><span class="line">    kind: IpAddrKind::V6,</span><br><span class="line">    address: <span class="built_in">String</span>::from(<span class="string">"::1"</span>),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>实际上，我们可以直接将枚举关联的数据嵌入其变体内，而不用像上面那样将枚举集成至结构体中。</p>
+<p>下面的代码直接定义了 <code>IpAddr</code> 枚举，<code>V4</code> 和 <code>V6</code> 两个变体都被关联上了一个 String 值：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">IpAddr</span></span> &#123;</span><br><span class="line">    V4(<span class="built_in">String</span>),</span><br><span class="line">    V6(<span class="built_in">String</span>),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> home = IpAddr::V4(<span class="built_in">String</span>::from(<span class="string">"127.0.0.1"</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> loopback = IpAddr::V6(<span class="built_in">String</span>::from(<span class="string">"::1"</span>));</span><br></pre></td></tr></table></figure></p>
+<p>我们直接将数据附加到枚举的每个变体中，就不需要额外地使用结构体了。</p>
+<p>另外一个枚举替代结构体的优势在于，<strong>每个变体可以拥有不同类型和数量的关联数据，同时所有变体仍属于同一个枚举类型</strong>。<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">IpAddr</span></span> &#123;</span><br><span class="line">    V4(<span class="built_in">u8</span>, <span class="built_in">u8</span>, <span class="built_in">u8</span>, <span class="built_in">u8</span>),</span><br><span class="line">    V6(<span class="built_in">String</span>),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> home = IpAddr::V4(<span class="number">127</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> loopback = IpAddr::V6(<span class="built_in">String</span>::from(<span class="string">"::1"</span>));</span><br></pre></td></tr></table></figure></p>
+<p>参考下面代码中定义的一个 <code>Message</code> 枚举：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Message</span></span> &#123;</span><br><span class="line">    Quit,</span><br><span class="line">    Move &#123; x: <span class="built_in">i32</span>, y: <span class="built_in">i32</span> &#125;,</span><br><span class="line">    Write(<span class="built_in">String</span>),</span><br><span class="line">    ChangeColor(<span class="built_in">i32</span>, <span class="built_in">i32</span>, <span class="built_in">i32</span>),</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>该枚举拥有 4 个内嵌了不同类型数据的变体：</p>
+<ul>
+<li>Quit 没有关联任何数据</li>
+<li>Move 包含了一个匿名结构体</li>
+<li>Write 包含了一个 String</li>
+<li>ChangeColor 包含了 3 个 i32 值</li>
+</ul>
+<p>枚举有些类似于定义多个不同类型的结构体。但枚举除了不会使用 <code>struct</code> 关键字，还将变体们组合到了同一个 <code>Message</code> 类型中。<br>下面代码中的结构体可以存储与这些变体完全一样的数据：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">QuitMessage</span></span>; <span class="comment">// 空结构体</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MoveMessage</span></span> &#123;</span><br><span class="line">    x: <span class="built_in">i32</span>,</span><br><span class="line">    y: <span class="built_in">i32</span>,</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">WriteMessage</span></span>(<span class="built_in">String</span>); <span class="comment">// 元组结构体</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ChangeColorMessage</span></span>(<span class="built_in">i32</span>, <span class="built_in">i32</span>, <span class="built_in">i32</span>); <span class="comment">// 元组结构体</span></span><br></pre></td></tr></table></figure></p>
+<p>两种实现方式的差别在于，如果使用了不同的结构体，则<strong>每个结构体都会拥有自己的类型</strong>，无法轻易定义一个统一处理这些类型的函数。而前面的 <strong><code>Message</code> 枚举是单独的一个类型</strong>。</p>
+<p>正如我们可以用 <code>impl</code> 关键字定义结构体的方法一样，我们同样可以为 <code>Message</code> 定义自己的方法：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span> Message &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">call</span></span>(&amp;<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="comment">// 方法在这里定义</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> m = Message::Write(<span class="built_in">String</span>::from(<span class="string">"hello"</span>));</span><br><span class="line">    m.call();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="Option-枚举及空值处理"><a href="#Option-枚举及空值处理" class="headerlink" title="Option 枚举及空值处理"></a>Option 枚举及空值处理</h4><p><code>Option</code> 是一种定义于标准库中的枚举类型，它描述了一种值可能不存在的情形。借助类型系统，编译器可以自动检查我们是否妥善地处理了所有应该被处理的情况。</p>
+<p>Rust 没有像其他语言一样支持<strong>空值（Null）</strong>。空值本身是一个值，但它的含义却是没有值。<br>空值的问题在于，当你尝试像使用非空值那样使用空值时，就会触发某种程度上的错误。由于空或非空的属性广泛散布在程序中，因此很难避免引起此类问题。<br>但空值本身所尝试表达的概念仍是有意义的，它代表了因为某种原因而变得无效或缺失的值。</p>
+<p>Rust 中虽然没有空值，但提供了一个拥有类似概念的枚举 <code>Option&lt;T&gt;</code>，它可以用来标识一个值无效或缺失。<br><code>Option&lt;T&gt;</code> 在标准库中的定义如下：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Option</span></span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="literal">Some</span>(T),</span><br><span class="line">    <span class="literal">None</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>Option&lt;T&gt;</code> 是一个普通的枚举类型，<code>Some&lt;T&gt;</code> 和 <code>None</code> 是该类型的变体。<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> some_number = <span class="literal">Some</span>(<span class="number">5</span>);</span><br><span class="line"><span class="keyword">let</span> some_string = <span class="literal">Some</span>(<span class="string">"a string"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> absent_number: <span class="built_in">Option</span>&lt;<span class="built_in">i32</span>&gt; = <span class="literal">None</span>;</span><br></pre></td></tr></table></figure></p>
+<p>若使用 <code>None</code> 而不是 <code>Some</code> 变体来进行赋值，则需要明确声明这个 <code>Option&lt;T&gt;</code> 的具体类型，否则编译器无法进行类型推导。</p>
+<p>当我们有了一个 <code>Some</code> 值时，就可以确定值是存在的，并且被 <code>Some</code> 所持有；当我们有了一个 <code>None</code> 值时，就知道当前并不存在一个有效的值。<br><code>Option&lt;T&gt;</code> 的设计相对于空值的优势在于，<strong><code>Option&lt;T&gt;</code> 和 <code>T</code> 是不同的类型，编译器不会允许我们像使用普通值一样直接去使用 <code>Option&lt;T&gt;</code> 的值</strong>。如：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> x: <span class="built_in">i8</span> = <span class="number">5</span>;</span><br><span class="line"><span class="keyword">let</span> y: <span class="built_in">Option</span>&lt;<span class="built_in">i8</span>&gt; = <span class="literal">Some</span>(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> sum = x + y;</span><br></pre></td></tr></table></figure></p>
+<p>运行上述代码会导致编译器报错，因为 <code>i8</code> 和 <code>Option&lt;i8&gt;</code> 是不同的类型。<br>当我们持有的类型是 <code>i8</code> 时，编译器可以确保该值是有效的。但是<strong>当我们持有的类型是 <code>Option&lt;i8&gt;</code> 时，我们必须要考虑值不存在的情况，编译器会迫使我们在使用值之前正确地做出处理操作</strong>。</p>
+<p><strong>为了持有一个可能为空的值，我们总是需要将其显式地放入对应类型的 <code>Option&lt;T&gt;</code> 值当中。当我们随后使用这个值时，也必须显式地处理它可能为空的情况</strong>。<br>即在处理 <code>Option&lt;T&gt;</code> 时，必须编写应对每个变体的代码。某些代码只会在持有 <code>Some(T)</code> 值时运行，它们可以使用变体中存储的 <code>T</code>；另外一些代码则只会在持有 <code>None</code> 值时运行，这些代码没有可用的 <code>T</code> 值。</p>
+<p><code>match</code> 表达式就是一种可以用来处理 <code>Option&lt;T&gt;</code> 这类枚举的控制流结构。它允许我们基于枚举拥有的变体来决定运行的代码分支，并允许代码通过模式匹配来获取变体内的数据。</p>
+<h4 id="控制流运算符-match"><a href="#控制流运算符-match" class="headerlink" title="控制流运算符 match"></a>控制流运算符 match</h4><p><code>match</code> 是 Rust 中一个强大的控制流运算符，它允许将一个值与一系列模式相比较，并根据匹配的模式执行相应的代码。这些模式可以由字面量、变量名、通配符及许多其他东西组成。</p>
+<p>下面的代码会接收一个美国的硬币作为输入，确定硬币的类型并返回其分值：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Coin</span></span> &#123;</span><br><span class="line">    Penny,</span><br><span class="line">    Nickel,</span><br><span class="line">    Dime,</span><br><span class="line">    Quarter,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">value_in_cents</span></span>(coin: Coin) -&gt; <span class="built_in">u32</span> &#123;</span><br><span class="line">    <span class="keyword">match</span> coin &#123;</span><br><span class="line">        Coin::Penny =&gt; <span class="number">1</span>,</span><br><span class="line">        Coin::Nickel =&gt; <span class="number">5</span>,</span><br><span class="line">        Coin::Dime =&gt; <span class="number">10</span>,</span><br><span class="line">        Coin::Quarter =&gt; <span class="number">25</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> coin = Coin::Dime;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"&#123;&#125;"</span>, value_in_cents(coin));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>每个 <code>match</code> 分支所关联的代码同时也是一个表达式，这个表达式运行的结果同时也会作为整个 <code>match</code> 表达式的结果返回。</p>
+<h5 id="绑定值的模式"><a href="#绑定值的模式" class="headerlink" title="绑定值的模式"></a>绑定值的模式</h5><p>匹配分支还可以绑定匹配对象的部分值，这使得我们能够从枚举变体中提取特定的值。</p>
+<p>比如美国的 25 美分硬币 50 个州采用了不同的设计。现在将这些信息添加至枚举中：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[derive(Debug)]</span> <span class="comment">// 方便打印输出默认不支持打印的类型</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">UsState</span></span> &#123;</span><br><span class="line">    Alabama,</span><br><span class="line">    Alaska,</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Coin</span></span> &#123;</span><br><span class="line">    Penny,</span><br><span class="line">    Nickel,</span><br><span class="line">    Dime,</span><br><span class="line">    Quarter(UsState),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">value_in_cents</span></span>(coin: Coin) -&gt; <span class="built_in">u32</span> &#123;</span><br><span class="line">    <span class="keyword">match</span> coin &#123;</span><br><span class="line">        Coin::Penny =&gt; <span class="number">1</span>,</span><br><span class="line">        Coin::Nickel =&gt; <span class="number">5</span>,</span><br><span class="line">        Coin::Dime =&gt; <span class="number">10</span>,</span><br><span class="line">        Coin::Quarter(state) =&gt; &#123;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">"State quarter from &#123;:?&#125;."</span>, state);</span><br><span class="line">            <span class="number">25</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> alaska = UsState::Alaska;</span><br><span class="line">    <span class="keyword">let</span> coin = Coin::Quarter(alaska);</span><br><span class="line">    value_in_cents(coin);</span><br><span class="line">    <span class="comment">// =&gt; State quarter from Alaska.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面的代码中，我们在模式中加入了一个名为 <code>state</code> 的变量用于匹配变体 <code>Coin::Quarter</code> 中的值。当匹配到 <code>Coin::Quarter</code> 时，变量 <code>state</code> 就会绑定到 25 美分所包含的值上。<br>比如代码中 <code>Coin::Quarter(UsState::Alaska)</code> 作为 <code>coin</code> 的值传入 <code>value_in_cents</code> 函数，最终值 <code>UsState::Alaska</code> 被绑定到变量 <code>state</code> 上。</p>
+<h4 id="匹配-Option"><a href="#匹配-Option" class="headerlink" title="匹配 Option"></a>匹配 Option<t></t></h4><p>可以使用 <code>match</code> 表达式来处理 <code>Option&lt;T&gt;</code>，从 <code>Some</code> 中取出内部的 <code>T</code> 值。<br>比如编写一个接收 <code>Option&lt;i32&gt;</code> 的函数，若其中有值存在，则将这个值加 1；若其中不存在值，则直接返回 <code>None</code>。<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">plus_one</span></span>(x: <span class="built_in">Option</span>&lt;<span class="built_in">i32</span>&gt;) -&gt; <span class="built_in">Option</span>&lt;<span class="built_in">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">match</span> x &#123;</span><br><span class="line">        <span class="literal">None</span> =&gt; &#123;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">"The result is None"</span>);</span><br><span class="line">            <span class="literal">None</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="literal">Some</span>(i) =&gt; &#123;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">"The result is &#123;&#125;"</span>, i + <span class="number">1</span>);</span><br><span class="line">            <span class="literal">Some</span>(i + <span class="number">1</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> five = <span class="literal">Some</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="keyword">let</span> six = plus_one(five);</span><br><span class="line">    <span class="keyword">let</span> none = plus_one(<span class="literal">None</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，<strong>匹配必须穷举所有的可能</strong>。尤其是 <code>Option&lt;T&gt;</code> 这个例子中，Rust 会强迫我们明确地处理值为 <code>None</code> 的情形。</p>
+<h5 id="简单控制流-if-let"><a href="#简单控制流-if-let" class="headerlink" title="简单控制流 if let"></a>简单控制流 <code>if let</code></h5><p><code>if let</code> 能让我们通过一种不那么繁琐的语法结合使用 <code>if</code> 与 <code>let</code>，处理那些只关心某一种匹配而忽略其他匹配的情况。<br>下面的代码会匹配一个 <code>Option&lt;u32&gt;</code> 的值，并只在值为 3 时执行代码：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> some_number = <span class="literal">Some</span>(<span class="number">3</span>);</span><br><span class="line">    <span class="keyword">match</span> some_number &#123;</span><br><span class="line">        <span class="literal">Some</span>(<span class="number">3</span>) =&gt; <span class="built_in">println!</span>(<span class="string">"three"</span>),</span><br><span class="line">        _ =&gt; (),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>为了满足 <code>match</code> 表达式<strong>穷尽性</strong>的要求，我们不得不在处理完 <code>Some(3)</code> 变体后额外加上一句 <code>_ =&gt; ()</code>。<br>可以使用 <code>if let</code> 以一种更简单的方式实现上述代码：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="literal">Some</span>(<span class="number">3</span>) = some_number &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"three"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>还可以在 <code>if let</code> 中搭配使用 <code>else</code>：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> some_number = <span class="literal">Some</span>(<span class="number">8</span>);</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="literal">Some</span>(<span class="number">3</span>) = some_number &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"three"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"other number"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://doc.rust-lang.org/book/" target="_blank" rel="noopener">The Rust Programming Language</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Functional/" rel="tag"># Functional</a>
+          
+            <a href="/tags/Pattern/" rel="tag"># Pattern</a>
+          
+            <a href="/tags/Match/" rel="tag"># Match</a>
+          
+            <a href="/tags/ADT/" rel="tag"># ADT</a>
+          
+            <a href="/tags/Rust/" rel="tag"># Rust</a>
+          
+            <a href="/tags/Enum/" rel="tag"># Enum</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/07/09/the-rust-programming-language-reading-notes-package-crate-and-module-system/" rel="next" title="The Rust programming language 读书笔记——包（package）、单元包（crate）与模块系统">
+                <i class="fa fa-chevron-left"></i> The Rust programming language 读书笔记——包（package）、单元包（crate）与模块系统
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">173</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">247</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义枚举"><span class="nav-number">1.</span> <span class="nav-text">定义枚举</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#枚举值"><span class="nav-number">1.1.</span> <span class="nav-text">枚举值</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Option-枚举及空值处理"><span class="nav-number">2.</span> <span class="nav-text">Option 枚举及空值处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#控制流运算符-match"><span class="nav-number">3.</span> <span class="nav-text">控制流运算符 match</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#绑定值的模式"><span class="nav-number">3.1.</span> <span class="nav-text">绑定值的模式</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#匹配-Option"><span class="nav-number">4.</span> <span class="nav-text">匹配 Option</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#简单控制流-if-let"><span class="nav-number">4.1.</span> <span class="nav-text">简单控制流 if let</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.1m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">19:08</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
