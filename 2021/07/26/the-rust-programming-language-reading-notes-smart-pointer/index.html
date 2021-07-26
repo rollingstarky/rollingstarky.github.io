@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="DataStructure,Program,Rust,Memory,Pointer,Heap,Stack,Borrow,Ownership," />
+
+
+<meta name="description" content="指针（pointer）是一个通用概念，用来指代那些包含内存地址的变量。这些地址“指向”内存中的其他数据。Rust 中最常见的指针是引用，会借用它所指向的数据。除此之外，引用没有任何其他功能和额外的开销。智能指针（smart pointer）是一种数据结构，它的行为类似于指针但拥有额外的元数据和附加功能。 在拥有所有权和借用概念的 Rust 中：引用只是用来借用数据的指针；而大多数智能指针本身就拥有">
+<meta name="keywords" content="DataStructure,Program,Rust,Memory,Pointer,Heap,Stack,Borrow,Ownership">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Rust programming language 读书笔记——智能指针">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/07/26/the-rust-programming-language-reading-notes-smart-pointer/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="指针（pointer）是一个通用概念，用来指代那些包含内存地址的变量。这些地址“指向”内存中的其他数据。Rust 中最常见的指针是引用，会借用它所指向的数据。除此之外，引用没有任何其他功能和额外的开销。智能指针（smart pointer）是一种数据结构，它的行为类似于指针但拥有额外的元数据和附加功能。 在拥有所有权和借用概念的 Rust 中：引用只是用来借用数据的指针；而大多数智能指针本身就拥有">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-23761fd6dc9ac77d.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-688437fa1045d8cb.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-46c80b946fd197b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-55a8d6b393cb625e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2021-07-26T15:34:22.264Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Rust programming language 读书笔记——智能指针">
+<meta name="twitter:description" content="指针（pointer）是一个通用概念，用来指代那些包含内存地址的变量。这些地址“指向”内存中的其他数据。Rust 中最常见的指针是引用，会借用它所指向的数据。除此之外，引用没有任何其他功能和额外的开销。智能指针（smart pointer）是一种数据结构，它的行为类似于指针但拥有额外的元数据和附加功能。 在拥有所有权和借用概念的 Rust 中：引用只是用来借用数据的指针；而大多数智能指针本身就拥有">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-23761fd6dc9ac77d.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/07/26/the-rust-programming-language-reading-notes-smart-pointer/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>The Rust programming language 读书笔记——智能指针 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/07/26/the-rust-programming-language-reading-notes-smart-pointer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">The Rust programming language 读书笔记——智能指针</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-07-26T00:00:00+08:00">2021-07-26</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/07/26/the-rust-programming-language-reading-notes-smart-pointer/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/07/26/the-rust-programming-language-reading-notes-smart-pointer/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/07/26/the-rust-programming-language-reading-notes-smart-pointer/" class="leancloud_visitors" data-flag-title="The Rust programming language 读书笔记——智能指针">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">20k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:20</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>指针（pointer）</strong>是一个通用概念，用来指代那些包含内存地址的变量。这些地址“指向”内存中的其他数据。<br>Rust 中最常见的指针是<strong>引用</strong>，会<strong>借用</strong>它所指向的数据。除此之外，引用没有任何其他功能和额外的开销。<br><strong>智能指针（smart pointer）</strong>是一种数据结构，它的行为类似于指针但<strong>拥有额外的元数据和附加功能</strong>。</p>
+<p>在拥有所有权和借用概念的 Rust 中：<strong>引用只是用来借用数据的指针；而大多数智能指针本身就拥有它们指向的值</strong>。<br>比如 <code>String</code> 和 <code>Vec&lt;T&gt;</code> 类型就都可以被算作智能指针。它们都拥有一片内存区域并允许用户对其进行操作，拥有元数据（如容量等），能提供额外的功能或保障（如 <code>String</code> 会保证其中的数据必是合法的 <code>UTF-8</code> 编码）。</p>
+<p>通常使用结构体来实现智能指针。区别于普通的结构体，智能指针会实现 <code>Deref</code> 与 <code>Drop</code> 这两个 <code>trait</code>。Deref trait 使得智能指针的实例拥有与引用一致的行为；Drop trait 使得用户可以自定义智能指针离开作用域时运行的代码。</p>
+<p>标准库中最为常见的智能指针如下：</p>
+<ul>
+<li><code>Box&lt;T&gt;</code>：可用于在堆上分配数据</li>
+<li><code>Rc&lt;T&gt;</code>：具备多重所有权的<strong>引用计数类型</strong></li>
+<li><code>Ref&lt;T&gt;</code> 和 <code>ReMut&lt;T&gt;</code>：可以通过 <code>RefCell&lt;T&gt;</code> 访问，是一种可以在运行时而不是编译时执行借用规则的类型</li>
+</ul>
+<h4 id="使用-Box-lt-T-gt-在堆上分配数据"><a href="#使用-Box-lt-T-gt-在堆上分配数据" class="headerlink" title="使用 Box&lt;T&gt; 在堆上分配数据"></a>使用 <code>Box&lt;T&gt;</code> 在堆上分配数据</h4><p><strong>装箱（box）</strong>是最简单的一种智能指针，其类型为 <code>Box&lt;T&gt;</code>。它使我们可以将数据存储在堆上，并在栈中保留一个指向堆数据的指针。</p>
+<p>装箱常被用于以下场景：</p>
+<ul>
+<li>拥有一个无法在编译时确定大小的类型，但又想在一个要求固定尺寸的上下文环境中使用这个类型</li>
+<li>需要传递大量数据的所有权，但又不希望产生大量数据的复制行为</li>
+<li>希望拥有一个实现了指定 trait 的类型值，但又不关心具体的类型</li>
+</ul>
+<p>使用装箱在堆上存储一个 <code>i32</code> 值：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> b = <span class="built_in">Box</span>::new(<span class="number">5</span>);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"b = &#123;&#125;"</span>, b);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>将单一值存放在堆上没有太大用处，大部分情况下都可以将类似的单个 <code>i32</code> 值默认放置在栈上。</p>
+<h5 id="使用装箱定义递归类型"><a href="#使用装箱定义递归类型" class="headerlink" title="使用装箱定义递归类型"></a>使用装箱定义递归类型</h5><p>Rust 必须在编译时知道每一种类型占据的空间大小，但有一种被称为<strong>递归</strong>的类型无法在编译时确定具体大小。<br>递归类型的值可以在自身中存储另一个相同类型的值，这种嵌套理论上可以无穷无尽地进行下去，根本无法计算出具体的空间大小。</p>
+<p>链接列表（cons list）是一种在函数式语言中非常常见的数据类型。<code>cons</code> 函数会将两个参数组成一个二元组，而这个元组通常由一个值和另一个二元组组成，通过这种不断嵌套元组的形式最终组成一个列表。<br>使用枚举来定义一个链接列表：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    Cons(<span class="built_in">i32</span>, List),</span><br><span class="line">    Nil,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> crate::List::&#123;Cons, Nil&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> list = Cons(<span class="number">1</span>, Cons(<span class="number">2</span>, Cons(<span class="number">3</span>, Nil)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上述代码在编译时会报出 <code>error[E0072]: recursive type `List` has infinite size</code> 错误。</p>
+<p>Rust 在计算枚举类型需要的空间大小时，会遍历枚举中的每一个成员来找到需要最大空间的那个变体。因为在每个时间点，只会有一个变体存在。<br>对于递归类型大小的计算，以前面的 <code>List</code> 为例，编译器会先检查 <code>Cons</code> 变体，它持有一个 <code>i32</code> 类型的值及另外一个 <code>List</code> 类型；为了确定此处<code>List</code> 的大小，编译器又会从 <code>Cons</code> 开始遍历其下的所有变体，这样的检查将永远进行下去。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-23761fd6dc9ac77d.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="包含无穷多 Cons 变体的无穷 List"></p>
+<p>可以使用 <code>Box&lt;T&gt;</code> 将递归类型的大小固定下来。<br><code>Box&lt;T&gt;</code> 是一个指针，其大小总是恒定的，不会因为指向数据的大小而发生变化。我们可以在 <code>Cons</code> 变体中存放一个 <code>Box&lt;T&gt;</code> 指针，<code>Box&lt;T&gt;</code> 指向下一个存储在堆上的 <code>List</code>。即嵌套的 <code>List</code> 并没有直接存放在 <code>Cons</code> 变体中，而是放置在堆上，打破了无限递归的过程。<br>此时任意的 <code>List</code> 值都只需要占用一个 <code>i32</code> 值加上一个装箱指针的大小。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-688437fa1045d8cb.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Box in Cons"></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    Cons(<span class="built_in">i32</span>, <span class="built_in">Box</span>&lt;List&gt;),</span><br><span class="line">    Nil,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> crate::List::&#123;Cons, Nil&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> list = Cons(<span class="number">1</span>, <span class="built_in">Box</span>::new(Cons(<span class="number">2</span>, <span class="built_in">Box</span>::new(Cons(<span class="number">3</span>, <span class="built_in">Box</span>::new(Nil))))));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>装箱除了间接访问内存和堆分配，没有提供任何其他的特殊功能，也没有这些特殊功能附带的性能开销。因此正好能被用在类似于链接列表这类只是需要间接访问的场景中。</p>
+<h4 id="通过-Deref-trait-将智能指针视作常规引用"><a href="#通过-Deref-trait-将智能指针视作常规引用" class="headerlink" title="通过 Deref trait 将智能指针视作常规引用"></a>通过 <code>Deref trait</code> 将智能指针视作常规引用</h4><p>实现 <code>Deref trait</code> 使我们可以自定义解引用运算符 <code>*</code> 的行为，这意味着原本用于处理引用的代码可以不加修改地用于处理智能指针。</p>
+<h5 id="使用解引用跳转到指针指向的值"><a href="#使用解引用跳转到指针指向的值" class="headerlink" title="使用解引用跳转到指针指向的值"></a>使用解引用跳转到指针指向的值</h5><p>指针可以被理解为一种箭头，会指向存储在别处的值。<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> x = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">let</span> y = &amp;x;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">5</span>, x);</span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">5</span>, *y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>数字和引用是两种不同的类型，所以不能直接比较 <code>5</code> 和 <code>y</code>。必须使用 <code>*y</code> 来跳转到引用指向的值。</p>
+<h5 id="把-Box-lt-T-gt-当成引用来操作"><a href="#把-Box-lt-T-gt-当成引用来操作" class="headerlink" title="把 Box&lt;T&gt; 当成引用来操作"></a>把 <code>Box&lt;T&gt;</code> 当成引用来操作</h5><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> x = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">let</span> y = <span class="built_in">Box</span>::new(x);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">5</span>, x);</span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">5</span>, *y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="自定义智能指针"><a href="#自定义智能指针" class="headerlink" title="自定义智能指针"></a>自定义智能指针</h5><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyBox</span></span>&lt;T&gt;(T);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;T&gt; MyBox&lt;T&gt; &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>(x: T) -&gt; MyBox&lt;T&gt; &#123;</span><br><span class="line">        MyBox(x)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::ops::Deref;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;T&gt; Deref <span class="keyword">for</span> MyBox&lt;T&gt; &#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">Target</span></span> = T;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">deref</span></span>(&amp;<span class="keyword">self</span>) -&gt; &amp;T &#123;</span><br><span class="line">        &amp;<span class="keyword">self</span>.<span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> x = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">let</span> y = MyBox::new(x);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">5</span>, x);</span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">5</span>, *y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中的 <code>MyBox</code> 是一个拥有 <code>T</code> 类型的元组结构体，其关联函数 <code>MyBox::new</code> 接收一个 <code>T</code> 类型的参数，并返回一个存储有传入值的 <code>MyBox</code> 实例作为结果。</p>
+<p>为了为 <code>MyBox&lt;T&gt;</code> 类型实现解引用功能，代码中实现了 <code>Deref trait</code>。<br>标准库中的 Deref trait 要求我们实现一个 <code>deref</code> 方法，该方法会借用 <code>self</code> 并返回一个指向内部数据的引用。<br><code>deref</code> 方法体中的 <code>&amp;self.0</code> 意味着 <code>deref</code> 会返回一个指向值的引用，进而允许调用者通过 <code>*</code> 运算符访问值。<br>代码中的 <code>*y</code> 会被 Rust 隐式地展开为 <code>*(y.deref())</code>。使得我们可以用完全相同的方式编写代码来处理常规引用及实现了 Deref trait 的类型。</p>
+<h4 id="函数和方法的隐式解引用转换"><a href="#函数和方法的隐式解引用转换" class="headerlink" title="函数和方法的隐式解引用转换"></a>函数和方法的隐式解引用转换</h4><p>解引用转换是 Rust 为函数和方法的参数提供的一种编程特性。当某个类型 T 实现了 Deref trait 时，它能够将 T 的引用转换为 T 经过 Deref 操作后生成的引用。<br>当我们将某个类型的值引用作为参数传递给类型或方法，但传入的类型与参数类型不一致时，解引用转换就会自动发生。编译器会插入一系列的 deref 方法来将我们提供的类型转换为参数所需的类型。</p>
+<p>解引用转换使程序员在调用函数或方法时无需多次显式地使用 <code>&amp;</code> 和 <code>*</code> 操作符来进行引用和解引用操作。我们因而可以更多地编写出能够同时作用于常规引用和智能指针的代码。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyBox</span></span>&lt;T&gt;(T);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;T&gt; MyBox&lt;T&gt; &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>(x: T) -&gt; MyBox&lt;T&gt; &#123;</span><br><span class="line">        MyBox(x)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::ops::Deref;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;T&gt; Deref <span class="keyword">for</span> MyBox&lt;T&gt; &#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">Target</span></span> = T;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">deref</span></span>(&amp;<span class="keyword">self</span>) -&gt; &amp;T &#123;</span><br><span class="line">        &amp;<span class="keyword">self</span>.<span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">hello</span></span>(name: &amp;<span class="built_in">str</span>) &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"Hello, &#123;&#125;!"</span>, name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> m = MyBox::new(<span class="built_in">String</span>::from(<span class="string">"Rust"</span>));</span><br><span class="line">    hello(&amp;m);</span><br><span class="line">    <span class="comment">// =&gt; Hello, Rust!</span></span><br><span class="line">    hello(&amp;(*m)[..]);</span><br><span class="line">    <span class="comment">// =&gt; Hello, Rust!</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>&amp;m</code> 是一个指向 <code>MyBox&lt;String&gt;</code> 值的引用。因为 <code>MyBox&lt;T&gt;</code> 实现了 Deref trait，Rust 可以通过调用 deref 将 <code>&amp;MyBox&lt;String&gt;</code> 转换为 <code>String</code>；因为标准库为 <code>String</code> 提供的 Deref 实现会返回字符串切片，所以 Rust 可以继续调用 deref 将 <code>&amp;String</code> 转换为 <code>&amp;str</code>，最终与 <code>hello</code> 函数的定义匹配。</p>
+<h5 id="解引用转换与可变性"><a href="#解引用转换与可变性" class="headerlink" title="解引用转换与可变性"></a>解引用转换与可变性</h5><p>使用 <code>Deref trait</code> 能够重载不可变引用的 <code>*</code> 运算符，使用 <code>DerefMut trait</code> 能够重载可变引用的 <code>*</code> 运算符。</p>
+<p>Rust 会在类型与 trait 满足下面 3 种情况时执行解引用转换：</p>
+<ul>
+<li>当 <code>T: Deref&lt;Target=U&gt;</code> 时，允许 <code>&amp;T</code> 转换为 <code>&amp;U</code></li>
+<li>当 <code>T: DerefMut&lt;Target=U&gt;</code> 时，允许 <code>&amp;mut T</code> 转换为 <code>&amp;mut U</code></li>
+<li>当 <code>T: Deref&lt;Target=U&gt;</code> 时，允许 <code>&amp;mut T</code> 转换为 <code>&amp;U</code></li>
+</ul>
+<h4 id="借助-Drop-trait-在清理时运行代码"><a href="#借助-Drop-trait-在清理时运行代码" class="headerlink" title="借助 Drop trait 在清理时运行代码"></a>借助 <strong>Drop trait</strong> 在清理时运行代码</h4><p>Drop trait 允许我们在变量离开作用域时执行某些自定义操作。可以为任意类型实现一个 Drop trait，它常常被用来释放诸如文件、网络连接等资源。<br>几乎每一种智能指针的实现都会用到这一 trait，比如 <code>Box&lt;T&gt;</code> 通过自定义 Drop 来释放装箱指针指向的堆内存空间。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CustomSmartPointer</span></span> &#123;</span><br><span class="line">    data: <span class="built_in">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> CustomSmartPointer &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"Dropping CustomSmartPointer with data `&#123;&#125;`!"</span>, <span class="keyword">self</span>.data)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> c = CustomSmartPointer &#123;</span><br><span class="line">        data: <span class="built_in">String</span>::from(<span class="string">"my stuff"</span>),</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">let</span> d = CustomSmartPointer &#123;</span><br><span class="line">        data: <span class="built_in">String</span>::from(<span class="string">"other stuff"</span>),</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"CustomSmartPointer created."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// =&gt; CustomSmartPointer created.</span></span><br><span class="line"><span class="comment">// =&gt; Dropping CustomSmartPointer with data `other stuff`!</span></span><br><span class="line"><span class="comment">// =&gt; Dropping CustomSmartPointer with data `my stuff`!</span></span><br></pre></td></tr></table></figure>
+<h5 id="使用-std-mem-drop-提前丢弃值"><a href="#使用-std-mem-drop-提前丢弃值" class="headerlink" title="使用 std::mem::drop 提前丢弃值"></a>使用 <code>std::mem::drop</code> 提前丢弃值</h5><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CustomSmartPointer</span></span> &#123;</span><br><span class="line">    data: <span class="built_in">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> CustomSmartPointer &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"Dropping CustomSmartPointer with data `&#123;&#125;`!"</span>, <span class="keyword">self</span>.data)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> c = CustomSmartPointer &#123;</span><br><span class="line">        data: <span class="built_in">String</span>::from(<span class="string">"some data"</span>),</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"CustomSmartPointer created."</span>);</span><br><span class="line">    <span class="built_in">drop</span>(c);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"CustomSmartPointer dropped before the end of main"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// =&gt; CustomSmartPointer created.</span></span><br><span class="line"><span class="comment">// =&gt; Dropping CustomSmartPointer with data `some data`!</span></span><br><span class="line"><span class="comment">// =&gt; CustomSmartPointer dropped before the end of main</span></span><br></pre></td></tr></table></figure>
+<h4 id="基于引用计数的智能指针-Rc"><a href="#基于引用计数的智能指针-Rc" class="headerlink" title="基于引用计数的智能指针 Rc"></a>基于引用计数的智能指针 <strong>Rc<t></t></strong></h4><p>所有权在大多数情况下都是清晰的，对于一个给定的值，可以准确地判断出哪个变量拥有它。<br>但在某些场景中，单个值也可能同时被多个所有者持有。<br>比如在图数据结构中，多个边可能会指向相同的节点，这个节点同时属于所有指向它的边。一个节点只要在任意指向它的边还存在时就不应该被清理掉。<br>Rust 提供了一种名为 <code>Rc&lt;T&gt;</code> 的类型来支持多重所有权。<code>Rc&lt;T&gt;</code> 类型的实例会在内部维护一个用于记录值引用次数的计数器，从而确认这个值是否仍在使用。若对一个值的引用次数为零，就意味着这个值可以被安全地清理掉。</p>
+<p>当你希望将堆上的一些数据分享给程序的多个部分同时使用，而又无法在编译期确定哪个部分会最后释放这些数据时，就可以使用 <code>Rc&lt;T&gt;</code> 类型。<br>相反地，若我们能够在编译期确定哪一部分最后会释放数据，那么就只需要让这部分代码成为数据的所有者即可。<br><strong><code>Rc&lt;T&gt;</code> 只能被用于单线程场景中</strong>。</p>
+<h5 id="使用-Rc-lt-T-gt-共享数据"><a href="#使用-Rc-lt-T-gt-共享数据" class="headerlink" title="使用 Rc&lt;T&gt; 共享数据"></a>使用 <code>Rc&lt;T&gt;</code> 共享数据</h5><p>创建两个链接列表，并让它们同时持有第三个列表的所有权。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-46c80b946fd197b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Cons List"></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    Cons(<span class="built_in">i32</span>, <span class="built_in">Box</span>&lt;List&gt;),</span><br><span class="line">    Nil,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> crate::List::&#123;Cons, Nil&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> a = Cons(<span class="number">5</span>, <span class="built_in">Box</span>::new(Cons(<span class="number">10</span>, <span class="built_in">Box</span>::new(Nil))));</span><br><span class="line">    <span class="keyword">let</span> b = Cons(<span class="number">3</span>, <span class="built_in">Box</span>::new(a));</span><br><span class="line">    <span class="keyword">let</span> c = Cons(<span class="number">4</span>, <span class="built_in">Box</span>::new(a));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>尝试编译上述代码会报出 <strong>error[E0382]: use of moved value: <code>a</code></strong> 错误。原因是 <code>a</code> 列表会在创建 <code>b</code> 列表时被移动至 <code>b</code> 中。即 <code>b</code> 列表持有了 <code>a</code> 列表的所有权。随后再次尝试使用 <code>a</code> 来创建 <code>c</code> 列表时就会出现编译错误，因为 <code>a</code> 已经被移走了。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    Cons(<span class="built_in">i32</span>, Rc&lt;List&gt;),</span><br><span class="line">    Nil,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> crate::List::&#123;Cons, Nil&#125;;</span><br><span class="line"><span class="keyword">use</span> std::rc::Rc;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> a = Rc::new(Cons(<span class="number">5</span>, Rc::new(Cons(<span class="number">10</span>, Rc::new(Nil)))));</span><br><span class="line">    <span class="keyword">let</span> b = Cons(<span class="number">3</span>, Rc::clone(&amp;a));</span><br><span class="line">    <span class="keyword">let</span> c = Cons(<span class="number">4</span>, Rc::clone(&amp;a));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中，每个 <code>Cons</code> 变体都持有一个值及一个指向 List 的 <code>Rc&lt;T&gt;</code>。我们只需要在创建 <code>b</code> 的过程中克隆 <code>a</code> 的 <code>Rc&lt;List&gt;</code> 智能指针即可，无需获取 <code>a</code> 的所有权。<br>这使得 <code>a</code> 和 <code>b</code> 可以共享 <code>Rc&lt;List&gt;</code> 数据的所有权，并使智能指针中的引用计数从 1 增加到 2。随后创建 <code>c</code> 时也会同样克隆 <code>a</code> 并将引用计数从 2 增加到 3。<br>每次调用 <code>Rc::clone</code> 都会使引用计数增加，而 <code>Rc&lt;List&gt;</code> 中的数据只有在引用计数器减少到 0 时才会被真正清理掉。</p>
+<h5 id="克隆-Rc-lt-T-gt-会增加引用计数"><a href="#克隆-Rc-lt-T-gt-会增加引用计数" class="headerlink" title="克隆 Rc&lt;T&gt; 会增加引用计数"></a>克隆 <code>Rc&lt;T&gt;</code> 会增加引用计数</h5><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    Cons(<span class="built_in">i32</span>, Rc&lt;List&gt;),</span><br><span class="line">    Nil,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> crate::List::&#123;Cons, Nil&#125;;</span><br><span class="line"><span class="keyword">use</span> std::rc::Rc;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> a = Rc::new(Cons(<span class="number">5</span>, Rc::new(Cons(<span class="number">10</span>, Rc::new(Nil)))));</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"count after creating a = &#123;&#125;"</span>, Rc::strong_count(&amp;a));</span><br><span class="line">    <span class="keyword">let</span> b = Cons(<span class="number">4</span>, Rc::clone(&amp;a));</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"count after creating b = &#123;&#125;"</span>, Rc::strong_count(&amp;a));</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> c = Cons(<span class="number">4</span>, Rc::clone(&amp;a));</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"count after creating c = &#123;&#125;"</span>, Rc::strong_count(&amp;a));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"count after c goes out of scope = &#123;&#125;"</span>, Rc::strong_count(&amp;a));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// =&gt; count after creating a = 1</span></span><br><span class="line"><span class="comment">// =&gt; count after creating b = 2</span></span><br><span class="line"><span class="comment">// =&gt; count after creating c = 3</span></span><br><span class="line"><span class="comment">// =&gt; count after c goes out of scope = 2</span></span><br></pre></td></tr></table></figure>
+<p>在上面的代码中，<code>a</code> 存储的 <code>Rc&lt;List&gt;</code> 拥有初始引用计数 1，并在随后每次调用 <code>clone</code> 时增加 1。当 <code>c</code> 离开作用域被丢弃时，引用计数减少 1。<code>Rc&lt;T&gt;</code> 的 <code>Drop</code> 实现会在 <code>Rc&lt;T&gt;</code> 离开作用域时自动将引用计数减 1。</p>
+<p>使用 <code>Rc&lt;T&gt;</code> 可以使单个值拥有多个所有者，而引用计数机制则保证了这个值会在其所有者存活时一直有效，并在所有者全部离开作用域时被自动清理。<br><code>Rc&lt;T&gt;</code> 通过不可变引用使你可以在程序的不同部分之间共享只读数据。但如果 <code>Rc&lt;T&gt;</code> 也允许持有多个可变引用的话，就会违反一个借用原则：多个指向同一区域的可变借用会导致数据竞争及数据不一致。<br>但在实际开发中，允许数据可变是非常有用的。实际上可以通过 <code>RefCell&lt;T&gt;</code> 与 <code>Rc&lt;T&gt;</code> 联合使用来绕开不可变的限制。</p>
+<h4 id="RefCell-和内部可变性模式"><a href="#RefCell-和内部可变性模式" class="headerlink" title="RefCell 和内部可变性模式"></a>RefCell<t> 和内部可变性模式</t></h4><p><strong>内部可变性</strong> 是 Rust 的设计模式之一，它允许你在只持有不可变引用的前提下对数据进行修改。为了能够改变数据，此模式在它的数据结构中使用了 <code>unsafe</code> 代码来绕过 Rust 正常的可变性和借用规则。<br>假如我们能够保证自己的代码在运行时符合借用规则，就可以在即使编译器无法在编译阶段保证符合借用规则的前提下，使用那些采用了内部可变性模式的类型。实现过程中涉及的那些不安全代码会被妥善地封装在安全的 API 内，而类型本身从外部看依然是不可变的。</p>
+<h5 id="使用-RefCell-lt-T-gt-在运行时检查借用规则"><a href="#使用-RefCell-lt-T-gt-在运行时检查借用规则" class="headerlink" title="使用 RefCell&lt;T&gt; 在运行时检查借用规则"></a>使用 <code>RefCell&lt;T&gt;</code> 在运行时检查借用规则</h5><p>Rust 中的借用规则如下：</p>
+<ul>
+<li>在任何给定的时间内，只能拥有一个可变引用或者任意数量的不可变引用</li>
+<li>引用总是有效的</li>
+</ul>
+<p>对于一般引用和 <code>Box&lt;T&gt;</code> 的代码，Rust 会在<strong>编译阶段</strong>强制代码遵守这些借用规则。而对于使用 <code>RefCell&lt;T&gt;</code> 的代码，Rust 只会在<strong>运行时</strong>检查这些规则，并在违反的时候触发 panic 来提前终止程序。</p>
+<p>借用规则的检查放在编译阶段不仅会帮助我们在开发阶段尽早暴露问题，并且不会带来任何运行时开销。对于大多数场景都是最佳的选择。<br>在运行时检查借用规则可以使我们实现某些特定的内存安全场景，即便这些场景无法通过编译时检查。因为某些静态分析是根本无法完成的。这类编译器无法理解代码，但开发者可以保证借用规则能够满足的场景，就适用于 <code>RefCell&lt;T&gt;</code>。</p>
+<h5 id="可变地借用一个不可变的值"><a href="#可变地借用一个不可变的值" class="headerlink" title="可变地借用一个不可变的值"></a>可变地借用一个不可变的值</h5><p><strong>内部可变性模式允许用户更改一个不可变值的内部数据</strong>。<br>借用规则限制用户可变地借用一个不可变的值，如下面的代码无法通过编译：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> x = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">let</span> y = &amp;<span class="keyword">mut</span> x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是在某些情况下，我们也需要一个值对外保持不可变性的同时能够在方法内部修改自身。除了这个值本身的方法，其余的代码仍不能修改这个值。<br>使用 <code>RefCell&lt;T&gt;</code> 可以获得这种内部可变性。<br>这种内部可变性的机制把借用规则的检查从编译期延后到了运行阶段，若违反了借用规则，只会在运行时触发 <strong>panic!</strong>。</p>
+<p><strong>内部可变性的应用场景：模拟对象</strong><br><strong>测试替代</strong>是一种通用的编程概念，代表了那些在测试工作中被用作其他类型替代品的类型。而<strong>模拟对象</strong>则指代了测试替代中某些特定的类型，会承担起记录测试过程的工作。</p>
+<p>Rust 没有和其他语言中类似的对象概念，也没有在标准库中提供模拟对象的测试功能。但是可以自定义一个结构体来实现与模拟对象相同的效果。<br>比如我们希望开发一个库，会基于当前值与最大值之间的接近程度向外传递信息。比如可以记录用户调用不同 API 的次数，并与设置的调用限额作比较。<br>使用这个库的应用程序需要自行实现发送消息的功能，例如在应用程序中打印信息、发送邮件、发送文字短信等。<br>源代码如下：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">trait</span> <span class="title">Messenger</span></span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">send</span></span>(&amp;<span class="keyword">self</span>, msg: &amp;<span class="built_in">str</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">struct</span> <span class="title">LimitTracker</span></span>&lt;<span class="symbol">'a</span>, T: <span class="symbol">'a</span> + Messenger&gt; &#123;</span><br><span class="line">    messenger: &amp;<span class="symbol">'a</span> T,</span><br><span class="line">    value: <span class="built_in">usize</span>,</span><br><span class="line">    max: <span class="built_in">usize</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;<span class="symbol">'a</span>, T&gt; LimitTracker&lt;<span class="symbol">'a</span>, T&gt;</span><br><span class="line"><span class="keyword">where</span></span><br><span class="line">    T: Messenger,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>(messenger: &amp;T, max: <span class="built_in">usize</span>) -&gt; LimitTracker&lt;T&gt; &#123;</span><br><span class="line">        LimitTracker &#123;</span><br><span class="line">            messenger,</span><br><span class="line">            value: <span class="number">0</span>,</span><br><span class="line">            max,</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">set_value</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, value: <span class="built_in">usize</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.value = value;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> percentage_of_max = <span class="keyword">self</span>.value <span class="keyword">as</span> <span class="built_in">f64</span> / <span class="keyword">self</span>.max <span class="keyword">as</span> <span class="built_in">f64</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> percentage_of_max &gt;= <span class="number">1.0</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.messenger.send(<span class="string">"Error: You're over your quota!"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> percentage_of_max &gt;= <span class="number">0.9</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.messenger</span><br><span class="line">                .send(<span class="string">"Urgent warning: You've used 90% of your quota!"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> percentage_of_max &gt;= <span class="number">0.75</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.messenger</span><br><span class="line">                .send(<span class="string">"Warning: You've used 75% of your quota!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[cfg(test)]</span></span><br><span class="line"><span class="keyword">mod</span> tests &#123;</span><br><span class="line">    <span class="keyword">use</span> super::*;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">MockMessenger</span></span> &#123;</span><br><span class="line">        sent_messages: <span class="built_in">Vec</span>&lt;<span class="built_in">String</span>&gt;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">impl</span> MockMessenger &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>() -&gt; MockMessenger &#123;</span><br><span class="line">            MockMessenger &#123;</span><br><span class="line">                sent_messages: <span class="built_in">vec!</span>[],</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">impl</span> Messenger <span class="keyword">for</span> MockMessenger &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fn</span> <span class="title">send</span></span>(&amp;<span class="keyword">self</span>, message: &amp;<span class="built_in">str</span>) &#123;</span><br><span class="line">            <span class="keyword">self</span>.sent_messages.push(<span class="built_in">String</span>::from(message));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">#[test]</span></span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">it_sends_an_over_75_percent_warning_message</span></span>() &#123;</span><br><span class="line">        <span class="keyword">let</span> mock_messenger = MockMessenger::new();</span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut</span> limit_tracker = LimitTracker::new(&amp;mock_messenger, <span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">        limit_tracker.set_value(<span class="number">80</span>);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">assert_eq!</span>(mock_messenger.sent_messages.len(), <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>Messenger</code> trait 的 <code>send</code> 方法可以接收 <code>self</code> 的不可变引用及一条文本消息作为参数。我们需要在测试中确定的是，当某段程序使用一个实现了 Messenger trait 的模拟对象与一个 max 值来创建 <code>LimitTracker</code> 实例时，传入的不同 value 值能够触发 messenger 发送不同的信息。<br>此处的模拟对象 <code>MockMessenger</code> 在调用 <code>send</code> 时只需要将收到的消息存档记录即可，不需要真的去发送邮件或短信。使用模拟对象创建 <code>LimitTracker</code> 实例后，就可以通过调用 <code>set_value</code> 方法检查模拟对象中是否存储了我们希望见到的消息。</p>
+<p>尝试编译（<code>cargo test</code>）上述代码会报出如下错误：<br><code>error[E0596]: cannot borrow `self.sent_messages` as mutable, as it is behind a `&amp;` reference</code></p>
+<p><code>send</code> 方法接收了 <code>self</code> 的不可变引用，因此我们无法通过修改 <code>MockMessenger</code> 的内容来记录消息。我们也不能将函数签名修改为 <code>&amp;mut self</code>，因为修改后的签名与 Messenger trait 定义的 <code>send</code> 签名不符。<br>此时就是一个非常适合内部可变性的场景。只要在 <code>RefCell&lt;T&gt;</code> 中存入 <code>sent_messages</code>，<code>send</code> 方法就能够修改 <code>sent_messages</code>。</p>
+<p>修改后的代码如下：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">trait</span> <span class="title">Messenger</span></span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">send</span></span>(&amp;<span class="keyword">self</span>, msg: &amp;<span class="built_in">str</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">struct</span> <span class="title">LimitTracker</span></span>&lt;<span class="symbol">'a</span>, T: <span class="symbol">'a</span> + Messenger&gt; &#123;</span><br><span class="line">    messenger: &amp;<span class="symbol">'a</span> T,</span><br><span class="line">    value: <span class="built_in">usize</span>,</span><br><span class="line">    max: <span class="built_in">usize</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;<span class="symbol">'a</span>, T&gt; LimitTracker&lt;<span class="symbol">'a</span>, T&gt;</span><br><span class="line"><span class="keyword">where</span></span><br><span class="line">    T: Messenger,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>(messenger: &amp;T, max: <span class="built_in">usize</span>) -&gt; LimitTracker&lt;T&gt; &#123;</span><br><span class="line">        LimitTracker &#123;</span><br><span class="line">            messenger,</span><br><span class="line">            value: <span class="number">0</span>,</span><br><span class="line">            max,</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">set_value</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, value: <span class="built_in">usize</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.value = value;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> percentage_of_max = <span class="keyword">self</span>.value <span class="keyword">as</span> <span class="built_in">f64</span> / <span class="keyword">self</span>.max <span class="keyword">as</span> <span class="built_in">f64</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> percentage_of_max &gt;= <span class="number">1.0</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.messenger.send(<span class="string">"Error: You're over your quota!"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> percentage_of_max &gt;= <span class="number">0.9</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.messenger</span><br><span class="line">                .send(<span class="string">"Urgent warning: You've used 90% of your quota!"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> percentage_of_max &gt;= <span class="number">0.75</span> &#123;</span><br><span class="line">            <span class="keyword">self</span>.messenger</span><br><span class="line">                .send(<span class="string">"Warning: You've used 75% of your quota!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[cfg(test)]</span></span><br><span class="line"><span class="keyword">mod</span> tests &#123;</span><br><span class="line">    <span class="keyword">use</span> super::*;</span><br><span class="line">    <span class="keyword">use</span> std::cell::RefCell;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">MockMessenger</span></span> &#123;</span><br><span class="line">        sent_messages: RefCell&lt;<span class="built_in">Vec</span>&lt;<span class="built_in">String</span>&gt;&gt;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">impl</span> MockMessenger &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>() -&gt; MockMessenger &#123;</span><br><span class="line">            MockMessenger &#123;</span><br><span class="line">                sent_messages: RefCell::new(<span class="built_in">vec!</span>[]),</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">impl</span> Messenger <span class="keyword">for</span> MockMessenger &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fn</span> <span class="title">send</span></span>(&amp;<span class="keyword">self</span>, message: &amp;<span class="built_in">str</span>) &#123;</span><br><span class="line">            <span class="keyword">self</span>.sent_messages.borrow_mut().push(<span class="built_in">String</span>::from(message));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">#[test]</span></span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">it_sends_an_over_75_percent_warning_message</span></span>() &#123;</span><br><span class="line">        <span class="keyword">let</span> mock_messenger = MockMessenger::new();</span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut</span> limit_tracker = LimitTracker::new(&amp;mock_messenger, <span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">        limit_tracker.set_value(<span class="number">80</span>);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">assert_eq!</span>(mock_messenger.sent_messages.borrow().len(), <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>sent_messages</code> 字段的类型变为了 <code>RefCell&lt;Vec&lt;String&gt;&gt;</code>。对于 <code>send</code> 方法的实现，其第一个参数依然是 <code>self</code> 的不可变借用，与 trait 的定义保持一致。后面的代码调用 <code>self.messages.borrow_mut</code> 方法获取 <code>RefCell&lt;Vec&lt;String&gt;&gt;</code> 内部值（也就是动态数组）的可变引用，再调用其 <code>push</code> 方法存入数据。<br>在断言语句中，调用了 <code>RefCell&lt;Vec&lt;String&gt;&gt;</code> 的 <code>borrow</code> 方法来取得动态数组的不可变引用。</p>
+<p>对于 <code>RefCell&lt;T&gt;</code> 而言，我们可以使用 <code>borrow</code> 与 <code>borrow_mut</code> 分别创建不可变和可变引用。这两个方法会分别返回 <code>Ref&lt;T&gt;</code> 与 <code>RefMut&lt;T&gt;</code> 两种智能指针，可以被当作一般的引用来对待。<br><code>RefCell&lt;T&gt;</code> 会记录当前存在多少个活跃的 <code>Ref&lt;T&gt;</code> 和 <code>RefMut&lt;T&gt;</code>，维护和编译器同样的借用规则：任何给定的时间都只允许拥有多个不可变借用或一个可变借用。<br>当借用规则被违背时，<code>RefCell&lt;T&gt;</code> 会在<strong>运行时</strong>触发 panic。</p>
+<h4 id="Rc-lt-T-gt-和-RefCell-lt-T-gt-实现一个拥有多重所有权的可变数据"><a href="#Rc-lt-T-gt-和-RefCell-lt-T-gt-实现一个拥有多重所有权的可变数据" class="headerlink" title="Rc&lt;T&gt; 和 RefCell&lt;T&gt; 实现一个拥有多重所有权的可变数据"></a><code>Rc&lt;T&gt;</code> 和 <code>RefCell&lt;T&gt;</code> 实现一个拥有多重所有权的可变数据</h4><p><code>Rc&lt;T&gt;</code> 允许多个所有者持有同一数据，但只能提供针对数据的不可变访问。若在 <code>Rc&lt;T&gt;</code> 内存储了 <code>RefCell&lt;T&gt;</code>，就可以定义出拥有多个所有者且能够进行修改的值了。</p>
+<p>在 <code>Cons</code> 定义中使用 <code>RefCell&lt;T&gt;</code> 来实现修改现有列表内数值的功能：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    Cons(Rc&lt;RefCell&lt;<span class="built_in">i32</span>&gt;&gt;, Rc&lt;List&gt;),</span><br><span class="line">    Nil,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> crate::List::&#123;Cons, Nil&#125;;</span><br><span class="line"><span class="keyword">use</span> std::cell::RefCell;</span><br><span class="line"><span class="keyword">use</span> std::rc::Rc;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> value = Rc::new(RefCell::new(<span class="number">5</span>));</span><br><span class="line">    <span class="keyword">let</span> a = Rc::new(Cons(Rc::clone(&amp;value), Rc::new(Nil)));</span><br><span class="line">    <span class="keyword">let</span> b = Cons(Rc::new(RefCell::new(<span class="number">6</span>)), Rc::clone(&amp;a));</span><br><span class="line">    <span class="keyword">let</span> c = Cons(Rc::new(RefCell::new(<span class="number">10</span>)), Rc::clone(&amp;a));</span><br><span class="line"></span><br><span class="line">    *value.borrow_mut() += <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"a after = &#123;:?&#125;"</span>, a);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"b after = &#123;:?&#125;"</span>, b);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"c after = &#123;:?&#125;"</span>, c);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="循环引用与内存泄漏"><a href="#循环引用与内存泄漏" class="headerlink" title="循环引用与内存泄漏"></a>循环引用与内存泄漏</h4><p>与数据竞争不同，在编译期彻底防止内存泄漏并不是 Rust 做出的保证。这意味着内存泄漏在 Rust 中是一种内存安全行为。<br>可以通过使用 <code>Rc&lt;T&gt;</code> 和 <code>RefCell&lt;T&gt;</code> 创建出相互引用成环状的实例。由于环中每一个指针的引用计数都不可能减少到 0，对应的值也不会被释放丢弃，最终造成内存泄漏。</p>
+<p>代码中先创建了一个 <code>Rc&lt;List&gt;</code> 实例并存储至变量 <code>a</code>，其中的 List 初始值为 <code>5, Nil</code>。<br>之后又创建了一个 <code>Rc&lt;List&gt;</code> 实例并存储至变量 <code>b</code>，其中的 List 包含数值 10 及指向列表 <code>a</code> 的指针。<br>接着将 <code>a</code> 指向的下一个元素 <code>Nil</code> 修改为 <code>b</code>，此时即创建出了循环引用。</p>
+<p>在完成 <code>a</code> 指向 <code>b</code> 的操作后，这两个 <code>Rc&lt;List&gt;</code> 实例的引用计数都变为了 2。而在 <code>main</code> 函数结尾处，Rust 会首先释放 <code>b</code>，并使 <code>b</code> 存储的 <code>Rc&lt;List&gt;</code> 实例的引用计数减少 1。<br>但由于 <code>a</code> 仍然有一个指向 <code>b</code> 中 <code>Rc&lt;List&gt;</code> 的引用，这个 <code>Rc&lt;List&gt;</code> 的引用计数仍然是 1 而不是 0。因此该 <code>Rc&lt;List&gt;</code> 在堆上的内存不会被释放，这块内存会永远以引用计数为 1 的状态保留在堆上。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-55a8d6b393cb625e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="a 和 b 相互指向的循环引用"></p>
+<p>假如去除最后一行 <code>println!</code> 的注释并再次运行程序，Rust 会在尝试将循环引用打印出来的过程中反复地从 <code>a</code> 跳转到 <code>b</code>，再从 <code>b</code> 跳转至 <code>a</code>，直到发生栈溢出为止。</p>
+<p>如果程序中存在 <code>RefCell&lt;T&gt;</code> 包含 <code>Rc&lt;T&gt;</code> 或其他联用了内部可变性与引用计数指针的情形，就需要自行确保不会在代码中创建出循环引用。<br>创建出循环引用意味着代码逻辑有 bug，可以通过自动化测试及其他软件开发手段来尽可能地避免。</p>
+<h4 id="使用-Weak-lt-T-gt-替代-Rc-lt-T-gt-来避免循环引用"><a href="#使用-Weak-lt-T-gt-替代-Rc-lt-T-gt-来避免循环引用" class="headerlink" title="使用 Weak&lt;T&gt; 替代 Rc&lt;T&gt; 来避免循环引用"></a>使用 <code>Weak&lt;T&gt;</code> 替代 <code>Rc&lt;T&gt;</code> 来避免循环引用</h4><p>调用 <code>Rc::clone</code> 会增加 <code>Rc&lt;T&gt;</code> 实例的 <code>strong_count</code> 引用计数，而 <code>Rc&lt;T&gt;</code> 实例只有在 <code>strong_count</code> 为 0 时才会被清理。<br>除此之外，我们还可以调用 <code>Rc::downgrade</code> 函数来创建 <code>Rc&lt;T&gt;</code> 实例中值的弱引用。使用 <code>Rc&lt;T&gt;</code> 的引用来调用 <code>Rc::downgrade</code> 会返回一个类型为 <code>Weak&lt;T&gt;</code> 的智能指针，这一操作会让 <code>Rc&lt;T&gt;</code> 的 <code>weak_count</code> 计数增加 1。<code>Rc&lt;T&gt;</code> 类型使用 <code>weak_count</code> 来记录当前存在多少个 <code>Weak&lt;T&gt;</code> 引用，但不会在执行清理操作前要求 <code>weak_count</code> 必须为 0。<br>强引用可以被用来共享一个 <code>Rc&lt;T&gt;</code> 实例的所有权，而弱引用则不会表达所有权关系。一旦强引用计数为 0，任何由弱引用组成的循环就会被打破。<strong>弱引用不会造成循环引用</strong>。<br>我们无法确定 <code>Weak&lt;T&gt;</code> 引用的值是否已经被释放，因此需要在使用 <code>Weak&lt;T&gt;</code> 指向的值之前确保它依然存在。可以调用 <code>Weak&lt;T&gt;</code> 实例的 <code>upgrade</code> 方法来完成这一验证。此函数返回的 <code>Option&lt;Rc&lt;T&gt;&gt;</code> 会在 <code>Rc&lt;T&gt;</code> 值依然存在时表达为 <code>Some</code>，在 <code>Rc&lt;T&gt;</code> 值被释放时表达为 <code>None</code>。Rust 能够保证 <code>Some</code> 和 <code>None</code> 两个分支都得到妥善的处理，不会产生无效指针之类的问题。</p>
+<h5 id="创建树状结构体：带有子节点的-Node"><a href="#创建树状结构体：带有子节点的-Node" class="headerlink" title="创建树状结构体：带有子节点的 Node"></a>创建树状结构体：带有子节点的 Node</h5><p>源代码如下：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::cell::RefCell;</span><br><span class="line"><span class="keyword">use</span> std::rc::Rc;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span></span> &#123;</span><br><span class="line">    value: <span class="built_in">i32</span>,</span><br><span class="line">    children: RefCell&lt;<span class="built_in">Vec</span>&lt;Rc&lt;Node&gt;&gt;&gt;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> leaf = Rc::new(Node &#123;</span><br><span class="line">        value: <span class="number">3</span>,</span><br><span class="line">        children: RefCell::new(<span class="built_in">vec!</span>[]),</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> branch = Rc::new(Node &#123;</span><br><span class="line">        value: <span class="number">5</span>,</span><br><span class="line">        children: RefCell::new(<span class="built_in">vec!</span>[Rc::clone(&amp;leaf)]),</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们希望 Node 持有自身所有子节点并通过变量来共享它们的所有权，从而可以直接访问树中的每个 Node。因此将 <code>Vec&lt;T&gt;</code> 的元素定义为 <code>Rc&lt;Node&gt;</code> 类型的值。<br>我们还希望在 <code>children</code> 字段中使用 <code>RefCell&lt;T&gt;</code> 包裹 <code>Vec&lt;Rc&lt;Node&gt;&gt;</code> 来实现内部可变性。<br>我们使用上述结构体定义一个值为 3 且没有子节点的 Node 实例，并将其作为叶子节点存入 <code>leaf</code> 变量。再定义一个值为 5 且将 <code>leaf</code> 作为子节点的 <code>branch</code> 实例。接着克隆 <code>leaf</code> 的 <code>Rc&lt;Node&gt;</code> 实例，并将其存入 <code>branch</code>。<br>此时我们可以使用 <code>branch.children</code> 来从 <code>branch</code> 访问 <code>leaf</code>，但是反之则不行。因为 <code>leaf</code> 并不持有 <code>branch</code> 的引用，它甚至对两个节点之间存在父子关系一无所知。</p>
+<h5 id="增加子节点指向父节点的引用"><a href="#增加子节点指向父节点的引用" class="headerlink" title="增加子节点指向父节点的引用"></a>增加子节点指向父节点的引用</h5><p>为了让子节点意识到父节点的存在，可以为 <code>Node</code> 结构体添加一个 <code>parent</code> 字段。但 <code>parent</code> 的类型不能是 <code>Rc&lt;T&gt;</code>，会创建循环引用。<code>branch.children</code> 指向 <code>leaf</code> 的同时使 <code>leaf.parent</code> 指向 <code>branch</code> 会导致两者的 <code>strong_count</code> 都无法清零。</p>
+<p>父节点自然拥有子节点的所有权，因为父节点被丢弃时，子节点也应该随之被丢弃；但子节点却不应该拥有父节点的所有权，即父节点的存在不会因为丢弃子节点而受到影响。<br>这恰好是使用弱引用的场景。<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::cell::RefCell;</span><br><span class="line"><span class="keyword">use</span> std::rc::&#123;Rc, Weak&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span></span> &#123;</span><br><span class="line">    value: <span class="built_in">i32</span>,</span><br><span class="line">    parent: RefCell&lt;Weak&lt;Node&gt;&gt;,</span><br><span class="line">    children: RefCell&lt;<span class="built_in">Vec</span>&lt;Rc&lt;Node&gt;&gt;&gt;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> leaf = Rc::new(Node &#123;</span><br><span class="line">        value: <span class="number">3</span>,</span><br><span class="line">        parent: RefCell::new(Weak::new()),</span><br><span class="line">        children: RefCell::new(<span class="built_in">vec!</span>[]),</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"leaf parent = &#123;:?&#125;"</span>, leaf.parent.borrow().upgrade());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> branch = Rc::new(Node &#123;</span><br><span class="line">        value: <span class="number">5</span>,</span><br><span class="line">        parent: RefCell::new(Weak::new()),</span><br><span class="line">        children: RefCell::new(<span class="built_in">vec!</span>[Rc::clone(&amp;leaf)]),</span><br><span class="line">    &#125;);</span><br><span class="line">    *leaf.parent.borrow_mut() = Rc::downgrade(&amp;branch);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"leaf parent = &#123;:?&#125;"</span>, leaf.parent.borrow().upgrade());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// =&gt; leaf parent = None</span></span><br><span class="line"><span class="comment">// =&gt; leaf parent = Some(Node &#123; value: 5, parent: RefCell &#123; value: (Weak) &#125;, children: RefCell &#123; value: [Node &#123; value: 3, parent: RefCell &#123; value: (Weak) &#125;, children: RefCell &#123; value: [] &#125; &#125;] &#125; &#125;)</span></span><br></pre></td></tr></table></figure></p>
+<p>在上面的代码中，<code>branch</code> 创建完毕后，我们通过 <code>RefCell&lt;Weak&lt;Node&gt;&gt;</code> 的 <code>borrow_mut</code> 方法取出 <code>leaf</code> 中 <code>parent</code> 字段的可变借用，再使用 <code>Rc::downgrade</code> 函数获取 <code>branch</code> 中 <code>Rc&lt;Node&gt;</code> 的 <code>Weak&lt;Node&gt;</code> 引用，将其存入 <code>leaf</code> 的 <code>parent</code> 字段中。<br>最后在打印 <code>leaf</code> 的父节点时，便可以看到一个包含了 <code>branch</code> 实际内容的 <code>Some</code> 变体，即表明 <code>leaf</code> 可以访问其父节点。另外，此时打印 <code>leaf</code> 还可以避免之前因循环引用导致的栈溢出故障，因为 <code>Weak&lt;Node&gt;</code> 引用会被直接打印为 <code>(Weak)</code>。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://doc.rust-lang.org/book/" target="_blank" rel="noopener">The Rust Programming Language</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/DataStructure/" rel="tag"># DataStructure</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Rust/" rel="tag"># Rust</a>
+          
+            <a href="/tags/Memory/" rel="tag"># Memory</a>
+          
+            <a href="/tags/Pointer/" rel="tag"># Pointer</a>
+          
+            <a href="/tags/Heap/" rel="tag"># Heap</a>
+          
+            <a href="/tags/Stack/" rel="tag"># Stack</a>
+          
+            <a href="/tags/Borrow/" rel="tag"># Borrow</a>
+          
+            <a href="/tags/Ownership/" rel="tag"># Ownership</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/07/13/the-rust-programming-language-reading-notes-enum-and-match/" rel="next" title="The Rust programming language 读书笔记——枚举类型">
+                <i class="fa fa-chevron-left"></i> The Rust programming language 读书笔记——枚举类型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">174</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">251</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-Box-lt-T-gt-在堆上分配数据"><span class="nav-number">1.</span> <span class="nav-text">使用 Box&lt;T&gt; 在堆上分配数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用装箱定义递归类型"><span class="nav-number">1.1.</span> <span class="nav-text">使用装箱定义递归类型</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通过-Deref-trait-将智能指针视作常规引用"><span class="nav-number">2.</span> <span class="nav-text">通过 Deref trait 将智能指针视作常规引用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用解引用跳转到指针指向的值"><span class="nav-number">2.1.</span> <span class="nav-text">使用解引用跳转到指针指向的值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#把-Box-lt-T-gt-当成引用来操作"><span class="nav-number">2.2.</span> <span class="nav-text">把 Box&lt;T&gt; 当成引用来操作</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#自定义智能指针"><span class="nav-number">2.3.</span> <span class="nav-text">自定义智能指针</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#函数和方法的隐式解引用转换"><span class="nav-number">3.</span> <span class="nav-text">函数和方法的隐式解引用转换</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解引用转换与可变性"><span class="nav-number">3.1.</span> <span class="nav-text">解引用转换与可变性</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#借助-Drop-trait-在清理时运行代码"><span class="nav-number">4.</span> <span class="nav-text">借助 Drop trait 在清理时运行代码</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-std-mem-drop-提前丢弃值"><span class="nav-number">4.1.</span> <span class="nav-text">使用 std::mem::drop 提前丢弃值</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于引用计数的智能指针-Rc"><span class="nav-number">5.</span> <span class="nav-text">基于引用计数的智能指针 Rc</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-Rc-lt-T-gt-共享数据"><span class="nav-number">5.1.</span> <span class="nav-text">使用 Rc&lt;T&gt; 共享数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#克隆-Rc-lt-T-gt-会增加引用计数"><span class="nav-number">5.2.</span> <span class="nav-text">克隆 Rc&lt;T&gt; 会增加引用计数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RefCell-和内部可变性模式"><span class="nav-number">6.</span> <span class="nav-text">RefCell 和内部可变性模式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-RefCell-lt-T-gt-在运行时检查借用规则"><span class="nav-number">6.1.</span> <span class="nav-text">使用 RefCell&lt;T&gt; 在运行时检查借用规则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#可变地借用一个不可变的值"><span class="nav-number">6.2.</span> <span class="nav-text">可变地借用一个不可变的值</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Rc-lt-T-gt-和-RefCell-lt-T-gt-实现一个拥有多重所有权的可变数据"><span class="nav-number">7.</span> <span class="nav-text">Rc&lt;T&gt; 和 RefCell&lt;T&gt; 实现一个拥有多重所有权的可变数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#循环引用与内存泄漏"><span class="nav-number">8.</span> <span class="nav-text">循环引用与内存泄漏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-Weak-lt-T-gt-替代-Rc-lt-T-gt-来避免循环引用"><span class="nav-number">9.</span> <span class="nav-text">使用 Weak&lt;T&gt; 替代 Rc&lt;T&gt; 来避免循环引用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建树状结构体：带有子节点的-Node"><span class="nav-number">9.1.</span> <span class="nav-text">创建树状结构体：带有子节点的 Node</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#增加子节点指向父节点的引用"><span class="nav-number">9.2.</span> <span class="nav-text">增加子节点指向父节点的引用</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">10.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">19:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
