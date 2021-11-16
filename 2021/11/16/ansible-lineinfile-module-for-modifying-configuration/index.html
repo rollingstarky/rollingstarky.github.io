@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Configuration,Shell,Ansible,Devops,Automation," />
+
+
+<meta name="description" content="需要用 Ansible 修改配置文件，其实就是在某个文件末尾添加几行内容。直观地想，直接用 shell 模块，echo 加 &amp;gt;&amp;gt; 就完事了。但仔细一琢磨，很可能会引发一些意想不到的问题，比如：  如果需要添加的配置已经存在，echo 仍会向配置文件底部添加同样的内容 如果添加配置的任务重复执行多次，则配置文件中也会多次出现重复的内容。无法做到幂等 如何做到，当对应的配置已经存在，则将该">
+<meta name="keywords" content="Linux,Configuration,Shell,Ansible,Devops,Automation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ansible 使用 lineinfile 模块修改配置文件">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/11/16/ansible-lineinfile-module-for-modifying-configuration/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="需要用 Ansible 修改配置文件，其实就是在某个文件末尾添加几行内容。直观地想，直接用 shell 模块，echo 加 &amp;gt;&amp;gt; 就完事了。但仔细一琢磨，很可能会引发一些意想不到的问题，比如：  如果需要添加的配置已经存在，echo 仍会向配置文件底部添加同样的内容 如果添加配置的任务重复执行多次，则配置文件中也会多次出现重复的内容。无法做到幂等 如何做到，当对应的配置已经存在，则将该">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-11-16T14:33:03.362Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ansible 使用 lineinfile 模块修改配置文件">
+<meta name="twitter:description" content="需要用 Ansible 修改配置文件，其实就是在某个文件末尾添加几行内容。直观地想，直接用 shell 模块，echo 加 &amp;gt;&amp;gt; 就完事了。但仔细一琢磨，很可能会引发一些意想不到的问题，比如：  如果需要添加的配置已经存在，echo 仍会向配置文件底部添加同样的内容 如果添加配置的任务重复执行多次，则配置文件中也会多次出现重复的内容。无法做到幂等 如何做到，当对应的配置已经存在，则将该">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/11/16/ansible-lineinfile-module-for-modifying-configuration/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Ansible 使用 lineinfile 模块修改配置文件 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/11/16/ansible-lineinfile-module-for-modifying-configuration/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Ansible 使用 lineinfile 模块修改配置文件</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-11-16T00:00:00+08:00">2021-11-16</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/11/16/ansible-lineinfile-module-for-modifying-configuration/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/11/16/ansible-lineinfile-module-for-modifying-configuration/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/11/16/ansible-lineinfile-module-for-modifying-configuration/" class="leancloud_visitors" data-flag-title="Ansible 使用 lineinfile 模块修改配置文件">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">7.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:08</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>需要用 Ansible 修改配置文件，其实就是在某个文件末尾添加几行内容。直观地想，直接用 <code>shell</code> 模块，<code>echo</code> 加 <code>&gt;&gt;</code> 就完事了。<br>但仔细一琢磨，很可能会引发一些意想不到的问题，比如：</p>
+<ul>
+<li>如果需要添加的配置已经存在，<code>echo</code> 仍会向配置文件底部添加同样的内容</li>
+<li>如果添加配置的任务重复执行多次，则配置文件中也会多次出现重复的内容。无法做到<strong>幂等</strong></li>
+<li>如何做到，当对应的配置已经存在，则将该配置改为期望的值；当对应的配置不存在，不做任何操作（有就修改，没有就不动。好像可以用 <code>sed</code>）</li>
+<li>如何安全地移除指定的配置项</li>
+</ul>
+<p>诸如此类。运维工作常常要关系到生产环境。任何无法预期的效果都可能产生严重的影响。而单纯使用 <code>echo</code> 和 <code>&gt;&gt;</code> 向配置文件中添加内容，具有很大的不确定性。<br>当然可以形成一个 Shell 脚本，对各种边界进行足够的检查和判定，但这会导致代码量变大，结构复杂难以标准化；同时也容易出现遗漏的情况。</p>
+<p>实际上 Ansible 内置的 <code>lineinfile</code> 就是专门用来处理上述任务的模块。</p>
+<p>比如针对如下内容的配置文件 <code>test_conf.ini</code>：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">FIRST</span>=<span class="literal">true</span></span><br><span class="line"><span class="attr">SECOND</span>=<span class="number">2</span></span><br></pre></td></tr></table></figure></p>
+<p>需要添加一行配置 <code>THIRD=3</code>。</p>
+<p>可以运行如下内容的 playbook <code>change_config.yml</code>：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">- name:</span> <span class="string">change</span> <span class="string">configuration</span></span><br><span class="line"><span class="attr">  gather_facts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  hosts:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  tasks:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">change</span> <span class="string">content</span> <span class="string">in</span> <span class="string">test_conf.ini</span></span><br><span class="line"><span class="attr">      lineinfile:</span></span><br><span class="line"><span class="attr">        path:</span> <span class="string">/home/starky/projects/ansible/practice/test_conf.ini</span></span><br><span class="line"><span class="attr">        regexp:</span> <span class="string">'^THIRD'</span></span><br><span class="line"><span class="attr">        line:</span> <span class="string">THIRD=3</span></span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>lineinfile</code> 模块的 <code>path</code> 参数用于指定目标配置文件的路径；<code>regexp</code> 参数则用于指定对文件内容进行匹配时使用的正则表达式；最后的 <code>line</code> 参数表示希望在目标文件中出现的内容。</p>
+<p>具体的步骤为：</p>
+<ul>
+<li>检查 <code>line</code> 对应的内容是否存在于 <code>path</code> 对应的目标文件中</li>
+<li>若已经存在。则目标文件符合要求，不对该文件做任何操作</li>
+<li>若不存在。通过 <code>regexp</code> 指定的正则表达式对目标文件进行匹配</li>
+<li>若 <code>regexp</code> 匹配到文本行，则将该行内容修改为 <code>line</code> 指定的内容</li>
+<li>若 <code>regexp</code> 未匹配到文本行，则将 <code>line</code> 对应的内容作为新的一行添加到目标文件末尾</li>
+</ul>
+<p>运行效果：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ansible-playbook change_config.yml</span><br><span class="line"></span><br><span class="line">PLAY [change configuration] *********************************************************************************************************</span><br><span class="line"></span><br><span class="line">TASK [change content <span class="keyword">in</span> test_conf.ini] **********************************************************************************************</span><br><span class="line">changed: [localhost]</span><br><span class="line"></span><br><span class="line">PLAY RECAP **************************************************************************************************************************</span><br><span class="line">localhost                  : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span><br></pre></td></tr></table></figure></p>
+<p>此时 <code>test_conf.ini</code> 配置文件的内容被修改为：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">FIRST</span>=<span class="literal">true</span></span><br><span class="line"><span class="attr">SECOND</span>=<span class="number">2</span></span><br><span class="line"><span class="attr">THIRD</span>=<span class="number">3</span></span><br></pre></td></tr></table></figure></p>
+<p>若再次运行 <code>ansible-playbook change_config.yml</code> 命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ansible-playbook change_config.yml</span><br><span class="line"></span><br><span class="line">PLAY [change configuration] *********************************************************************************************************</span><br><span class="line"></span><br><span class="line">TASK [change content <span class="keyword">in</span> test_conf.ini] **********************************************************************************************</span><br><span class="line">ok: [localhost]</span><br><span class="line"></span><br><span class="line">PLAY RECAP **************************************************************************************************************************</span><br><span class="line">localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span><br></pre></td></tr></table></figure></p>
+<p>可以看到修改配置文件的任务执行结果为 <code>ok</code>，而不同于上一次的 <code>changed</code>。这表示 <code>lineinfile</code> 模块对配置文件的内容进行了检查，发现需要添加的配置行已经存在，因此未做任何改动。符合<strong>幂等</strong>的原则。</p>
+<p>假如将配置文件中的 <code>THIRD=3</code> 改为 <code>THIRD=false</code>，再次运行 playbook：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ansible-playbook change_config.yml</span><br><span class="line"></span><br><span class="line">PLAY [change configuration] *********************************************************************************************************</span><br><span class="line"></span><br><span class="line">TASK [change content <span class="keyword">in</span> test_conf.ini] **********************************************************************************************</span><br><span class="line">changed: [localhost]</span><br><span class="line"></span><br><span class="line">PLAY RECAP **************************************************************************************************************************</span><br><span class="line">localhost                  : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0</span><br></pre></td></tr></table></figure></p>
+<p>正则表达式 <code>^THIRD</code> 会匹配到配置文件的第三行 <code>THIRD=false</code>，再将该行内容替换为 <code>THIRD=3</code>。</p>
+<p>最终仍可以得到我们想要的内容：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">FIRST</span>=<span class="literal">true</span></span><br><span class="line"><span class="attr">SECOND</span>=<span class="number">2</span></span><br><span class="line"><span class="attr">THIRD</span>=<span class="number">3</span></span><br></pre></td></tr></table></figure></p>
+<p>对于 Ansible playbook 而言，我们只需要关注<strong>期望达到的状态</strong>，而不用纠结<strong>为了达到该状态需要执行哪些步骤</strong>。<br>如 <code>lineinfile</code> 模块，<code>line</code> 指定的内容即为我们期望目标文件达到的状态。即该文件最终一定会包含一行与 <code>line</code> 相同的文本。<br>不管该行内容是本就已经存在的，还是通过修改 <code>regexp</code> 匹配到的文本行得到的，还是直接在目标文件末尾新增的。而我们只需要定义 <code>path</code>、<code>regexp</code>、<code>line</code> 三个参数即可。</p>
+<h4 id="其他用法"><a href="#其他用法" class="headerlink" title="其他用法"></a>其他用法</h4><h5 id="backrefs"><a href="#backrefs" class="headerlink" title="backrefs"></a>backrefs</h5><p><code>lineinfile</code> 默认的行为是若 <code>line</code> 指定的内容未存在，<code>regexp</code> 正则表达式也没有任何匹配，就在文件末尾添加一行 <code>line</code> 指定的内容。<br><code>backrefs</code> 参数可以修改此行为。当 <code>backrefs</code> 设定为 <code>true</code> 时，若 <code>line</code> 指定的内容不存在，正则表达式也没有匹配。则不做任何操作。</p>
+<p>比如如下 playbook：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">- name:</span> <span class="string">change</span> <span class="string">configuration</span></span><br><span class="line"><span class="attr">  gather_facts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  hosts:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  tasks:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">change</span> <span class="string">content</span> <span class="string">in</span> <span class="string">test_conf.ini</span></span><br><span class="line"><span class="attr">      lineinfile:</span></span><br><span class="line"><span class="attr">        path:</span> <span class="string">/home/starky/projects/ansible/practice/test_conf.ini</span></span><br><span class="line"><span class="attr">        regexp:</span> <span class="string">'^THIRD'</span></span><br><span class="line"><span class="attr">        line:</span> <span class="string">'THIRD=3'</span></span><br><span class="line"><span class="attr">        backrefs:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure></p>
+<p>当目标文件的内容如下：<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">FIRST</span>=<span class="literal">true</span></span><br><span class="line"><span class="attr">SECOND</span>=<span class="number">2</span></span><br></pre></td></tr></table></figure></p>
+<p>playbook 实际不会对其做任何修改，不会在文件末尾添加 <code>THIRD=3</code>。只有当文件中存在如 <code>THIRD=false</code> 这类内容时，playbook 才会完成匹配并替换对应的行。</p>
+<p>没有 <code>backrefs</code> 表示匹配就替换，不匹配就在文件末尾添加；有 <code>backrefs</code> 表示匹配就替换，不匹配就不动。</p>
+<h5 id="删除一行内容"><a href="#删除一行内容" class="headerlink" title="删除一行内容"></a>删除一行内容</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">- name:</span> <span class="string">change</span> <span class="string">configuration</span></span><br><span class="line"><span class="attr">  gather_facts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  hosts:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  tasks:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">change</span> <span class="string">content</span> <span class="string">in</span> <span class="string">test_conf.ini</span></span><br><span class="line"><span class="attr">      lineinfile:</span></span><br><span class="line"><span class="attr">        path:</span> <span class="string">/home/starky/projects/ansible/practice/test_conf.ini</span></span><br><span class="line"><span class="attr">        regexp:</span> <span class="string">'^THIRD'</span></span><br><span class="line"><span class="attr">        state:</span> <span class="string">absent</span></span><br></pre></td></tr></table></figure>
+<h5 id="在匹配行前-后添加"><a href="#在匹配行前-后添加" class="headerlink" title="在匹配行前/后添加"></a>在匹配行前/后添加</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">- name:</span> <span class="string">change</span> <span class="string">configuration</span></span><br><span class="line"><span class="attr">  gather_facts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  hosts:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  tasks:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">change</span> <span class="string">content</span> <span class="string">in</span> <span class="string">test_conf.ini</span></span><br><span class="line"><span class="attr">      lineinfile:</span></span><br><span class="line"><span class="attr">        path:</span> <span class="string">/home/starky/projects/ansible/practice/test_conf.ini</span></span><br><span class="line"><span class="attr">        insertbefore:</span> <span class="string">'^FIRST'</span></span><br><span class="line"><span class="attr">        line:</span> <span class="string">'ZERO=false'</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">- name:</span> <span class="string">change</span> <span class="string">configuration</span></span><br><span class="line"><span class="attr">  gather_facts:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  hosts:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  tasks:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">change</span> <span class="string">content</span> <span class="string">in</span> <span class="string">test_conf.ini</span></span><br><span class="line"><span class="attr">      lineinfile:</span></span><br><span class="line"><span class="attr">        path:</span> <span class="string">/home/starky/projects/ansible/practice/test_conf.ini</span></span><br><span class="line"><span class="attr">        insertafter:</span> <span class="string">'^THIRD'</span></span><br><span class="line"><span class="attr">        line:</span> <span class="string">'FOURTH=4'</span></span><br></pre></td></tr></table></figure>
+<p>需要注意以下两点：</p>
+<ul>
+<li>当 <code>line</code> 指定的内容已经存在于目标文件中时，不管其具体在什么位置，目标文件都不会做任何修改</li>
+<li>当 <code>insertbefore</code> 或 <code>insertafter</code> 指定的正则表达式没有任何匹配时，都会在文件末尾添加 <code>line</code> 指定的内容</li>
+</ul>
+<h4 id="官网示例"><a href="#官网示例" class="headerlink" title="官网示例"></a>官网示例</h4><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># <span class="doctag">NOTE:</span> Before 2.3, option 'dest', 'destfile' or 'name' was used instead of 'path'</span></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Ensure</span> <span class="string">SELinux</span> <span class="string">is</span> <span class="string">set</span> <span class="string">to</span> <span class="string">enforcing</span> <span class="string">mode</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/selinux/config</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^SELINUX='</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">SELINUX=enforcing</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Make</span> <span class="string">sure</span> <span class="string">group</span> <span class="string">wheel</span> <span class="string">is</span> <span class="string">not</span> <span class="string">in</span> <span class="string">the</span> <span class="string">sudoers</span> <span class="string">configuration</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/sudoers</span></span><br><span class="line"><span class="attr">    state:</span> <span class="string">absent</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^%wheel'</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Replace</span> <span class="string">a</span> <span class="string">localhost</span> <span class="string">entry</span> <span class="string">with</span> <span class="string">our</span> <span class="string">own</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/hosts</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^127\.0\.0\.1'</span></span><br><span class="line"><span class="attr">    line:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span> <span class="string">localhost</span></span><br><span class="line"><span class="attr">    owner:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">    group:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">    mode:</span> <span class="string">'0644'</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Replace</span> <span class="string">a</span> <span class="string">localhost</span> <span class="string">entry</span> <span class="string">searching</span> <span class="string">for</span> <span class="string">a</span> <span class="string">literal</span> <span class="string">string</span> <span class="string">to</span> <span class="string">avoid</span> <span class="string">escaping</span></span><br><span class="line"><span class="attr">  lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/hosts</span></span><br><span class="line"><span class="attr">    search_string:</span> <span class="string">'127.0.0.1'</span></span><br><span class="line"><span class="attr">    line:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span> <span class="string">localhost</span></span><br><span class="line"><span class="attr">    owner:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">    group:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">    mode:</span> <span class="string">'0644'</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Ensure</span> <span class="string">the</span> <span class="string">default</span> <span class="string">Apache</span> <span class="string">port</span> <span class="string">is</span> <span class="number">8080</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/httpd/conf/httpd.conf</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^Listen '</span></span><br><span class="line"><span class="attr">    insertafter:</span> <span class="string">'^#Listen '</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">Listen</span> <span class="number">8080</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Ensure</span> <span class="string">php</span> <span class="string">extension</span> <span class="string">matches</span> <span class="string">new</span> <span class="string">pattern</span></span><br><span class="line"><span class="attr">  lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/httpd/conf/httpd.conf</span></span><br><span class="line"><span class="attr">    search_string:</span> <span class="string">'&lt;FilesMatch ".php[45]?$"&gt;'</span></span><br><span class="line"><span class="attr">    insertafter:</span> <span class="string">'^\t&lt;Location \/&gt;\n'</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">'        &lt;FilesMatch ".php[34]?$"&gt;'</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Ensure</span> <span class="string">we</span> <span class="string">have</span> <span class="string">our</span> <span class="string">own</span> <span class="string">comment</span> <span class="string">added</span> <span class="string">to</span> <span class="string">/etc/services</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/services</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^# port for http'</span></span><br><span class="line"><span class="attr">    insertbefore:</span> <span class="string">'^www.*80/tcp'</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">'# port for http by default'</span></span><br><span class="line"></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Add</span> <span class="string">a</span> <span class="string">line</span> <span class="string">to</span> <span class="string">a</span> <span class="string">file</span> <span class="string">if</span> <span class="string">the</span> <span class="string">file</span> <span class="string">does</span> <span class="string">not</span> <span class="string">exist,</span> <span class="string">without</span> <span class="string">passing</span> <span class="string">regexp</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/tmp/testfile</span></span><br><span class="line"><span class="attr">    line:</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.99</span> <span class="string">foo.lab.net</span> <span class="string">foo</span></span><br><span class="line"><span class="attr">    create:</span> <span class="literal">yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># <span class="doctag">NOTE:</span> Yaml requires escaping backslashes in double quotes but not in single quotes</span></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Ensure</span> <span class="string">the</span> <span class="string">JBoss</span> <span class="string">memory</span> <span class="string">settings</span> <span class="string">are</span> <span class="string">exactly</span> <span class="string">as</span> <span class="string">needed</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/opt/jboss-as/bin/standalone.conf</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^(.*)Xms(\d+)m(.*)$'</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">'\1Xms$&#123;xms&#125;m\3'</span></span><br><span class="line"><span class="attr">    backrefs:</span> <span class="literal">yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># <span class="doctag">NOTE:</span> Fully quoted because of the ': ' on the line. See the Gotchas in the YAML docs.</span></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Validate</span> <span class="string">the</span> <span class="string">sudoers</span> <span class="string">file</span> <span class="string">before</span> <span class="string">saving</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/etc/sudoers</span></span><br><span class="line"><span class="attr">    state:</span> <span class="string">present</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">'^%ADMIN ALL='</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">'%ADMIN ALL=(ALL) NOPASSWD: ALL'</span></span><br><span class="line"><span class="attr">    validate:</span> <span class="string">/usr/sbin/visudo</span> <span class="bullet">-cf</span> <span class="string">%s</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># See https://docs.python.org/3/library/re.html for further details on syntax</span></span><br><span class="line"><span class="attr">- name:</span> <span class="string">Use</span> <span class="string">backrefs</span> <span class="string">with</span> <span class="string">alternative</span> <span class="string">group</span> <span class="string">syntax</span> <span class="string">to</span> <span class="string">avoid</span> <span class="string">conflicts</span> <span class="string">with</span> <span class="string">variable</span> <span class="string">values</span></span><br><span class="line">  <span class="string">ansible.builtin.lineinfile:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/tmp/config</span></span><br><span class="line"><span class="attr">    regexp:</span> <span class="string">^(host=).*</span></span><br><span class="line"><span class="attr">    line:</span> <span class="string">\g&lt;1&gt;&#123;&#123;</span> <span class="string">hostname</span> <span class="string">&#125;&#125;</span></span><br><span class="line"><span class="attr">    backrefs:</span> <span class="literal">yes</span></span><br></pre></td></tr></table></figure>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html" target="_blank" rel="noopener">ansible.builtin.lineinfile – Manage lines in text files</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Configuration/" rel="tag"># Configuration</a>
+          
+            <a href="/tags/Shell/" rel="tag"># Shell</a>
+          
+            <a href="/tags/Ansible/" rel="tag"># Ansible</a>
+          
+            <a href="/tags/Devops/" rel="tag"># Devops</a>
+          
+            <a href="/tags/Automation/" rel="tag"># Automation</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/10/08/effective-python-notes-concurrency-and-queue/" rel="next" title="Effective Python 笔记 —— 并发与并行（Queue）">
+                <i class="fa fa-chevron-left"></i> Effective Python 笔记 —— 并发与并行（Queue）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">181</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">267</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#其他用法"><span class="nav-number">1.</span> <span class="nav-text">其他用法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#backrefs"><span class="nav-number">1.1.</span> <span class="nav-text">backrefs</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删除一行内容"><span class="nav-number">1.2.</span> <span class="nav-text">删除一行内容</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在匹配行前-后添加"><span class="nav-number">1.3.</span> <span class="nav-text">在匹配行前/后添加</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#官网示例"><span class="nav-number">2.</span> <span class="nav-text">官网示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">20:18</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
