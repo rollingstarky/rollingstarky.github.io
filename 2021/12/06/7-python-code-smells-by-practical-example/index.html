@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Python,Advanced,Program,OOP,Refactoring,Class,Design,Exception," />
+
+
+<meta name="description" content="code smells 可以理解为代码中让人感觉到不舒服的地方。可能是代码规范问题，也可能是设计上的缺陷。很多时候一段代码符合基本逻辑，能够正常运行，并不代表它是不“丑”的。代码中可能会存在诸如可读性差、结构混乱、重复代码太多、不够健壮等问题。 示例代码1234567891011121314151617181920212223242526272829303132333435363738394041">
+<meta name="keywords" content="Python,Advanced,Program,OOP,Refactoring,Class,Design,Exception">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python code smells 实例讲解">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/12/06/7-python-code-smells-by-practical-example/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="code smells 可以理解为代码中让人感觉到不舒服的地方。可能是代码规范问题，也可能是设计上的缺陷。很多时候一段代码符合基本逻辑，能够正常运行，并不代表它是不“丑”的。代码中可能会存在诸如可读性差、结构混乱、重复代码太多、不够健壮等问题。 示例代码1234567891011121314151617181920212223242526272829303132333435363738394041">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-12-06T15:38:09.787Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python code smells 实例讲解">
+<meta name="twitter:description" content="code smells 可以理解为代码中让人感觉到不舒服的地方。可能是代码规范问题，也可能是设计上的缺陷。很多时候一段代码符合基本逻辑，能够正常运行，并不代表它是不“丑”的。代码中可能会存在诸如可读性差、结构混乱、重复代码太多、不够健壮等问题。 示例代码1234567891011121314151617181920212223242526272829303132333435363738394041">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/12/06/7-python-code-smells-by-practical-example/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Python code smells 实例讲解 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/12/06/7-python-code-smells-by-practical-example/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Python code smells 实例讲解</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-12-06T00:00:00+08:00">2021-12-06</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/12/06/7-python-code-smells-by-practical-example/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/12/06/7-python-code-smells-by-practical-example/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/12/06/7-python-code-smells-by-practical-example/" class="leancloud_visitors" data-flag-title="Python code smells 实例讲解">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">15k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:15</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>code smells</strong> 可以理解为代码中让人感觉到不舒服的地方。可能是代码规范问题，也可能是设计上的缺陷。<br>很多时候一段代码符合基本逻辑，能够正常运行，并不代表它是不“丑”的。代码中可能会存在诸如可读性差、结构混乱、重复代码太多、不够健壮等问题。</p>
+<h4 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">Very advanced Employee management system.</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> List</span><br><span class="line"></span><br><span class="line"><span class="comment"># The fixed number of vacation days that can be paid out.</span></span><br><span class="line">FIXED_VACATION_DAYS_PAYOUT = <span class="number">5</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span>:</span></span><br><span class="line">    <span class="string">"""Basic representation of an employee at the company"""</span></span><br><span class="line"></span><br><span class="line">    name: str</span><br><span class="line">    role: str</span><br><span class="line">    vacation_days: int = <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">take_a_holiday</span><span class="params">(self, payout: bool)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Let the employee take a single holiday, or pay out 5 holidays."""</span></span><br><span class="line">        <span class="keyword">if</span> payout:</span><br><span class="line">            <span class="keyword">if</span> self.vacation_days &lt; FIXED_VACATION_DAYS_PAYOUT:</span><br><span class="line">                <span class="keyword">raise</span> ValueError(</span><br><span class="line">                    <span class="string">f"You don't have enough holidays left over for a payout. \</span></span><br><span class="line"><span class="string">                            Remaining holidays: <span class="subst">&#123;self.vacation_days&#125;</span>"</span></span><br><span class="line">                )</span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                self.vacation_days -= FIXED_VACATION_DAYS_PAYOUT</span><br><span class="line">                print(</span><br><span class="line">                    <span class="string">f"Paying out a holiday. Holidays left: <span class="subst">&#123;self.vacation_days&#125;</span>"</span>)</span><br><span class="line">            <span class="keyword">except</span> Exception:</span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">if</span> self.vacation_days &lt; <span class="number">1</span>:</span><br><span class="line">                <span class="keyword">raise</span> ValueError(</span><br><span class="line">                    <span class="string">"You don't have any holidays left. Now back to work, you!"</span></span><br><span class="line">                )</span><br><span class="line">            self.vacation_days -= <span class="number">1</span></span><br><span class="line">            print(<span class="string">"Have fun on your holiday. Don't forget to check your emails!"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HourlyEmployee</span><span class="params">(Employee)</span>:</span></span><br><span class="line">    <span class="string">""" Employee that's paid based on number of worked hours."""</span></span><br><span class="line"></span><br><span class="line">    hourly_rate: float = <span class="number">50</span></span><br><span class="line">    amount: int = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SalariedEmployee</span><span class="params">(Employee)</span>:</span></span><br><span class="line">    <span class="string">"""Employee that's paid based on a fixed monthly salary."""</span></span><br><span class="line"></span><br><span class="line">    monthly_salary: float = <span class="number">5000</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Company</span>:</span></span><br><span class="line">    <span class="string">"""Represents a company with employees."""</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.employees: List[Employee] = []</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_employee</span><span class="params">(self, employee: Employee)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.employees.append(employee)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_managers</span><span class="params">(self)</span> -&gt; List[Employee]:</span></span><br><span class="line">        managers = []</span><br><span class="line">        <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees:</span><br><span class="line">            <span class="keyword">if</span> employee.role == <span class="string">"manager"</span>:</span><br><span class="line">                managers.append(employee)</span><br><span class="line">        <span class="keyword">return</span> managers</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_vice_presidents</span><span class="params">(self)</span> -&gt; List[Employee]:</span></span><br><span class="line">        vice_presidents = []</span><br><span class="line">        <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees:</span><br><span class="line">            <span class="keyword">if</span> employee.role == <span class="string">"president"</span>:</span><br><span class="line">                vice_presidents.append(employee)</span><br><span class="line">        <span class="keyword">return</span> vice_presidents</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_interns</span><span class="params">(self)</span> -&gt; List[Employee]:</span></span><br><span class="line">        interns = []</span><br><span class="line">        <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees:</span><br><span class="line">            <span class="keyword">if</span> employee.role == <span class="string">"intern"</span>:</span><br><span class="line">                interns.append(employee)</span><br><span class="line">        <span class="keyword">return</span> interns</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pay_employee</span><span class="params">(self, employee: Employee)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="keyword">if</span> isinstance(employee, SalariedEmployee):</span><br><span class="line">            print(</span><br><span class="line">                <span class="string">f"Paying employee <span class="subst">&#123;employee.name&#125;</span> a monthly salary of $<span class="subst">&#123;employee.monthly_salary&#125;</span>"</span></span><br><span class="line">            )</span><br><span class="line">        <span class="keyword">elif</span> isinstance(employee, HourlyEmployee):</span><br><span class="line">            print(</span><br><span class="line">                <span class="string">f"Paying employee <span class="subst">&#123;employee.name&#125;</span> a hourly rate of \</span></span><br><span class="line"><span class="string">                            $<span class="subst">&#123;employee.hourly_rate&#125;</span> for <span class="subst">&#123;employee.amount&#125;</span> hours."</span></span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">    company = Company()</span><br><span class="line">    company.add_employee(SalariedEmployee(name=<span class="string">"Louis"</span>, role=<span class="string">"manager"</span>))</span><br><span class="line">    company.add_employee(HourlyEmployee(name=<span class="string">"Brenda"</span>, role=<span class="string">"president"</span>))</span><br><span class="line">    company.add_employee(HourlyEmployee(name=<span class="string">"Tim"</span>, role=<span class="string">"intern"</span>))</span><br><span class="line">    print(company.find_vice_presidents())</span><br><span class="line">    print(company.find_managers())</span><br><span class="line">    print(company.find_interns())</span><br><span class="line">    company.pay_employee(company.employees[<span class="number">0</span>])</span><br><span class="line">    company.employees[<span class="number">0</span>].take_a_holiday(<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<p>上述代码实现了一个简单的“员工管理系统”。</p>
+<ul>
+<li>Employee 类代表公司里的员工，有姓名、角色、假期等属性。可以请假（<code>take_a_holiday</code>），或者单独请一天，或者以 5 天为单位将假期兑换为报酬</li>
+<li>HourlyEmployee 和 MonthlyEmployee 分别代表以时薪或者月薪来计算工资的员工</li>
+<li>Company 类代表公司，可以招收员工（<code>add_employee</code>）、返回特定角色的员工列表（如 <code>find_managers</code>）、发放薪资等（<code>pay_employee</code>）</li>
+</ul>
+<h4 id="code-smells"><a href="#code-smells" class="headerlink" title="code smells"></a>code smells</h4><p>上面的代码中存在着很多可以改进的地方。</p>
+<h5 id="用-Enum-类型替代-str-作为员工的-role-属性"><a href="#用-Enum-类型替代-str-作为员工的-role-属性" class="headerlink" title="用 Enum 类型替代 str 作为员工的 role 属性"></a>用 Enum 类型替代 str 作为员工的 role 属性</h5><p>上面的 <code>Employee</code> 类使用了 <code>str</code> 类型来存储 <code>role</code> 属性的值，比如用 <code>&quot;manager&quot;</code> 代表经理，用 <code>&quot;intern&quot;</code> 代表实习生。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">company.add_employee(SalariedEmployee(name=<span class="string">"Louis"</span>, role=<span class="string">"manager"</span>))</span><br><span class="line">company.add_employee(HourlyEmployee(name=<span class="string">"Brenda"</span>, role=<span class="string">"president"</span>))</span><br><span class="line">company.add_employee(HourlyEmployee(name=<span class="string">"Tim"</span>, role=<span class="string">"intern"</span>))</span><br></pre></td></tr></table></figure></p>
+<p>实际上 String 过于灵活，可以拥有任何含义，用来表示角色属性时不具有足够清晰的指向性。不同的拼写规则和大小写习惯都会导致出现错误的指向，比如 <code>&quot;Manager&quot;</code> 和 <code>&quot;manager&quot;</code>，<code>&quot;vice-president&quot;</code> 和 <code>&quot;vice_president&quot;</code>。<br>可以使用 Enum 替代 str。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> enum <span class="keyword">import</span> Enum, auto</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Role</span><span class="params">(Enum)</span>:</span></span><br><span class="line">    <span class="string">"""Employee roles."""</span></span><br><span class="line">    PRESIDENT = auto()</span><br><span class="line">    VICEPRESIDENT = auto()</span><br><span class="line">    MANAGER = auto()</span><br><span class="line">    LEAD = auto()</span><br><span class="line">    WORKER = auto()</span><br><span class="line">    INTERN = auto()</span><br></pre></td></tr></table></figure></p>
+<p>修改 <code>Employee</code> 类中 <code>role</code> 属性的定义：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span>:</span></span><br><span class="line"></span><br><span class="line">    name: str</span><br><span class="line">    role: Role</span><br><span class="line">    vacation_days: int = <span class="number">25</span></span><br></pre></td></tr></table></figure></p>
+<p><code>Company</code> 类中 <code>find_managers</code> 等方法也做相应的修改：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">find_managers</span><span class="params">(self)</span> -&gt; List[Employee]:</span></span><br><span class="line">    managers = []</span><br><span class="line">    <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees:</span><br><span class="line">        <span class="keyword">if</span> employee.role == Role.MANAGER:</span><br><span class="line">            managers.append(employee)</span><br><span class="line">    <span class="keyword">return</span> managers</span><br></pre></td></tr></table></figure></p>
+<p><code>main</code> 方法中使用新的 role 创建员工对象：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">company.add_employee(SalariedEmployee(name=<span class="string">"Louis"</span>, role=Role.MANAGER))</span><br><span class="line">company.add_employee(HourlyEmployee(name=<span class="string">"Brenda"</span>, role=Role.VICEPRESIDENT))</span><br><span class="line">company.add_employee(HourlyEmployee(name=<span class="string">"Tim"</span>, role=Role.INTERN))</span><br></pre></td></tr></table></figure></p>
+<h5 id="消除重复代码"><a href="#消除重复代码" class="headerlink" title="消除重复代码"></a>消除重复代码</h5><p><code>Company</code> 类中有一个功能是返回特定角色的员工列表，即 <code>find_managers</code>、<code>find_vice_presidents</code>、<code>find_interns</code> 三个方法。<br>这三个方法实际上有着同样的逻辑，却分散在了三个不同的函数里。可以合并成一个方法来消除重复代码。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">find_employees</span><span class="params">(self, role: Role)</span> -&gt; List[Employee]:</span></span><br><span class="line">    <span class="string">"""Find all employees with a particular role."""</span></span><br><span class="line">    employees = []</span><br><span class="line">    <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees:</span><br><span class="line">        <span class="keyword">if</span> employee.role == role:</span><br><span class="line">            employees.append(employee)</span><br><span class="line">    <span class="keyword">return</span> employees</span><br></pre></td></tr></table></figure></p>
+<p>同时将 <code>main</code> 函数中的 <code>find_managers</code>、<code>find_vice_presidents</code>、<code>find_interns</code> 都改为如下形式：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">print(company.find_employees(Role.VICEPRESIDENT))</span><br><span class="line">print(company.find_employees(Role.MANAGER))</span><br><span class="line">print(company.find_employees(Role.INTERN))</span><br></pre></td></tr></table></figure></p>
+<h5 id="尽量使用内置函数"><a href="#尽量使用内置函数" class="headerlink" title="尽量使用内置函数"></a>尽量使用内置函数</h5><p>上面版本中的 <code>find_employees</code> 方法，包含了一个 <code>for</code> 循环。实际上该部分逻辑可以使用 Python 内置的<strong>列表推导</strong>来实现。<br>合理的使用 Python 内置函数可以使代码更短、更直观，同时内置函数针对很多场景在性能上也做了一定的优化。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">find_employees</span><span class="params">(self, role: Role)</span> -&gt; List[Employee]:</span></span><br><span class="line">    <span class="string">"""Find all employees with a particular role."""</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [employee <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees <span class="keyword">if</span> employee.role <span class="keyword">is</span> role]</span><br></pre></td></tr></table></figure></p>
+<h5 id="更清晰明确的变量名"><a href="#更清晰明确的变量名" class="headerlink" title="更清晰明确的变量名"></a>更清晰明确的变量名</h5><p>旧版本：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HourlyEmployee</span><span class="params">(Employee)</span>:</span></span><br><span class="line">    <span class="string">""" Employee that's paid based on number of worked hours."""</span></span><br><span class="line"></span><br><span class="line">    hourly_rate: float = <span class="number">50</span></span><br><span class="line">    amount: int = <span class="number">10</span></span><br></pre></td></tr></table></figure></p>
+<p>新版本：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HourlyEmployee</span><span class="params">(Employee)</span>:</span></span><br><span class="line">    <span class="string">""" Employee that's paid based on number of worked hours."""</span></span><br><span class="line"></span><br><span class="line">    hourly_rate_dollars: float = <span class="number">50</span></span><br><span class="line">    hours_worked: int = <span class="number">10</span></span><br></pre></td></tr></table></figure></p>
+<h5 id="isinstance"><a href="#isinstance" class="headerlink" title="isinstance"></a>isinstance</h5><p>当你在代码的任何地方看到 <code>isinstance</code> 这个函数时，都需要特别地加以关注。它意味着代码中有可能存在某些有待提升的设计。</p>
+<p>比如代码中的 <code>pay_employee</code> 函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pay_employee</span><span class="params">(self, employee: Employee)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">    <span class="keyword">if</span> isinstance(employee, SalariedEmployee):</span><br><span class="line">        print(</span><br><span class="line">            <span class="string">f"Paying employee <span class="subst">&#123;employee.name&#125;</span> a monthly salary of $<span class="subst">&#123;employee.monthly_salary&#125;</span>"</span></span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">elif</span> isinstance(employee, HourlyEmployee):</span><br><span class="line">        print(</span><br><span class="line">            <span class="string">f"Paying employee <span class="subst">&#123;employee.name&#125;</span> a hourly rate of \</span></span><br><span class="line"><span class="string">                        $<span class="subst">&#123;employee.hourly_rate_dollars&#125;</span> for <span class="subst">&#123;employee.hours_worked&#125;</span> hours."</span></span><br><span class="line">        )</span><br></pre></td></tr></table></figure></p>
+<p>这里 <code>isinstance</code> 的使用，实际上在 <code>pay_employee</code> 函数中引入了对 <code>Employee</code> 的子类的依赖。这种依赖导致各部分代码之间的职责划分不够清晰，耦合性变强。<br><code>pay_employee</code> 方法需要与 <code>Employee</code> 的子类的具体实现保持同步。每新增一个新的员工类型（<code>Employee</code> 的子类），此方法中的 <code>if-else</code> 也就必须再新增一个分支。即需要同时改动不同位置的两部分代码。</p>
+<p>可以将 <code>pay_employee</code> 的实现从 <code>Company</code> 类转移到具体的 <code>Employee</code> 子类中。即特定类型的员工拥有对应的报酬支付方法，公司在发薪时只需要调用对应员工的 <code>pay</code> 方法，无需实现自己的<code>pay_employee</code> 方法。<br>由 <code>isinstance</code> 引入的依赖关系从而被移除。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">@dataclass</span><br><span class="line">class HourlyEmployee(Employee):</span><br><span class="line">    &quot;&quot;&quot; Employee that&apos;s paid based on number of worked hours.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    hourly_rate_dollars: float = 50</span><br><span class="line">    hours_worked: int = 10</span><br><span class="line"></span><br><span class="line">    def pay(self):</span><br><span class="line">        print(</span><br><span class="line">            f&quot;Paying employee &#123;self.name&#125; a hourly rate of \</span><br><span class="line">                    $&#123;self.hourly_rate_dollars&#125; for &#123;self.hours_worked&#125; hours.&quot;</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@dataclass</span><br><span class="line">class SalariedEmployee(Employee):</span><br><span class="line">    &quot;&quot;&quot;Employee that&apos;s paid based on a fixed monthly salary.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    monthly_salary: float = 5000</span><br><span class="line"></span><br><span class="line">    def pay(self):</span><br><span class="line">        print(</span><br><span class="line">            f&quot;Paying employee &#123;self.name&#125; a monthly salary of $&#123;self.monthly_salary&#125;&quot;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure></p>
+<p>再把 <code>main</code> 函数中的 <code>company.pay_employee(company.employees[0])</code> 改为 <code>company.employees[0].pay()</code>。</p>
+<p>由于每一个特定的 <code>Employee</code> 子类都需要实现 <code>pay</code> 方法，更好的方式是将 <code>Employee</code> 实现为虚拟基类，<code>pay</code> 成为子类必须实现的虚拟方法。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> abc <span class="keyword">import</span> ABC, abstractmethod</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span><span class="params">(ABC)</span>:</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pay</span><span class="params">()</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Method to call when paying an employee"""</span></span><br></pre></td></tr></table></figure></p>
+<h5 id="Bool-flag"><a href="#Bool-flag" class="headerlink" title="Bool flag"></a>Bool flag</h5><p><code>Employee</code> 类中的 <code>take_a_holiday</code> 方法有一个名为 <code>payout</code> 的参数。它是布尔类型，作为一个开关，来决定某个员工是请一天假，还是以 5 天为单位将假期兑换为报酬。<br>这个开关实际上导致了 <code>take_a_holiday</code> 方法包含了两种不同的职责，只通过一个布尔值来决定具体执行哪一个。</p>
+<p><strong>函数原本的目的就是职责的分离</strong>。使得同一个代码块中不会包含过多不同类型的任务。<br>因此 <code>take_a_holiday</code> 方法最好分割成两个不同的方法，分别应对不同的休假方式。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span><span class="params">(ABC)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">take_a_holiday</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Let the employee take a single holiday."""</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.vacation_days &lt; <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(</span><br><span class="line">                <span class="string">"You don't have any holidays left. Now back to work, you!"</span></span><br><span class="line">            )</span><br><span class="line">        self.vacation_days -= <span class="number">1</span></span><br><span class="line">        print(<span class="string">"Have fun on your holiday. Don't forget to check your emails!"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">payout_a_holiday</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Let the employee get paid for unused holidays."""</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.vacation_days &lt; FIXED_VACATION_DAYS_PAYOUT:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(</span><br><span class="line">                <span class="string">f"You don't have enough holidays left over for a payout. \</span></span><br><span class="line"><span class="string">                        Remaining holidays: <span class="subst">&#123;self.vacation_days&#125;</span>"</span></span><br><span class="line">            )</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            self.vacation_days -= FIXED_VACATION_DAYS_PAYOUT</span><br><span class="line">            print(</span><br><span class="line">                <span class="string">f"Paying out a holiday. Holidays left: <span class="subst">&#123;self.vacation_days&#125;</span>"</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            <span class="keyword">pass</span></span><br></pre></td></tr></table></figure></p>
+<h5 id="Exceptions"><a href="#Exceptions" class="headerlink" title="Exceptions"></a>Exceptions</h5><p><code>payout_a_holiday</code> 方法中有一步 <code>try-except</code> 代码。但该部分代码实际上对 Exception 没有做任何事。对于 Exception 而言：</p>
+<p><strong>如果需要 catch Exception，就 catch 特定类型的某个 Exception，并对其进行处理；如果不会对该 Exception 做任何处理，就不要 catch 它</strong>。</p>
+<p>在此处使用 <code>try-except</code> 会阻止异常向外抛出，导致外部代码在调用 <code>payout_a_holiday</code> 时获取不到异常信息。此外，使用 <code>Exception</code> 而不是某个特定类型的异常，会导致所有的异常信息都被屏蔽掉，包括语法错误、键盘中断等。<br>因此，去掉上述代码中的 <code>try-except</code>。</p>
+<h5 id="使用自定义-Exception-替代-ValueError"><a href="#使用自定义-Exception-替代-ValueError" class="headerlink" title="使用自定义 Exception 替代 ValueError"></a>使用自定义 Exception 替代 ValueError</h5><p><code>ValueError</code> 是 Python 内置的在内部出现值错误时抛出的异常，并不适合用在自定义的场景中。最好在代码中定义自己的异常类型。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VacationDaysShortageError</span><span class="params">(Exception)</span>:</span></span><br><span class="line">    <span class="string">"""Custom error that is raised when not enough vacation days available."""</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, requested_days: int, remaining_days: int, message: str)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.requested_days = requested_days</span><br><span class="line">        self.remaining_days = remaining_days</span><br><span class="line">        self.message = message</span><br><span class="line">        super().__init__(message)</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">payout_a_holiday</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">    <span class="string">"""Let the employee get paid for unused holidays."""</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> self.vacation_days &lt; FIXED_VACATION_DAYS_PAYOUT:</span><br><span class="line">        <span class="keyword">raise</span> VacationDaysShortageError(</span><br><span class="line">            requested_days=FIXED_VACATION_DAYS_PAYOUT,</span><br><span class="line">            remaining_days=self.vacation_days,</span><br><span class="line">            message=<span class="string">"You don't have enough holidays left over for a payout."</span>)</span><br><span class="line">    self.vacation_days -= FIXED_VACATION_DAYS_PAYOUT</span><br><span class="line">    print(<span class="string">f"Paying out a holiday. Holidays left: <span class="subst">&#123;self.vacation_days&#125;</span>"</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="最终版本"><a href="#最终版本" class="headerlink" title="最终版本"></a>最终版本</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">Very advanced Employee management system.</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> List</span><br><span class="line"><span class="keyword">from</span> enum <span class="keyword">import</span> Enum, auto</span><br><span class="line"><span class="keyword">from</span> abc <span class="keyword">import</span> ABC, abstractmethod</span><br><span class="line"></span><br><span class="line"><span class="comment"># The fixed number of vacation days that can be paid out.</span></span><br><span class="line">FIXED_VACATION_DAYS_PAYOUT = <span class="number">5</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VacationDaysShortageError</span><span class="params">(Exception)</span>:</span></span><br><span class="line">    <span class="string">"""Custom error that is raised when not enough vacation days available."""</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, requested_days: int, remaining_days: int, message: str)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.requested_days = requested_days</span><br><span class="line">        self.remaining_days = remaining_days</span><br><span class="line">        self.message = message</span><br><span class="line">        super().__init__(message)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Role</span><span class="params">(Enum)</span>:</span></span><br><span class="line">    <span class="string">"""Employee roles."""</span></span><br><span class="line">    PRESIDENT = auto()</span><br><span class="line">    VICEPRESIDENT = auto()</span><br><span class="line">    MANAGER = auto()</span><br><span class="line">    LEAD = auto()</span><br><span class="line">    WORKER = auto()</span><br><span class="line">    INTERN = auto()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Employee</span><span class="params">(ABC)</span>:</span></span><br><span class="line">    <span class="string">"""Basic representation of an employee at the company"""</span></span><br><span class="line"></span><br><span class="line">    name: str</span><br><span class="line">    role: Role</span><br><span class="line">    vacation_days: int = <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">take_a_holiday</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Let the employee take a single holiday."""</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.vacation_days &lt; <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">raise</span> VacationDaysShortageError(</span><br><span class="line">                requested_days=<span class="number">1</span>,</span><br><span class="line">                remaining_days=self.vacation_days,</span><br><span class="line">                message=<span class="string">"You don't have any holidays left. Now back to work, you!"</span>)</span><br><span class="line">        self.vacation_days -= <span class="number">1</span></span><br><span class="line">        print(<span class="string">"Have fun on your holiday. Don't forget to check your emails!"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">payout_a_holiday</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Let the employee get paid for unused holidays."""</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.vacation_days &lt; FIXED_VACATION_DAYS_PAYOUT:</span><br><span class="line">            <span class="keyword">raise</span> VacationDaysShortageError(</span><br><span class="line">                requested_days=FIXED_VACATION_DAYS_PAYOUT,</span><br><span class="line">                remaining_days=self.vacation_days,</span><br><span class="line">                message=<span class="string">"You don't have enough holidays left over for a payout."</span></span><br><span class="line">            )</span><br><span class="line">        self.vacation_days -= FIXED_VACATION_DAYS_PAYOUT</span><br><span class="line">        print(<span class="string">f"Paying out a holiday. Holidays left: <span class="subst">&#123;self.vacation_days&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pay</span><span class="params">()</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        <span class="string">"""Method to call when paying an employee"""</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HourlyEmployee</span><span class="params">(Employee)</span>:</span></span><br><span class="line">    <span class="string">""" Employee that's paid based on number of worked hours."""</span></span><br><span class="line"></span><br><span class="line">    hourly_rate_dollars: float = <span class="number">50</span></span><br><span class="line">    hours_worked: int = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pay</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(</span><br><span class="line">            <span class="string">f"Paying employee <span class="subst">&#123;self.name&#125;</span> a hourly rate of \</span></span><br><span class="line"><span class="string">                    $<span class="subst">&#123;self.hourly_rate_dollars&#125;</span> for <span class="subst">&#123;self.hours_worked&#125;</span> hours."</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SalariedEmployee</span><span class="params">(Employee)</span>:</span></span><br><span class="line">    <span class="string">"""Employee that's paid based on a fixed monthly salary."""</span></span><br><span class="line"></span><br><span class="line">    monthly_salary: float = <span class="number">5000</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pay</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(</span><br><span class="line">            <span class="string">f"Paying employee <span class="subst">&#123;self.name&#125;</span> a monthly salary of $<span class="subst">&#123;self.monthly_salary&#125;</span>"</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Company</span>:</span></span><br><span class="line">    <span class="string">"""Represents a company with employees."""</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.employees: List[Employee] = []</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_employee</span><span class="params">(self, employee: Employee)</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">        self.employees.append(employee)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_employees</span><span class="params">(self, role: Role)</span> -&gt; List[Employee]:</span></span><br><span class="line">        <span class="string">"""Find all employees with a particular role."""</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> [employee <span class="keyword">for</span> employee <span class="keyword">in</span> self.employees <span class="keyword">if</span> employee.role <span class="keyword">is</span> role]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span> -&gt; <span class="keyword">None</span>:</span></span><br><span class="line">    company = Company()</span><br><span class="line">    company.add_employee(SalariedEmployee(name=<span class="string">"Louis"</span>, role=Role.MANAGER))</span><br><span class="line">    company.add_employee(HourlyEmployee(</span><br><span class="line">        name=<span class="string">"Brenda"</span>, role=Role.VICEPRESIDENT))</span><br><span class="line">    company.add_employee(HourlyEmployee(name=<span class="string">"Tim"</span>, role=Role.INTERN))</span><br><span class="line">    print(company.find_employees(Role.VICEPRESIDENT))</span><br><span class="line">    print(company.find_employees(Role.MANAGER))</span><br><span class="line">    print(company.find_employees(Role.INTERN))</span><br><span class="line">    company.employees[<span class="number">0</span>].pay()</span><br><span class="line">    company.employees[<span class="number">0</span>].take_a_holiday()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.youtube.com/watch?v=LrtnLEkOwFE" target="_blank" rel="noopener">7 Python Code Smells: Olfactory Offenses To Avoid At All Costs</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Advanced/" rel="tag"># Advanced</a>
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/OOP/" rel="tag"># OOP</a>
+          
+            <a href="/tags/Refactoring/" rel="tag"># Refactoring</a>
+          
+            <a href="/tags/Class/" rel="tag"># Class</a>
+          
+            <a href="/tags/Design/" rel="tag"># Design</a>
+          
+            <a href="/tags/Exception/" rel="tag"># Exception</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/11/30/kubernetes-in-action-reading-notes-introducing-kubernetes/" rel="next" title="Kubernetes in Action 笔记 —— Kubernetes 介绍">
+                <i class="fa fa-chevron-left"></i> Kubernetes in Action 笔记 —— Kubernetes 介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">185</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">279</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#示例代码"><span class="nav-number">1.</span> <span class="nav-text">示例代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#code-smells"><span class="nav-number">2.</span> <span class="nav-text">code smells</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用-Enum-类型替代-str-作为员工的-role-属性"><span class="nav-number">2.1.</span> <span class="nav-text">用 Enum 类型替代 str 作为员工的 role 属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#消除重复代码"><span class="nav-number">2.2.</span> <span class="nav-text">消除重复代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#尽量使用内置函数"><span class="nav-number">2.3.</span> <span class="nav-text">尽量使用内置函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#更清晰明确的变量名"><span class="nav-number">2.4.</span> <span class="nav-text">更清晰明确的变量名</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#isinstance"><span class="nav-number">2.5.</span> <span class="nav-text">isinstance</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Bool-flag"><span class="nav-number">2.6.</span> <span class="nav-text">Bool flag</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Exceptions"><span class="nav-number">2.7.</span> <span class="nav-text">Exceptions</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用自定义-Exception-替代-ValueError"><span class="nav-number">2.8.</span> <span class="nav-text">使用自定义 Exception 替代 ValueError</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#最终版本"><span class="nav-number">3.</span> <span class="nav-text">最终版本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">20:44</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
