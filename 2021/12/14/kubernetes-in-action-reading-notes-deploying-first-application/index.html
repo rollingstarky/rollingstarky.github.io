@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Server,Docker,Container,Kubernetes,MicroService,Deployment,Cluster,LoadBalance," />
+
+
+<meta name="description" content="Minikube &amp;amp; kubectlMinikube 是一个能够在本地环境搭建 Kubernetes 集群的工具，支持 Windows、Linux 和 MacOS 等平台，由 Kubernetes 社区进行维护。它通常在 Linux 虚拟机中运行 Kubernetes。如果宿主机是基于 Linux 的系统，也可以通过 Docker 实现。即为了运行 Minikube，需要先安装 Hyper">
+<meta name="keywords" content="Linux,Server,Docker,Container,Kubernetes,MicroService,Deployment,Cluster,LoadBalance">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes in Action 笔记 —— 部署第一个应用">
+<meta property="og:url" content="https://rollingstarky.github.io/2021/12/14/kubernetes-in-action-reading-notes-deploying-first-application/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="Minikube &amp;amp; kubectlMinikube 是一个能够在本地环境搭建 Kubernetes 集群的工具，支持 Windows、Linux 和 MacOS 等平台，由 Kubernetes 社区进行维护。它通常在 Linux 虚拟机中运行 Kubernetes。如果宿主机是基于 Linux 的系统，也可以通过 Docker 实现。即为了运行 Minikube，需要先安装 Hyper">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-cd8f312f56764487.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8722b456a653d61a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a4e1b15833234eb4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-847957263408bbb1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-2ec179df5ff6687c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2021-12-14T14:28:49.362Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kubernetes in Action 笔记 —— 部署第一个应用">
+<meta name="twitter:description" content="Minikube &amp;amp; kubectlMinikube 是一个能够在本地环境搭建 Kubernetes 集群的工具，支持 Windows、Linux 和 MacOS 等平台，由 Kubernetes 社区进行维护。它通常在 Linux 虚拟机中运行 Kubernetes。如果宿主机是基于 Linux 的系统，也可以通过 Docker 实现。即为了运行 Minikube，需要先安装 Hyper">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-cd8f312f56764487.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2021/12/14/kubernetes-in-action-reading-notes-deploying-first-application/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Kubernetes in Action 笔记 —— 部署第一个应用 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2021/12/14/kubernetes-in-action-reading-notes-deploying-first-application/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Kubernetes in Action 笔记 —— 部署第一个应用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-12-14T00:00:00+08:00">2021-12-14</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/12/14/kubernetes-in-action-reading-notes-deploying-first-application/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/12/14/kubernetes-in-action-reading-notes-deploying-first-application/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2021/12/14/kubernetes-in-action-reading-notes-deploying-first-application/" class="leancloud_visitors" data-flag-title="Kubernetes in Action 笔记 —— 部署第一个应用">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">7.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:08</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="Minikube-amp-kubectl"><a href="#Minikube-amp-kubectl" class="headerlink" title="Minikube &amp; kubectl"></a>Minikube &amp; kubectl</h4><p><a href="https://github.com/kubernetes/minikube" target="_blank" rel="noopener">Minikube</a> 是一个能够在本地环境搭建 Kubernetes 集群的工具，支持 Windows、Linux 和 MacOS 等平台，由 Kubernetes 社区进行维护。<br>它通常在 Linux 虚拟机中运行 Kubernetes。如果宿主机是基于 Linux 的系统，也可以通过 Docker 实现。<br>即为了运行 Minikube，需要先安装 Hypervisor 比如 Virtualbox；对于 Linux 系统，也可以直接使用 Docker。</p>
+<p>具体的安装配置步骤可以参考官方文档 <a href="https://minikube.sigs.k8s.io/docs/start/" target="_blank" rel="noopener">Getting Started Guide</a>。</p>
+<p>kubectl 是一个命令行工具，能够向 Kubernetes 集群发送命令并执行，支持的功能包括部署应用、查询和管理资源、查看日志等。<br>安装步骤可参考官方文档 <a href="https://kubernetes.io/docs/tasks/tools/" target="_blank" rel="noopener">Install Tools</a>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-cd8f312f56764487.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="kubectl"></p>
+<h4 id="部署应用"><a href="#部署应用" class="headerlink" title="部署应用"></a>部署应用</h4><p>通常情况下，部署应用时要准备一个 JSON 或者 YAML 文件，里面包含对该应用的所有组件的描述信息，再把该描述文件应用到 Kubernetes 集群。<br>从演示的角度来看，也可以通过单行命令的方式部署简单的应用。</p>
+<h5 id="创建-deployment"><a href="#创建-deployment" class="headerlink" title="创建 deployment"></a>创建 deployment</h5><p>可以使用 <code>kubectl create deployment</code> 命令部署应用。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl create deployment kubia --image=luksa/kubia:1.0</span></span><br><span class="line">deployment.apps/kubia created</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>kubia</code> 表示创建的 <strong>deployment</strong> 对象的名称，<code>luksa/kubia:1.0</code> 指代需要使用的容器镜像。</p>
+<p><code>kubia</code> 对象的存在告诉 Kubernetes <code>luksa/kubia:1.0</code> 容器必须运行在集群中。它定义了一种用户期待的状态，而 Kubernetes 负责确保实际的状态一定会满足该期望。</p>
+<p><code>kubectl get deployment</code> 命令可以列出当前集群中存在的所有 deployment 对象及其状态。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl get deployment</span></span><br><span class="line">NAME    READY   UP-TO-DATE   AVAILABLE   AGE</span><br><span class="line">kubia   0/1     1            0           5m17s</span><br></pre></td></tr></table></figure></p>
+<h5 id="Pods"><a href="#Pods" class="headerlink" title="Pods"></a>Pods</h5><p>容器并不是 Kubernetes 中部署的最小单位。不同于直接部署独立的容器，Kubernetes 实际上会部署一组相互关联的容器，称为 <strong>pod</strong>。<br>pod 包含一组一个或一个以上关系密切的容器实例，同时运行在同一个工作节点上，并共享特定的 Linux 命名空间。<br>同一个 pod 中的容器共享相同的网络和 UTS 命名空间，因而共享同样的网络接口、IP 地址、端口空间和主机名等。也可以在描述文件中定义其他需要共享的命名空间。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-8722b456a653d61a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="pods"></p>
+<p>每个 pod 都有自己的 IP、机器名、进程、网络接口以及其他资源。同一个 pod 中的容器都会将自己看作是 pod 中唯一运行的容器，它们并不能看到其他容器中的进程。</p>
+<p>创建 Deployment 对象后就表示已经部署了 pod，Kubernetes 会基于 Deployment 对象创建一个或多个 pod。<br>可以使用 <code>kubectl get pods</code> 来列出系统中的 pod：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl get pods</span></span><br><span class="line">NAME                     READY   STATUS    RESTARTS   AGE</span><br><span class="line">kubia-767f9bc59d-77d2z   1/1     Running   0          41m</span><br></pre></td></tr></table></figure></p>
+<p>如果某些 issue 导致 pod 运行失败，或者单纯想查看更多 pod 相关的信息，可以使用 <code>kubectl describe pod</code> 命令：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl describe pod</span></span><br><span class="line">Name:         kubia-767f9bc59d-77d2z</span><br><span class="line">Namespace:    default</span><br><span class="line">Priority:     0</span><br><span class="line">Node:         minikube/192.168.49.2</span><br><span class="line">Start Time:   Tue, 14 Dec 2021 11:16:58 +0800</span><br><span class="line">Labels:       app=kubia</span><br><span class="line">              pod-template-hash=767f9bc59d</span><br><span class="line">Annotations:  &lt;none&gt;</span><br><span class="line">Status:       Running</span><br><span class="line">IP:           172.17.0.3</span><br><span class="line">IPs:</span><br><span class="line">  IP:           172.17.0.3</span><br><span class="line">Controlled By:  ReplicaSet/kubia-767f9bc59d</span><br><span class="line">Containers:</span><br><span class="line">  kubia:</span><br><span class="line">    Container ID:   docker://e9bd5cf8f2eb15959c08bc8f154742b7194030d8ce0f9e6290cd80fc21b48692</span><br><span class="line">    Image:          luksa/kubia:1.0</span><br><span class="line">    Image ID:       docker-pullable://luksa/kubia@sha256:a961dc8f377916936fa963508726d77cf77dcead5c97de7e5361f0875ba3bef7</span><br><span class="line">    Port:           &lt;none&gt;</span><br><span class="line">    Host Port:      &lt;none&gt;</span><br><span class="line">    State:          Running</span><br><span class="line">      Started:      Tue, 14 Dec 2021 11:26:25 +0800</span><br><span class="line">    Ready:          True</span><br><span class="line">    Restart Count:  0</span><br><span class="line">    Environment:    &lt;none&gt;</span><br><span class="line">    Mounts:</span><br><span class="line">      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n9n9b (ro)</span><br><span class="line">Conditions:</span><br><span class="line">  Type              Status</span><br><span class="line">  Initialized       True</span><br><span class="line">  Ready             True</span><br><span class="line">  ContainersReady   True</span><br><span class="line">  PodScheduled      True</span><br><span class="line">Volumes:</span><br><span class="line">  kube-api-access-n9n9b:</span><br><span class="line">    Type:                    Projected (a volume that contains injected data from multiple sources)</span><br><span class="line">    TokenExpirationSeconds:  3607</span><br><span class="line">    ConfigMapName:           kube-root-ca.crt</span><br><span class="line">    ConfigMapOptional:       &lt;nil&gt;</span><br><span class="line">    DownwardAPI:             true</span><br><span class="line">QoS Class:                   BestEffort</span><br><span class="line">Node-Selectors:              &lt;none&gt;</span><br><span class="line">Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s</span><br><span class="line">                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s</span><br><span class="line">Events:</span><br><span class="line">  Type    Reason     Age   From               Message</span><br><span class="line">  ----    ------     ----  ----               -------</span><br><span class="line">  Normal  Scheduled  11m   default-scheduler  Successfully assigned default/kubia-767f9bc59d-77d2z to minikube</span><br><span class="line">  Normal  Pulling    11m   kubelet            Pulling image "luksa/kubia:1.0"</span><br><span class="line">  Normal  Pulled     115s  kubelet            Successfully pulled image "luksa/kubia:1.0" in 9m24.3380576s</span><br><span class="line">  Normal  Created    113s  kubelet            Created container kubia</span><br><span class="line">  Normal  Started    113s  kubelet            Started container kubia</span><br></pre></td></tr></table></figure></p>
+<p>输出的最后就包含 pod 创建和启动时触发的一系列事件（Events）。</p>
+<h5 id="Pods-的创建流程"><a href="#Pods-的创建流程" class="headerlink" title="Pods 的创建流程"></a>Pods 的创建流程</h5><ul>
+<li>运行 <code>kubectl create deployment</code> 命令，向 Kubernetes API Server 发送 HTTP 请求，创建一个新的 Deployment 对象</li>
+<li>之后 Kubernetes 创建一个新的 Pod 对象，该 Pod 对象被分配给某个工作节点</li>
+<li>工作节点上的 Kubelet agent 得知新的 Pod 对象被创建，且分配给了自己。于是 Kubelet 控制 Docker 拉取特定的镜像并创建、运行容器</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-a4e1b15833234eb4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Deployment object to a running container"></p>
+<h4 id="向外部暴露应用"><a href="#向外部暴露应用" class="headerlink" title="向外部暴露应用"></a>向外部暴露应用</h4><p>应用已经成功运行了，接下来就是控制它如何被外部访问。每个 pod 都会获得一个专属的 IP 地址，但该地址是只有集群内部可见的。为了使 pod 能够从外部访问，还需要创建一个 <strong>Service</strong> 对象。</p>
+<p>Service 对象有好几种类型，其中一种 LoadBalancer 会生成一个外部的负载均衡器，令服务能够从集群外部访问。<br>可以使用 <code>kubectl expose</code> 命令创建 Service：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl expose deployment kubia --<span class="built_in">type</span>=LoadBalancer --port 8080</span></span><br><span class="line">service/kubia exposed</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>kubectl get svc</code> 命令查看当前系统中存在的 Service：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl get svc</span></span><br><span class="line">NAME         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE</span><br><span class="line">kubernetes   ClusterIP      10.96.0.1       &lt;none&gt;        443/TCP          29d</span><br><span class="line">kubia        LoadBalancer   10.106.111.39   &lt;pending&gt;     8080:30077/TCP   2m28s</span><br></pre></td></tr></table></figure></p>
+<p>创建 LoadBalancer 服务时，正常情况下 Kubernetes 会访问云服务提供商，令其创建负载均衡器并获取公共 IP。<br>Minikube 是本地模拟的集群环境，因而无法完成上述操作。kubia Service 的 EXTERNAL-IP 会一直处于 <pending> 状态。</pending></p>
+<p>在没有获取到外部 IP 的情况下，minikube 可以使用下面的方法获取服务的 url：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> minikube service kubia --url</span></span><br><span class="line">🏃  Starting tunnel for service kubia.</span><br><span class="line">|-----------|-------|-------------|------------------------|</span><br><span class="line">| NAMESPACE | NAME  | TARGET PORT |          URL           |</span><br><span class="line">|-----------|-------|-------------|------------------------|</span><br><span class="line">| default   | kubia |             | http://127.0.0.1:39529 |</span><br><span class="line">|-----------|-------|-------------|------------------------|</span><br><span class="line">http://127.0.0.1:39529</span><br><span class="line">❗  Because you are using a Docker driver on linux, the terminal needs to be open to run it.</span><br></pre></td></tr></table></figure></p>
+<p>打开一个新的命令行窗口，可以成功访问上面的 url：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> curl http://127.0.0.1:39529</span></span><br><span class="line">Hey there, this is kubia-767f9bc59d-77d2z. Your IP is ::ffff:172.17.0.1.</span><br></pre></td></tr></table></figure></p>
+<h5 id="LoadBalancer-的创建流程"><a href="#LoadBalancer-的创建流程" class="headerlink" title="LoadBalancer 的创建流程"></a>LoadBalancer 的创建流程</h5><p><img src="https://upload-images.jianshu.io/upload_images/6875152-847957263408bbb1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Service object to LoadBalancer"></p>
+<h4 id="横向扩展应用"><a href="#横向扩展应用" class="headerlink" title="横向扩展应用"></a>横向扩展应用</h4><p>在容器中部署应用的一个主要好处就是，横向扩展应用变得非常简单和直观。<br>可以使用下列命令扩展 kubia 应用，令其同时运行 3 个实例副本。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl scale deployment kubia --replicas=3</span></span><br><span class="line">deployment.apps/kubia scaled</span><br><span class="line"><span class="meta">$</span><span class="bash"> kubectl get deploy</span></span><br><span class="line">NAME    READY   UP-TO-DATE   AVAILABLE   AGE</span><br><span class="line">kubia   3/3     3            3           3h58m</span><br></pre></td></tr></table></figure></p>
+<p>此时共有 3 个 pod 实例运行：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl get pods</span></span><br><span class="line">NAME                     READY   STATUS    RESTARTS   AGE</span><br><span class="line">kubia-767f9bc59d-77d2z   1/1     Running   0          3h59m</span><br><span class="line">kubia-767f9bc59d-rvsdq   1/1     Running   0          3m56s</span><br><span class="line">kubia-767f9bc59d-sfn42   1/1     Running   0          3m56s</span><br></pre></td></tr></table></figure></p>
+<p>可以加上 <code>-o wide</code> 选项获取更详细的 pods 信息，比如 IP、运行的节点等：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods -o wide</span><br><span class="line">NAME                     READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE   READINESS GATES</span><br><span class="line">kubia-767f9bc59d-77d2z   1/1     Running   0          4h      172.17.0.3   minikube   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kubia-767f9bc59d-rvsdq   1/1     Running   0          5m31s   172.17.0.5   minikube   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kubia-767f9bc59d-sfn42   1/1     Running   0          5m31s   172.17.0.4   minikube   &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure></p>
+<p>再次访问 Service 的 URL，可以看到多次访问返回的信息并不一样，可以证实后台提供服务的 pod 并不是同一个，而是 3 个 pod 轮流接收请求并提供服务：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> curl http://127.0.0.1:39529</span></span><br><span class="line">Hey there, this is kubia-767f9bc59d-sfn42. Your IP is ::ffff:172.17.0.1.</span><br><span class="line"><span class="meta">$</span><span class="bash"> curl http://127.0.0.1:39529</span></span><br><span class="line">Hey there, this is kubia-767f9bc59d-77d2z. Your IP is ::ffff:172.17.0.1.</span><br><span class="line"><span class="meta">$</span><span class="bash"> curl http://127.0.0.1:39529</span></span><br><span class="line">Hey there, this is kubia-767f9bc59d-sfn42. Your IP is ::ffff:172.17.0.1.</span><br><span class="line"><span class="meta">$</span><span class="bash"> curl http://127.0.0.1:39529</span></span><br><span class="line">Hey there, this is kubia-767f9bc59d-rvsdq. Your IP is ::ffff:172.17.0.1.</span><br></pre></td></tr></table></figure></p>
+<p>负载均衡架构示意图：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-2ec179df5ff6687c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Load balancing"></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>部署应用可以使用 <code>kubectl create deployment</code> 命令，暴露应用使用 <code>kubectl expose deployment</code> 命令，横向扩展应用使用 <code>kubectl scale deployment</code> 命令。</li>
+<li>应用部署的基本单位不是容器而是 pod，一个 pod 可以包含一个或多个相互关联的容器。</li>
+<li>Deployments、Services、Pods 和 Nodes 都是 Kubernetes 对象/资源。可以使用 <code>kubectl get</code> 命令获取这些对象的列表，或者使用 <code>kubectl describe</code> 命令获取对象的详细信息。</li>
+<li>Deployment 对象负责部署指定数量的 pods。Services 对象则可以令这些 pods 能够通过一个单一的 IP 地址访问。</li>
+<li>Service 在集群内部提供负载均衡。如果指定其类型为 LoadBalancer，则 Kubernetes 会请求云服务提供商令应用可以通过公共地址访问。</li>
+</ul>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/kubernetes-in-action-second-edition" target="_blank" rel="noopener">Kubernetes in Action, Second Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Server/" rel="tag"># Server</a>
+          
+            <a href="/tags/Docker/" rel="tag"># Docker</a>
+          
+            <a href="/tags/Container/" rel="tag"># Container</a>
+          
+            <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          
+            <a href="/tags/MicroService/" rel="tag"># MicroService</a>
+          
+            <a href="/tags/Deployment/" rel="tag"># Deployment</a>
+          
+            <a href="/tags/Cluster/" rel="tag"># Cluster</a>
+          
+            <a href="/tags/LoadBalance/" rel="tag"># LoadBalance</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/12/13/uncle-bob-SOLID-principles-in-python/" rel="next" title="Uncle Bob 的 SOLID 软件设计原则——Python 实例讲解">
+                <i class="fa fa-chevron-left"></i> Uncle Bob 的 SOLID 软件设计原则——Python 实例讲解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">188</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Minikube-amp-kubectl"><span class="nav-number">1.</span> <span class="nav-text">Minikube &amp; kubectl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#部署应用"><span class="nav-number">2.</span> <span class="nav-text">部署应用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-deployment"><span class="nav-number">2.1.</span> <span class="nav-text">创建 deployment</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Pods"><span class="nav-number">2.2.</span> <span class="nav-text">Pods</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Pods-的创建流程"><span class="nav-number">2.3.</span> <span class="nav-text">Pods 的创建流程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#向外部暴露应用"><span class="nav-number">3.</span> <span class="nav-text">向外部暴露应用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#LoadBalancer-的创建流程"><span class="nav-number">3.1.</span> <span class="nav-text">LoadBalancer 的创建流程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#横向扩展应用"><span class="nav-number">4.</span> <span class="nav-text">横向扩展应用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.3m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">21:12</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
