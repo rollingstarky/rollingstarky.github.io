@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Server,Storage,Docker,Container,Kubernetes,Volumes,Pod," />
+
+
+<meta name="description" content="Volumes 介绍Pod 就像是一个部署着某个应用的逻辑化的计算机，可以包含一个或几个容器，运行着应用的各个进程。这些进程可以共享 CPU、RAM、网络接口等计算资源。在普通的计算机中，应用的进程使用同一个文件系统。但是在 Pod 中，每个容器都有自己独有的、由容器镜像提供的隔离的文件系统。 容器构建时添加到镜像中的文件构成了容器的文件系统，容器启动后，运行在容器中的进程就可以修改这些文件或者添">
+<meta name="keywords" content="Linux,Server,Storage,Docker,Container,Kubernetes,Volumes,Pod">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes in Action 笔记 —— 向容器挂载存储卷">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/01/06/kubernetes-in-action-reading-notes-mount-storage-volumes/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="Volumes 介绍Pod 就像是一个部署着某个应用的逻辑化的计算机，可以包含一个或几个容器，运行着应用的各个进程。这些进程可以共享 CPU、RAM、网络接口等计算资源。在普通的计算机中，应用的进程使用同一个文件系统。但是在 Pod 中，每个容器都有自己独有的、由容器镜像提供的隔离的文件系统。 容器构建时添加到镜像中的文件构成了容器的文件系统，容器启动后，运行在容器中的进程就可以修改这些文件或者添">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-b6512cfe7b8b10cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a1dbdaf7fcc1a252.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-5b341a1a50a8938a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-f630769df6056546.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8bafa09cc1369c5f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-ea1ae1c57074b2de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-db595737626572c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0f593c120f4cd3c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-48b1a7db394ddd26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-01-06T15:30:53.513Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kubernetes in Action 笔记 —— 向容器挂载存储卷">
+<meta name="twitter:description" content="Volumes 介绍Pod 就像是一个部署着某个应用的逻辑化的计算机，可以包含一个或几个容器，运行着应用的各个进程。这些进程可以共享 CPU、RAM、网络接口等计算资源。在普通的计算机中，应用的进程使用同一个文件系统。但是在 Pod 中，每个容器都有自己独有的、由容器镜像提供的隔离的文件系统。 容器构建时添加到镜像中的文件构成了容器的文件系统，容器启动后，运行在容器中的进程就可以修改这些文件或者添">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-b6512cfe7b8b10cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/01/06/kubernetes-in-action-reading-notes-mount-storage-volumes/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Kubernetes in Action 笔记 —— 向容器挂载存储卷 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/01/06/kubernetes-in-action-reading-notes-mount-storage-volumes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Kubernetes in Action 笔记 —— 向容器挂载存储卷</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-01-06T00:00:00+08:00">2022-01-06</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/01/06/kubernetes-in-action-reading-notes-mount-storage-volumes/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/01/06/kubernetes-in-action-reading-notes-mount-storage-volumes/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/01/06/kubernetes-in-action-reading-notes-mount-storage-volumes/" class="leancloud_visitors" data-flag-title="Kubernetes in Action 笔记 —— 向容器挂载存储卷">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">6.7k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:07</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="Volumes-介绍"><a href="#Volumes-介绍" class="headerlink" title="Volumes 介绍"></a>Volumes 介绍</h4><p>Pod 就像是一个部署着某个应用的逻辑化的计算机，可以包含一个或几个容器，运行着应用的各个进程。这些进程可以共享 CPU、RAM、网络接口等计算资源。<br>在普通的计算机中，应用的进程使用同一个文件系统。但是在 Pod 中，每个容器都有自己独有的、由容器镜像提供的隔离的文件系统。</p>
+<p>容器构建时添加到镜像中的文件构成了容器的文件系统，容器启动后，运行在容器中的进程就可以修改这些文件或者添加新的文件。<br>但是当容器终止和重启时，所有对于文件系统的改动都不会被保留。事实上容器并不是真正意义上的重启，而是完全地被一个新容器<strong>替换</strong>掉了。这对于一些类型的应用是 OK 的，其他应用则需要在重启时至少保留一部分文件系统。<br>这可以通过挂载 Volume 来实现。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-b6512cfe7b8b10cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Mounting a filesystem into the file tree"></p>
+<h5 id="Volumes-与-Pod"><a href="#Volumes-与-Pod" class="headerlink" title="Volumes 与 Pod"></a>Volumes 与 Pod</h5><p>Volumes 并不是 Pod 或 Node 那样的顶层资源，而是和容器一样是 Pod 中的一个组件，因而会使用 Pod 的生命周期。Volumes 与其挂载的容器的生命周期是毫无关联的，也因此能够用来在容器重启时保持数据。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-a1dbdaf7fcc1a252.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Volumes are defined at the pod level and mounted in the pod’s containers"></p>
+<p>Volumes 在 Pod 中定义，挂载到 Pod 下的容器中。</p>
+<p><strong>在容器重启时保持数据</strong><br>Pod 中的所有 Volumes 都会在容器启动前创建，在 Pod 关闭时销毁。<br>应用可以向挂载到容器文件系统中的 Volume 写入数据。当容器重启时，其被替换为一个新容器，文件系统也重新从镜像创建。此时则可以再次挂载同样的 Volume，完成对之前数据的访问。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-5b341a1a50a8938a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Volumes ensure that part of the container’s filesystem is persisted across restarts"></p>
+<p>通常由应用的作者决定哪些文件需要在容器重启时被保留，一般是一些代表应用状态的数据。但不包括应用的本地缓存数据，这些数据会阻止容器完成一次“全新”的重启。而全新的重启有利于应用的“自愈”。</p>
+<p><strong>在一个容器中挂载多个 Volume</strong><br>一个 Pod 可以包含多个 Volumes，Pod 中的每个容器都可以挂载这些 Volumes 中的零个或多个。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-f630769df6056546.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="A pod can contain multiple volumes and a container can mount multiple volumes"></p>
+<p><strong>在多个容器间共享文件</strong><br>一个 Volume 可以被同时挂载到多个容器中，从而这些容器中的应用可以共享文件。<br>比如可以创建一个 Pod，包含一个 Web Server 容器和一个 content-producing agent 容器。Agent 容器负责生成静态媒体内容保存至 Volume，Web 容器则将 Volume 中的内容发布给客户端。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-8bafa09cc1369c5f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="A volume can be mounted into more than one container"></p>
+<p><strong>在 Pod 重启时保持数据</strong><br>Volume 与 Pod 的生命周期绑定，只会在 Pod 存在时存在。但是依靠某些特殊的 Volume 类型，其中的文件也可以在 Pod 和 Volume 消失后继续存在，后续也能够挂载到一个新的 Volume 中。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-ea1ae1c57074b2de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Pod volumes can also map to storage volumes that persist across pod restarts"></p>
+<p>如上图所示，Pod 中的 Volume 可以映射到 Pod 外面的永久存储。代表 Volume 的文件目录并不是 Pod 内部的本地路径，而是挂载的一个脱离了 Pod 生命周期的 NAS。<br>假如 Pod 被删除并被一个新的 Pod 所替换，同一个 NAS 可以被关联到新的 Pod 实例中，从而前一个 Pod 保持的数据可以被新的 Pod 访问。</p>
+<p><strong>在多个 Pod 间共享文件</strong><br>取决于 external storage volume 使用的具体技术，同一个外挂存储也能够同时被关联给多个 Pod，从而这些 Pod 之间能够共享数据。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-db595737626572c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Using volumes to share data between pods"></p>
+<h5 id="Volume-类型"><a href="#Volume-类型" class="headerlink" title="Volume 类型"></a>Volume 类型</h5><p>当向某个 Pod 添加 Volume 时，必须指定 Volume 类型。主要的几种 Volume 类型如下：</p>
+<ul>
+<li><code>emptyDir</code>：一个简单的空目录，允许 Pod 在其生命周期内向该路径下存储数据</li>
+<li><code>hostPath</code>：从工作节点的文件系统向 Pod 挂载文件</li>
+<li><code>nfs</code>：挂载到 Pod 中的 NFS 共享</li>
+<li><code>gcePersistentDisk</code> (Google Compute Engine Persistent Disk), <code>awsElasticBlockStore</code> (Amazon Web Services Elastic Block Store), <code>azureFile</code> (Microsoft Azure File Service), <code>azureDisk</code> (Microsoft Azure Data Disk)</li>
+<li><code>cephfs</code>, <code>cinder</code>, <code>fc</code>, <code>flexVolume</code>, <code>flocker</code>, <code>glusterfs</code>, <code>iscsi</code>, <code>portworxVolume</code>, <code>quobyte</code>, <code>rbd</code>, <code>scaleIO</code>, <code>storageos</code>, <code>photonPersistentDisk</code>, <code>vsphereVolume</code></li>
+<li><code>configMap</code>, <code>secret</code>, <code>downwardAPI</code>, <code>projected</code>：特殊类型的 Volume，用来暴露 Pod 及其他 Kubernetes 对象的信息</li>
+<li><code>csi</code>：一种可插拔的通过 <strong>Container Storage Interface</strong> 添加存储的方式。任何人都可以使用这种 Volume 类型来实现自己的存储驱动</li>
+</ul>
+<h4 id="使用-Volumes"><a href="#使用-Volumes" class="headerlink" title="使用 Volumes"></a>使用 Volumes</h4><h5 id="使用-emptyDir-在容器重启时保留文件"><a href="#使用-emptyDir-在容器重启时保留文件" class="headerlink" title="使用 emptyDir 在容器重启时保留文件"></a>使用 <code>emptyDir</code> 在容器重启时保留文件</h5><p><code>emptyDir</code> 是最简单的 Volume 类型。它最开始以空目录的形式挂载到容器的文件系统，任何写入到该路径下的文件都会在 Pod 的整个生命周期中存在。<br>这类 Volume 通常用于在容器重启后保留部分数据；或者当整个容器的文件系统都是只读时，令其部分文件系统可写；又或者在包含两个或以上容器的 Pod 中，在各容器间传递数据。</p>
+<p><strong>向 Pod 添加 <code>emptyDir</code> Volume</strong><br>创建如下 <code>fortune-emptydir.yml</code> 清单文件：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">fortune-emptydir</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  volumes:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">content</span></span><br><span class="line"><span class="attr">    emptyDir:</span> <span class="string">&#123;&#125;</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">nginx</span></span><br><span class="line"><span class="attr">    image:</span> <span class="attr">nginx:alpine</span></span><br><span class="line"><span class="attr">    volumeMounts:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">content</span></span><br><span class="line"><span class="attr">      mountPath:</span> <span class="string">/usr/share/nginx/html</span></span><br><span class="line"><span class="attr">    lifecycle:</span></span><br><span class="line"><span class="attr">      postStart:</span></span><br><span class="line"><span class="attr">        exec:</span></span><br><span class="line"><span class="attr">          command:</span></span><br><span class="line"><span class="bullet">          -</span> <span class="string">sh</span></span><br><span class="line"><span class="bullet">          -</span> <span class="bullet">-c</span></span><br><span class="line"><span class="bullet">          -</span> <span class="string">"ls /usr/share/nginx/html/quote || (apk add fortune &amp;&amp; fortune &gt; /usr/share/nginx/html/quote)"</span></span><br><span class="line"><span class="attr">    ports:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">http</span></span><br><span class="line"><span class="attr">      containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></p>
+<p>当容器第一次启动时，<code>postStart</code> hook 会执行 <code>apk add fortune</code> 命令安装 fortune 软件包，并执行 <code>fortune &gt; /usr/share/nginx/html/quote</code> 创建 <code>quote</code> 文件。<br>后续若容器因为各种原因重启，由于 <code>quote</code> 文件位于挂载的 Volume 中，不会随着容器一同被销毁。<br>并且在新容器生成后仍会挂载到原来的路径下，即不管后续容器如何重启，<code>quote</code> 文件都会保持第一次创建时的状态。</p>
+<p>若没有挂载 Volume，则 <code>quote</code> 文件会在容器重启时随着旧容器一同被销毁，每次新容器生成，都会在同样的路径下产生一个新的不同版本的 <code>quote</code> 文件。</p>
+<p>运行 <code>kubectl apply -f fortune-emptydir.yml</code> 命令应用清单文件，检查容器中 Volume 的挂载状态：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f fortune-emptydir.yml</span></span><br><span class="line">pod/fortune-emptydir created</span><br><span class="line"><span class="meta">$</span><span class="bash"> kubectl <span class="built_in">exec</span> fortune-emptydir -- mount --list | grep nginx/html</span></span><br><span class="line">/dev/sdb on /usr/share/nginx/html type ext4 (rw,relatime,discard,errors=remount-ro,data=ordered)</span><br></pre></td></tr></table></figure></p>
+<h5 id="使用-emptyDir-在容器间共享文件"><a href="#使用-emptyDir-在容器间共享文件" class="headerlink" title="使用 emptyDir 在容器间共享文件"></a>使用 <code>emptyDir</code> 在容器间共享文件</h5><p>创建如下内容的清单文件 <code>fortune.yml</code>：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">fortune</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  volumes:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">content</span></span><br><span class="line"><span class="attr">      emptyDir:</span> <span class="string">&#123;&#125;</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">fortune</span></span><br><span class="line"><span class="attr">      image:</span> <span class="string">luksa/fortune-writer:1.0</span></span><br><span class="line"><span class="attr">      volumeMounts:</span></span><br><span class="line"><span class="attr">        - mountPath:</span> <span class="string">/var/local/output</span></span><br><span class="line"><span class="attr">          name:</span> <span class="string">content</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">nginx</span></span><br><span class="line"><span class="attr">      image:</span> <span class="attr">nginx:alpine</span></span><br><span class="line"><span class="attr">      volumeMounts:</span></span><br><span class="line"><span class="attr">        - mountPath:</span> <span class="string">/usr/share/nginx/html</span></span><br><span class="line"><span class="attr">          name:</span> <span class="string">content</span></span><br><span class="line"><span class="attr">          readOnly:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">      ports:</span></span><br><span class="line"><span class="attr">        - containerPort:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">          name:</span> <span class="string">http</span></span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>fortune</code> 容器是作者自己构建的，会每隔 30s 执行一次 <code>fortune &gt; /var/local/output/quote</code> 命令。<code>fortune</code> 每次执行都会随机输出一段名言警句类型的话，即 <code>/var/local/output/quote</code> 文件中的内容会每隔 30s 变化一次。<br>整个 Pod 包含两个容器和一个 Volume，其中 <code>fortune</code> 容器挂载 <code>content</code> Volume 到自己的 <code>/var/local/output</code> 路径下，而 <code>nginx</code> 容器挂载同一个 <code>content</code> Volume 到自己的 <code>/usr/share/nginx/html</code> 路径下。<br><code>fortune</code> 容器会每隔 30s 生成一个新的 <code>quote</code> 文件，保存到挂载的 <code>content</code> Volume 下；而另一个 <code>nginx</code> 容器也挂载了 <code>content</code> Volume，并且将其中的 <code>quote</code> 文件作为 Web 服务的静态文件向外提供服务。<br>即同一个 Pod 中的两个容器通过挂载同一个 Volume 实现文件的共享。</p>
+<p><strong>运行 Pod</strong><br>使用 <code>kubectl apply -f fortune.yml</code> 命令应用清单文件创建 Pod，再分别从两个容器中查看 Volume 下 <code>quote</code> 文件的内容：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f fortune.yml</span></span><br><span class="line">pod/fortune configured</span><br><span class="line"><span class="meta">$</span><span class="bash"> kubectl <span class="built_in">exec</span> fortune -c fortune -- cat /var/<span class="built_in">local</span>/output/quote</span></span><br><span class="line">Life is too important to take seriously.</span><br><span class="line">                -- Corky Siegel</span><br><span class="line"><span class="meta">$</span><span class="bash"> kubectl <span class="built_in">exec</span> fortune -c nginx -- cat /usr/share/nginx/html/quote</span></span><br><span class="line">Life is too important to take seriously.</span><br><span class="line">                -- Corky Siegel</span><br></pre></td></tr></table></figure></p>
+<p>后两条命令输出了同样的内容。虽然两个容器查看的 <code>quote</code> 文件本地路径不同，它们实际上指向了同一个 Volume。</p>
+<h4 id="理解-external-volumes-是如何挂载的"><a href="#理解-external-volumes-是如何挂载的" class="headerlink" title="理解 external volumes 是如何挂载的"></a>理解 external volumes 是如何挂载的</h4><p>如下图所示，网络存储卷首先是被宿主节点挂载，然后再授予 Pod 访问挂载点的权限。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-0f593c120f4cd3c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Network volumes are mounted by the host node and then exposed in pods"></p>
+<p>通常情况下，底层的存储技术并不允许一个 Volume 以读写模式同时挂载到一个以上的节点，但是同一个节点上的多个 Pods 可以同时以读写模式使用 Volume。<br>对于云环境提供的大多数存储技术，多个节点使用同一个网络存储卷的方式只有一种，即以只读模式挂载。<br>在设计分布式应用的架构时，考虑网络存储卷的上述限制是很有必要的。同一个 Pod 的多个副本通常不能以读写模式挂载同一个网络存储卷。</p>
+<h4 id="访问工作节点上的文件系统"><a href="#访问工作节点上的文件系统" class="headerlink" title="访问工作节点上的文件系统"></a>访问工作节点上的文件系统</h4><p>绝大多数 Pods 不应该关注部署它们的宿主节点，不应该访问节点文件系统中的任何文件。除非这些 Pods 是系统级别的。<br>可以使用 <code>hostPath</code> 类型的 Volume 令 Pod 能够访问宿主节点。</p>
+<h5 id="hostPath-Volume-介绍"><a href="#hostPath-Volume-介绍" class="headerlink" title="hostPath Volume 介绍"></a><code>hostPath</code> Volume 介绍</h5><p><code>hostPath</code> Volume 指向宿主节点文件系统中的特定文件或目录，形成 Pod 与宿主节点之间的文件共享。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-48b1a7db394ddd26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="hostPath volume mounts a file or directory from the worker node’s filesystem into the container"></p>
+<p><code>hostPath</code> Volume 并不适合存放数据库中的数据。因为此 Volume 的内容只是保存在某个特定的工作节点上，假如数据库 Pod 被重新分配给了另一个节点，则保存在 Volume 中的数据库数据对新的 Pod 不再可见。</p>
+<p>通常情况下，<code>hostPath</code> Volume 只用在当 Pod 确实是需要读写 Node 中的文件，比如 Node 上的系统日志。<br><code>hostPath</code> 是最危险的 Volume 类型之一，一般只用于具有特殊权限的 Pod。假如不对 <code>hostPath</code> 的使用加以限制，用户有可能对工作节点做任何事。<br>比如用户可以使用 <code>hostPath</code> 挂载容器的 Docker socket 文件，然后在容器内运行 Docker 客户端，接着便可以作为 root 用户在宿主节点上执行任意命令。</p>
+<h5 id="使用-hostPath-Volume"><a href="#使用-hostPath-Volume" class="headerlink" title="使用 hostPath Volume"></a>使用 <code>hostPath</code> Volume</h5><p>部署如下配置的 Pod：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">node-explorer</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  volumes:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">host-root</span></span><br><span class="line"><span class="attr">      hostPath:</span></span><br><span class="line"><span class="attr">        path:</span> <span class="string">/</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">node-explorer</span></span><br><span class="line"><span class="attr">      image:</span> <span class="string">alpine</span></span><br><span class="line"><span class="attr">      command:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">"sleep"</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">"9999999999"</span></span><br><span class="line"><span class="attr">      volumeMounts:</span></span><br><span class="line"><span class="attr">        - mountPath:</span> <span class="string">/host</span></span><br><span class="line"><span class="attr">          name:</span> <span class="string">host-root</span></span><br></pre></td></tr></table></figure></p>
+<p>Pod 部署完成后，即可运行 <code>kubectl exec -it node-explorer -- sh</code> 命令在 Pod 中运行一个交互式命令行窗口，在执行 <code>cd /host</code> 命令即可进入宿主节点的文件系统：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl <span class="built_in">exec</span> -it node-explorer -- sh</span></span><br><span class="line">/ # cd /host</span><br><span class="line">/host # ls</span><br><span class="line">Release.key  boot         dev          etc          kic.txt      lib          lib64        media        opt          root         sbin         sys          usr</span><br><span class="line">bin          data         docker.key   home         kind         lib32        libx32       mnt          proc         run          srv          tmp          var</span><br><span class="line">/host #</span><br></pre></td></tr></table></figure></p>
+<p><code>hostPath</code> Volume 指向的是宿主节点的 <code>/</code> 路径，由此整个工作节点的文件系统都会向 Pod 开放。执行完上面的命令后，即可以修改工作节点上的任何文件。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/kubernetes-in-action-second-edition" target="_blank" rel="noopener">Kubernetes in Action, Second Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Server/" rel="tag"># Server</a>
+          
+            <a href="/tags/Storage/" rel="tag"># Storage</a>
+          
+            <a href="/tags/Docker/" rel="tag"># Docker</a>
+          
+            <a href="/tags/Container/" rel="tag"># Container</a>
+          
+            <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          
+            <a href="/tags/Volumes/" rel="tag"># Volumes</a>
+          
+            <a href="/tags/Pod/" rel="tag"># Pod</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/01/05/kubernetes-in-action-reading-notes-managing-pod-lifecycle/" rel="next" title="Kubernetes in Action 笔记 —— 管理 Pod 的生命周期">
+                <i class="fa fa-chevron-left"></i> Kubernetes in Action 笔记 —— 管理 Pod 的生命周期
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">191</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">292</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Volumes-介绍"><span class="nav-number">1.</span> <span class="nav-text">Volumes 介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Volumes-与-Pod"><span class="nav-number">1.1.</span> <span class="nav-text">Volumes 与 Pod</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Volume-类型"><span class="nav-number">1.2.</span> <span class="nav-text">Volume 类型</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-Volumes"><span class="nav-number">2.</span> <span class="nav-text">使用 Volumes</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-emptyDir-在容器重启时保留文件"><span class="nav-number">2.1.</span> <span class="nav-text">使用 emptyDir 在容器重启时保留文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-emptyDir-在容器间共享文件"><span class="nav-number">2.2.</span> <span class="nav-text">使用 emptyDir 在容器间共享文件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#理解-external-volumes-是如何挂载的"><span class="nav-number">3.</span> <span class="nav-text">理解 external volumes 是如何挂载的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#访问工作节点上的文件系统"><span class="nav-number">4.</span> <span class="nav-text">访问工作节点上的文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#hostPath-Volume-介绍"><span class="nav-number">4.1.</span> <span class="nav-text">hostPath Volume 介绍</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-hostPath-Volume"><span class="nav-number">4.2.</span> <span class="nav-text">使用 hostPath Volume</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.3m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">21:46</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
