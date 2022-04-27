@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Linux,Disk,Storage,Docker,Container,Kubernetes,Volume,Persistent,NFS," />
+
+
+<meta name="description" content="Pods 与底层存储技术的解耦理想情况下，将应用部署到 Kubernetes 上的开发者不需要知道集群提供的存储技术，就像他们不需要知道运行 Pods 的物理服务器的属性。基础设施的细节应该由集群的维护者去掌控。 比如在 Pod 中挂载一个 NFS 共享作为持久存储，Pod 的清单文件中就需要包含 NFS 服务器的 IP 地址和共享文件的路径，从而导致该 Pod 的定义与特定的集群绑定在一起，阻止">
+<meta name="keywords" content="Linux,Disk,Storage,Docker,Container,Kubernetes,Volume,Persistent,NFS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes in Action 笔记 —— 通过 PersistentVolume 持久化数据">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/04/27/kubernetes-in-action-reading-notes-persistent-data-with-persistent-volume/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="Pods 与底层存储技术的解耦理想情况下，将应用部署到 Kubernetes 上的开发者不需要知道集群提供的存储技术，就像他们不需要知道运行 Pods 的物理服务器的属性。基础设施的细节应该由集群的维护者去掌控。 比如在 Pod 中挂载一个 NFS 共享作为持久存储，Pod 的清单文件中就需要包含 NFS 服务器的 IP 地址和共享文件的路径，从而导致该 Pod 的定义与特定的集群绑定在一起，阻止">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0329c69edbfa8e74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-f749bef8732150a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-d3c4f62a71307453.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-6fe103345145503b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0721dd2191c07854.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8e5e161bccbcbc3d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-f92c964bf83dba7a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-aa9febdc8c5c0f00.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-1c0aedb1f55632dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-04-27T12:41:30.486Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kubernetes in Action 笔记 —— 通过 PersistentVolume 持久化数据">
+<meta name="twitter:description" content="Pods 与底层存储技术的解耦理想情况下，将应用部署到 Kubernetes 上的开发者不需要知道集群提供的存储技术，就像他们不需要知道运行 Pods 的物理服务器的属性。基础设施的细节应该由集群的维护者去掌控。 比如在 Pod 中挂载一个 NFS 共享作为持久存储，Pod 的清单文件中就需要包含 NFS 服务器的 IP 地址和共享文件的路径，从而导致该 Pod 的定义与特定的集群绑定在一起，阻止">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-0329c69edbfa8e74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/04/27/kubernetes-in-action-reading-notes-persistent-data-with-persistent-volume/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Kubernetes in Action 笔记 —— 通过 PersistentVolume 持久化数据 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/04/27/kubernetes-in-action-reading-notes-persistent-data-with-persistent-volume/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Kubernetes in Action 笔记 —— 通过 PersistentVolume 持久化数据</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-04-27T00:00:00+08:00">2022-04-27</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/04/27/kubernetes-in-action-reading-notes-persistent-data-with-persistent-volume/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/04/27/kubernetes-in-action-reading-notes-persistent-data-with-persistent-volume/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/04/27/kubernetes-in-action-reading-notes-persistent-data-with-persistent-volume/" class="leancloud_visitors" data-flag-title="Kubernetes in Action 笔记 —— 通过 PersistentVolume 持久化数据">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:11</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="Pods-与底层存储技术的解耦"><a href="#Pods-与底层存储技术的解耦" class="headerlink" title="Pods 与底层存储技术的解耦"></a>Pods 与底层存储技术的解耦</h4><p>理想情况下，将应用部署到 Kubernetes 上的开发者不需要知道集群提供的存储技术，就像他们不需要知道运行 Pods 的物理服务器的属性。基础设施的细节应该由集群的维护者去掌控。</p>
+<p>比如在 Pod 中挂载一个 NFS 共享作为持久存储，Pod 的清单文件中就需要包含 NFS 服务器的 IP 地址和共享文件的路径，从而导致该 Pod 的定义与特定的集群绑定在一起，阻止其用在其他地方。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-0329c69edbfa8e74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="A pod manifest with infrastructure-specific volume information is not portable to other clusters"></p>
+<h5 id="Persistent-volumes-and-claims"><a href="#Persistent-volumes-and-claims" class="headerlink" title="Persistent volumes and claims"></a>Persistent volumes and claims</h5><p>为了令 Pod 清单文件面向不同的集群是可移植的，针对存储卷的环境相关的信息被移动到 <strong>PersistentVolume</strong> 对象中，再通过一个 <strong>PersistentVolumeClaim</strong> 对象将 Pod 与 PersistentVolume 连接在一起。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-f749bef8732150a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Using persistent volumes and persistent volume claims to attach network storage to pods"></p>
+<p>顾名思义，<strong>PersistentVolume</strong> 对象代表一种存储卷，用来持久化应用数据。该对象包含了底层存储的信息，从而将这些信息从 Pod 中解耦。即 Pod 的清单文件中与存储相关的部分，不必再包含基础设施相关的信息（转移到了 PersistentVolume 中），使得同样的清单文件能够部署在不同的集群上。</p>
+<p>Pod 并不会直接引用 PersistentVolume 对象，而是指向一个 <strong>PersistentVolumeClaim</strong> 对象。PersistentVolumeClaim 代表用户对 PV 的请求或者声明，有着独立于 Pod 的生命周期，从而允许 PV 的所属权（ownership）与 Pod 解耦。<br>用户在使用 PV 前必须先声明一个 PVC 对象。Pod 可以在任意时间删除，用户并不会因此失去对 PV 的所属权。当 PV 不再被需要时，用户可以通过删除 PVC 来释放它。</p>
+<p>Pod 清单文件中的存储定义部分只需要包含 PVC 的名称，不需要任何基础设施相关的信息，比如 NFS 服务器的 IP 地址。PVC 会负责将其绑定的代表 NFS 存储的 PV 挂载到 Pod 中。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-d3c4f62a71307453.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Mounting a persistent volume into the pod’s container(s)"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-6fe103345145503b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Using the same persistent volume claim in multiple pods"></p>
+<h5 id="使用-PV-和-PVC-的优势"><a href="#使用-PV-和-PVC-的优势" class="headerlink" title="使用 PV 和 PVC 的优势"></a>使用 PV 和 PVC 的优势</h5><p>为了让 Pod 使用某个存储卷，借助 PV 和 PVC 这两种额外的对象，肯定比直接在 Pod 清单文件中定义要复杂得多。<br>使用 PV 和 PVC 的最大优势在于，基础设施相关的细节从 Pod 代表的应用中解脱了出来。集群管理员比任何人都更了解数据中心本身，他们负责创建 PV 对象；软件开发者则可以集中精力通过 Pod 和 PVC 来描述应用本身的需求。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-0721dd2191c07854.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Persistent volumes are provisioned by cluster admins and consumed by pods through persistent volume claims"></p>
+<p>应用开发人员不需要了解底层基础设施的任何细节，就可以直接创建 Pod 清单文件和 PVC 对象；同样的，集群管理员也可以在不了解应用的所有细节的前提下，创建一系列不同大小的存储卷。<br>更进一步的，借助 PV 的动态创建功能，管理员根本不需要提前创建好存储卷。如果集群中安装了 automated volume provisioner，物理存储卷和 PV 对象会在用户创建 PVC 之后按需自动生成。</p>
+<h4 id="创建-PV-和-PVC"><a href="#创建-PV-和-PVC" class="headerlink" title="创建 PV 和 PVC"></a>创建 PV 和 PVC</h4><h5 id="创建-PV-对象"><a href="#创建-PV-对象" class="headerlink" title="创建 PV 对象"></a>创建 PV 对象</h5><p>测试环境使用的是 Minikube，因此这里使用工作节点的本地路径来创建 PV，而不使用网络存储。其清单文件如下：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PersistentVolume</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">quiz-data</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  capacity:</span></span><br><span class="line"><span class="attr">    storage:</span> <span class="number">1</span><span class="string">Gi</span></span><br><span class="line"><span class="attr">  accessModes:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">ReadWriteOnce</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">ReadOnlyMany</span></span><br><span class="line"><span class="attr">  hostPath:</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/var/quiz-data</span></span><br></pre></td></tr></table></figure></p>
+<p>其中的 <code>capacity</code> 选项用来指定底层存储卷的大小。每个 PV 都必须指定其容量，以便于在 PVC 和 PV 绑定时，Kubernetes 可以判断具体哪个 PV 符合要求。<br>每个 PV 都必须指定其支持的 <code>accessModes</code> 列表。依赖于底层存储的具体实现，PV 可能支持也可能不支持同时被多个工作节点以 r/w 或 r/o 模式挂载。<br>注意 <code>accessModes</code> 影响的是 <strong>Nodes</strong> 而不是 <strong>Pods</strong>。一个 PV 只要能够被某个节点挂载，同时也就支持被该节点上的多个 Pods 挂载。<br><code>accessModes</code> 有 <code>ReadWriteOnce</code>、<code>ReadOnlyMany</code>、<code>ReadWriteMany</code> 三种模式。</p>
+<h5 id="创建和查看-PV"><a href="#创建和查看-PV" class="headerlink" title="创建和查看 PV"></a>创建和查看 PV</h5><p>创建 PV：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl apply -f pv.quiz-data.hostpath.yaml</span><br><span class="line">persistentvolume/quiz-data created</span><br></pre></td></tr></table></figure></p>
+<p>查看 PV：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pv</span><br><span class="line">NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE</span><br><span class="line">quiz-data   <span class="number">1</span>Gi        RWO,ROX        Retain           Available                                   <span class="number">2</span>m55s</span><br></pre></td></tr></table></figure></p>
+<h5 id="声明一个-PV"><a href="#声明一个-PV" class="headerlink" title="声明一个 PV"></a>声明一个 PV</h5><p><strong>创建一个 PVC 对象</strong><br>需要创建 PVC 对象来声明一个 PV，PVC 对象中会指定 PV 必须符合的要求，包括最小容量、访问模式等，通常是由不同应用的具体需求来决定的。因而 PVC 对象应该由应用的作者而不是集群管理员来创建。</p>
+<p>PVC 对象的清单文件内容如下：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PersistentVolumeClaim</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">quiz-data</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  resources:</span></span><br><span class="line"><span class="attr">    requests:</span></span><br><span class="line"><span class="attr">      storage:</span> <span class="number">1</span><span class="string">Gi</span></span><br><span class="line"><span class="attr">  accessModes:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">ReadWriteOnce</span></span><br><span class="line"><span class="attr">  storageClassName:</span> <span class="string">""</span></span><br><span class="line"><span class="attr">  volumeName:</span> <span class="string">quiz-data</span></span><br></pre></td></tr></table></figure></p>
+<p>上面的 PVC 对象描述了一系列需要 PV 满足的要求。比如至少 1G 大小、能够在单节点上以读写模式挂载。<br><code>storageClassName</code> 字段用来配置 PV 的动态生成，如果需要绑定一个已经预先创建好的 PV，则该字段必须为空。<br>因为前面创建的 PV 名字为 <code>quiz-data</code>，所以 PVC 中的 <code>volumeName</code> 字段也必须为 <code>quiz-data</code>；若不指定此字段，则 Kubernetes 有可能会绑定其他满足要求的 PV。<br>如果集群管理员创建了一系列没有指定名称的 PV，用户也并不在意具体会绑定哪个 PV，则可以跳过 <code>volumeName</code> 字段，让 Kubernetes 随机选择满足要求的 PV。</p>
+<h5 id="创建和查看-PVC"><a href="#创建和查看-PVC" class="headerlink" title="创建和查看 PVC"></a>创建和查看 PVC</h5><p>创建 PVC：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl apply -f pvc.quiz-data.static.yaml</span><br><span class="line">persistentvolumeclaim/quiz-data created</span><br></pre></td></tr></table></figure></p>
+<p>查看 PVC：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pvc</span><br><span class="line">NAME        STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   AGE</span><br><span class="line">quiz-data   Bound    quiz-data   <span class="number">1</span>Gi        RWO,ROX                       <span class="number">31</span>s</span><br></pre></td></tr></table></figure></p>
+<p>再次查看之前创建的 PV 的状态，可以看到此时 <code>quiz-data</code> PV 的 <code>STATUS</code> 变成了 <code>BOUND</code>：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pv</span><br><span class="line">NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM               STORAGECLASS   REASON   AGE</span><br><span class="line">quiz-data   <span class="number">1</span>Gi        RWO,ROX        Retain           Bound    default/quiz-data                           <span class="number">92</span>m</span><br></pre></td></tr></table></figure></p>
+<h4 id="在-Pod-中使用-PVC-和-PV"><a href="#在-Pod-中使用-PVC-和-PV" class="headerlink" title="在 Pod 中使用 PVC 和 PV"></a>在 Pod 中使用 PVC 和 PV</h4><p>参考如下清单文件：<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">quiz</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  volumes:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">quiz-data</span></span><br><span class="line"><span class="attr">    persistentVolumeClaim:</span></span><br><span class="line"><span class="attr">      claimName:</span> <span class="string">quiz-data</span></span><br><span class="line"><span class="attr">  containers:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">quiz-api</span></span><br><span class="line"><span class="attr">    image:</span> <span class="string">luksa/quiz-api:0.1</span></span><br><span class="line"><span class="attr">    ports:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">http</span></span><br><span class="line"><span class="attr">      containerPort:</span> <span class="number">8080</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">mongo</span></span><br><span class="line"><span class="attr">    image:</span> <span class="string">mongo</span></span><br><span class="line"><span class="attr">    volumeMounts:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">quiz-data</span></span><br><span class="line"><span class="attr">      mountPath:</span> <span class="string">/data/db</span></span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>kubectl apply -f pod.quiz.pvc.yaml</code> 命令创建 Pod，待创建完成后，可以执行如下 Shell 命令向 mongo 容器中插入数据：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">exec</span> -it quiz -c mongo -- mongo kiada &lt;&lt;EOF</span><br><span class="line">db.questions.insert(&#123;</span><br><span class="line">  id: 1,</span><br><span class="line">  text: <span class="string">"What does k8s mean?"</span>,</span><br><span class="line">  answers: [<span class="string">"Kates"</span>, <span class="string">"Kubernetes"</span>, <span class="string">"Kooba Dooba Doo!"</span>],</span><br><span class="line">  correctAnswerIndex: 1</span><br><span class="line">&#125;)</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></p>
+<p>运行如下命令查看插入的数据：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl exec -it quiz -c mongo -- mongo kiada --quiet --eval "db.questions.<span class="built_in">find</span>()"</span><br><span class="line">&#123; "_id" : ObjectId("<span class="number">625</span>fe24a095faed6c085f539"), "id" : <span class="number">1</span>, "text" : "What does k8s mean?", "answers" : [ "Kates", "Kubernetes", "Kooba Dooba Doo!" ], "correctAnswerIndex" : <span class="number">1</span> &#125;</span><br></pre></td></tr></table></figure></p>
+<h5 id="在-Pod-中重复使用-PVC"><a href="#在-Pod-中重复使用-PVC" class="headerlink" title="在 Pod 中重复使用 PVC"></a>在 Pod 中重复使用 PVC</h5><p>当删除某个 Pod 中的 PVC 时，对应的底层存储卷会从工作节点解除挂载。但 PV 对象仍旧是跟 PVC 相关联的。若之后创建另一个 Pod 指向同样的 PVC，则新的 Pod 可以访问 PV 对应的存储卷和文件。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl delete -f pod.quiz.pvc.yaml</span><br><span class="line">pod "quiz" deleted</span><br><span class="line">$ kubectl apply -f pod.quiz.pvc.yaml</span><br><span class="line">pod/quiz created</span><br><span class="line">$ kubectl exec -it quiz -c mongo -- mongo kiada --quiet --eval "db.questions.<span class="built_in">find</span>()"</span><br><span class="line">&#123; "_id" : ObjectId("<span class="number">625</span>fe24a095faed6c085f539"), "id" : <span class="number">1</span>, "text" : "What does k8s mean?", "answers" : [ "Kates", "Kubernetes", "Kooba Dooba Doo!" ], "correctAnswerIndex" : <span class="number">1</span> &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="释放-PV"><a href="#释放-PV" class="headerlink" title="释放 PV"></a>释放 PV</h5><p>删除 PVC 会释放对应的 PV。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl delete pod quiz</span><br><span class="line">pod "quiz" deleted</span><br><span class="line">$ kubectl delete pvc quiz-data</span><br><span class="line">persistentvolumeclaim "quiz-data" deleted</span><br></pre></td></tr></table></figure></p>
+<p>查看此时 PV 的状态：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pv quiz-data</span><br><span class="line">NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM               STORAGECLASS   REASON   AGE</span><br><span class="line">quiz-data   <span class="number">1</span>Gi        RWO,ROX        Retain           Released   default/quiz-data                           <span class="number">45</span>h</span><br></pre></td></tr></table></figure></p>
+<p>其 <code>STATUS</code> 项变成了 <code>Released</code> 状态。</p>
+<p>若此时重新创建删除的 PVC，对应的 PV 不会再次被绑定。<br>原因在于，PV 已经被使用过，有可能包含一些旧的数据，需要在绑定给另一个 PVC 之前进行清理。这也是为什么 PV 已经 <code>Released</code> 之后，仍然显示关联的 <code>CLAIM</code> 是 <code>default/quiz-data</code>，为了方便集群管理员确认这些数据能否被安全的删除。</p>
+<h5 id="令释放的-PV-重新可用"><a href="#令释放的-PV-重新可用" class="headerlink" title="令释放的 PV 重新可用"></a>令释放的 PV 重新可用</h5><p>重新创建删除的 PVC 不会自动绑定之前的 PV，该 PV 会处于 <code>Released</code> 状态。为了让 PV 对应的数据再次可用，需要删除并重新创建 PV。<br><strong>PV 对象只是一个指向底层存储的指针</strong>，它本身并不存储任何应用数据。删除并重新创建 PV 相当于创建了一个新的指向同一个底层存储卷的指针。数据和之前是相同的。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl delete pv quiz-data</span><br><span class="line">persistentvolume "quiz-data" deleted</span><br><span class="line">$ kubectl apply -f pv.quiz-data.hostpath.yaml</span><br><span class="line">persistentvolume/quiz-data created</span><br><span class="line">$ kubectl apply -f pvc.quiz-data.static.yaml</span><br><span class="line">persistentvolumeclaim/quiz-data created</span><br><span class="line">$ kubectl apply -f pod.quiz.pvc.yaml</span><br><span class="line">pod/quiz created</span><br><span class="line">$ kubectl exec -it quiz -c mongo -- mongo kiada --quiet --eval "db.questions.<span class="built_in">find</span>()"</span><br><span class="line">&#123; "_id" : ObjectId("<span class="number">625</span>fe24a095faed6c085f539"), "id" : <span class="number">1</span>, "text" : "What does k8s mean?", "answers" : [ "Kates", "Kubernetes", "Kooba Dooba Doo!" ], "correctAnswerIndex" : <span class="number">1</span> &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="PV-的-reclaim-policy"><a href="#PV-的-reclaim-policy" class="headerlink" title="PV 的 reclaim policy"></a>PV 的 reclaim policy</h5><p>PV 被释放后的动作取决于其 reclaim policy。此 policy 由 PV 对象的 <code>.spec.persistentVolumeReclaimPolicy</code> 条目进行配置。前面 <code>quiz-data</code> 的 reclaim policy 是 <code>Retain</code>。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pv</span><br><span class="line">NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM               STORAGECLASS   REASON   AGE</span><br><span class="line">quiz-data   <span class="number">1</span>Gi        RWO,ROX        Retain           Bound    default/quiz-data                           <span class="number">5</span>m57s</span><br></pre></td></tr></table></figure></p>
+<p>两种不同的 reclaim policy：</p>
+<ul>
+<li><code>Retain</code>：当 PV 被释放后（即对应的 PVC 被删除后），Kubernetes 会保留该 PV。集群管理员则必须手动回收 Volume。这是手动创建 PV 的默认配置</li>
+<li><code>Delete</code>：PV 对象和对应的底层存储会在 PV 释放后自动删除。这是动态创建 PV 的默认配置</li>
+</ul>
+<h5 id="删除绑定中的-PV"><a href="#删除绑定中的-PV" class="headerlink" title="删除绑定中的 PV"></a>删除绑定中的 PV</h5><p>如果集群管理员删除了某个正在使用中的 PV（已经绑定给了某个 PVC）：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl delete pv quiz-data</span><br><span class="line">persistentvolume "quiz-data" deleted</span><br><span class="line">^C</span><br></pre></td></tr></table></figure></p>
+<p>上述命令会告诉 Kubernetes API 删除 PV 对象，并等待 Kubernetes 控制器完成该操作。<br>事实上该操作并不会完成，直到待删除的 PV 最终被释放（绑定的 PVC 被删除）。<br>可以按 <code>Ctrl - C</code> 取消等待，但删除动作并不会被取消：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pv</span><br><span class="line">NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM               STORAGECLASS   REASON   AGE</span><br><span class="line">quiz-data   <span class="number">1</span>Gi        RWO,ROX        Retain           Terminating   default/quiz-data                           <span class="number">19</span>m</span><br></pre></td></tr></table></figure></p>
+<p>该 PV 会一直处于 <code>Terminating</code> 状态，直到对应的 PVC 被删除。</p>
+<h5 id="删除使用中的-PVC"><a href="#删除使用中的-PVC" class="headerlink" title="删除使用中的 PVC"></a>删除使用中的 PVC</h5><p>和删除 PV 类似，删除使用中的 PVC 的动作并不会立即完成。可以强制中断删除命令的执行，但并不会取消该删除流程。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl delete pvc quiz-data</span><br><span class="line">persistentvolumeclaim "quiz-data" deleted</span><br><span class="line">^C</span><br></pre></td></tr></table></figure></p>
+<p>删除动作会被 Pod 阻塞。毫无疑问，删除一个正在使用中的 PVC 并不会立即对 Pod 中运行的应用产生任何影响。Kubernetes 并不会因为集群管理员需要回收一些存储空间而杀掉某个 Pod。<br>只有删掉引用了该 PVC 的 Pod，删除该 PVC 的进度才会完成。</p>
+<h4 id="理解手动创建的-PV-的生命周期"><a href="#理解手动创建的-PV-的生命周期" class="headerlink" title="理解手动创建的 PV 的生命周期"></a>理解手动创建的 PV 的生命周期</h4><p><img src="https://upload-images.jianshu.io/upload_images/6875152-8e5e161bccbcbc3d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="The lifecycle of statically provisioned persistent volumes, claims and the pods that use them"></p>
+<p>在使用手动创建的 PV 时，底层存储卷的生命周期与 PV 对象的生命周期是分离的。<br>PV 创建后的初始状态是 <code>Available</code>，当 PVC 出现且其要求能被某个 PV 满足时，PV 与 PVC 完成绑定。在此之前 PVC 处于 <code>Pending</code> 状态，绑定完成后 PV 和 PVC 都处于 <code>Bound</code> 状态。<br>在这之后，一个或多个 Pod 可以通过引用 PVC 来使用对应的存储。当所有的 Pods 运行结束后，PVC 对象可以被删除。PVC 对象删除后，PV 的回收策略决定了对 PV 和底层存储的后续操作。若策略为 <code>Delete</code>，则 PV 和 底层存储都会被删除；若策略为 <code>Retain</code>，PV 对象和底层存储都会被保留，PV 的状态变为 <code>Released</code>，无法再次被绑定。底层存储以及其中的文件会继续存在，可以通过创建一个新的指向同样位置的 PV 来再次访问这些文件。</p>
+<h4 id="PV-的动态创建"><a href="#PV-的动态创建" class="headerlink" title="PV 的动态创建"></a>PV 的动态创建</h4><p>前面的章节中，集群管理员必须提前创建 PV 对象，每次 PV 释放后还需要管理员手动删除存储卷中的数据。<br>为了保证集群平稳地运行，管理员需要提前创建数十甚至上百个 PV，还要持续地跟踪可用的 PV 数量，确保其没有耗尽。所有这些手动操作并没有遵循 Kubernetes 自动管理的哲学。</p>
+<p>更好的方式是动态创建 PV。集群管理员部署一个 PV provisioner，该 provisioner 可以自动化执行实时的 PV 创建流程。<br><img src="https://upload-images.jianshu.io/upload_images/6875152-f92c964bf83dba7a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Dynamic provisioning of persistent volumes"></p>
+<p>与静态创建 PV 相反，在动态创建过程中，用户先创建 PVC，然后 provisioner 再从底层存储创建对应的 PV 对象。</p>
+<h5 id="StorageClass-对象"><a href="#StorageClass-对象" class="headerlink" title="StorageClass 对象"></a>StorageClass 对象</h5><p>列出 storage classes<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get sc</span><br><span class="line">NAME                 PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE</span><br><span class="line">standard (default)   k8s.io/minikube-hostpath   Delete          Immediate           false                  <span class="number">158</span>d</span><br></pre></td></tr></table></figure></p>
+<p>进一步检查 storage class<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">$</span> <span class="string">kubectl</span> <span class="string">get</span> <span class="string">sc</span> <span class="string">standard</span> <span class="bullet">-o</span> <span class="string">yaml</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">storage.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StorageClass</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  annotations:</span></span><br><span class="line">    <span class="string">kubectl.kubernetes.io/last-applied-configuration:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      &#123;"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":&#123;"annotations":&#123;"storageclass.kubernetes.io/is-default-class":"true"&#125;,"labels":&#123;"addonmanager.kubernetes.io/mode":"EnsureExists"&#125;,"name":"standard"&#125;,"provisioner":"k8s.io/minikube-hostpath"&#125;</span></span><br><span class="line"><span class="string">    storageclass.kubernetes.io/is-default-class: "true"</span></span><br><span class="line"><span class="string"></span><span class="attr">  creationTimestamp:</span> <span class="string">"2021-11-15T05:36:28Z"</span></span><br><span class="line"><span class="attr">  labels:</span></span><br><span class="line">    <span class="string">addonmanager.kubernetes.io/mode:</span> <span class="string">EnsureExists</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">standard</span></span><br><span class="line"><span class="attr">  resourceVersion:</span> <span class="string">"298"</span></span><br><span class="line"><span class="attr">  uid:</span> <span class="number">3</span><span class="string">d1fb350-928d-4d53-a2eb-558358814839</span></span><br><span class="line"><span class="attr">provisioner:</span> <span class="string">k8s.io/minikube-hostpath</span></span><br><span class="line"><span class="attr">reclaimPolicy:</span> <span class="string">Delete</span></span><br><span class="line"><span class="attr">volumeBindingMode:</span> <span class="string">Immediate</span></span><br></pre></td></tr></table></figure></p>
+<p>StorageClass 对象代表某种可以被动态创建的存储类型。每一个 StorageClass 都会指定在动态创建 Volume 时需要使用的 provisioner 以及需要传递的参数。由用户来决定每一个 PVC 具体使用那种 StorageClass。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-aa9febdc8c5c0f00.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="The relationship between storage classes, persistent volume claims and dynamic volume provisioners"></p>
+<h5 id="用-default-storage-class-动态创建-PV"><a href="#用-default-storage-class-动态创建-PV" class="headerlink" title="用 default storage class 动态创建 PV"></a>用 default storage class 动态创建 PV</h5><p>可以创建一个 PVC 对象并将其 <code>storageClassName</code> 条目设置为 <code>standard</code>，或者不指定任何 <code>storageClassName</code>，Kubernetes 会自动选择默认的 storage class。<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PersistentVolumeClaim</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">quiz-data-default</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  resources:</span></span><br><span class="line"><span class="attr">    requests:</span></span><br><span class="line"><span class="attr">      storage:</span> <span class="number">1</span><span class="string">Gi</span></span><br><span class="line"><span class="attr">  accessModes:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">ReadWriteOnce</span></span><br></pre></td></tr></table></figure></p>
+<p>创建和查看 PVC：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f pvc.quiz-data-default.yaml</span><br><span class="line">persistentvolumeclaim/quiz-data-default created</span><br><span class="line">$ kubectl get pvc quiz-data-default</span><br><span class="line">NAME                STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE</span><br><span class="line">quiz-data-default   Bound    pvc-eac89776-b02b-<span class="number">49</span>c1-<span class="number">9878</span>-b50b9780bd3c   <span class="number">1</span>Gi        RWO            standard       <span class="number">47</span>s</span><br></pre></td></tr></table></figure></p>
+<p>对应的 PV 会在 PVC 创建后自动生成和绑定。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pv</span><br><span class="line">NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS   REASON   AGE</span><br><span class="line">pvc-eac89776-b02b-<span class="number">49</span>c1-<span class="number">9878</span>-b50b9780bd3c   <span class="number">1</span>Gi        RWO            Delete           Bound    default/quiz-data-default   standard                <span class="number">113</span>s</span><br></pre></td></tr></table></figure></p>
+<h5 id="动态生成-PV-的生命周期"><a href="#动态生成-PV-的生命周期" class="headerlink" title="动态生成 PV 的生命周期"></a>动态生成 PV 的生命周期</h5><p><img src="https://upload-images.jianshu.io/upload_images/6875152-1c0aedb1f55632dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="The lifecycle of dynamically provisioned persistent volumes, claims and the pods using them"></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/kubernetes-in-action-second-edition" target="_blank" rel="noopener">Kubernetes in Action, Second Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Disk/" rel="tag"># Disk</a>
+          
+            <a href="/tags/Storage/" rel="tag"># Storage</a>
+          
+            <a href="/tags/Docker/" rel="tag"># Docker</a>
+          
+            <a href="/tags/Container/" rel="tag"># Container</a>
+          
+            <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          
+            <a href="/tags/Volume/" rel="tag"># Volume</a>
+          
+            <a href="/tags/Persistent/" rel="tag"># Persistent</a>
+          
+            <a href="/tags/NFS/" rel="tag"># NFS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/04/15/fluent-python-2nd-reading-notes-type-hints/" rel="next" title="Fluent Python 2nd 笔记——Type hints（类型标注）介绍">
+                <i class="fa fa-chevron-left"></i> Fluent Python 2nd 笔记——Type hints（类型标注）介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">195</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Pods-与底层存储技术的解耦"><span class="nav-number">1.</span> <span class="nav-text">Pods 与底层存储技术的解耦</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Persistent-volumes-and-claims"><span class="nav-number">1.1.</span> <span class="nav-text">Persistent volumes and claims</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-PV-和-PVC-的优势"><span class="nav-number">1.2.</span> <span class="nav-text">使用 PV 和 PVC 的优势</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建-PV-和-PVC"><span class="nav-number">2.</span> <span class="nav-text">创建 PV 和 PVC</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建-PV-对象"><span class="nav-number">2.1.</span> <span class="nav-text">创建 PV 对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建和查看-PV"><span class="nav-number">2.2.</span> <span class="nav-text">创建和查看 PV</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#声明一个-PV"><span class="nav-number">2.3.</span> <span class="nav-text">声明一个 PV</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建和查看-PVC"><span class="nav-number">2.4.</span> <span class="nav-text">创建和查看 PVC</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在-Pod-中使用-PVC-和-PV"><span class="nav-number">3.</span> <span class="nav-text">在 Pod 中使用 PVC 和 PV</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#在-Pod-中重复使用-PVC"><span class="nav-number">3.1.</span> <span class="nav-text">在 Pod 中重复使用 PVC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#释放-PV"><span class="nav-number">3.2.</span> <span class="nav-text">释放 PV</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#令释放的-PV-重新可用"><span class="nav-number">3.3.</span> <span class="nav-text">令释放的 PV 重新可用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#PV-的-reclaim-policy"><span class="nav-number">3.4.</span> <span class="nav-text">PV 的 reclaim policy</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删除绑定中的-PV"><span class="nav-number">3.5.</span> <span class="nav-text">删除绑定中的 PV</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删除使用中的-PVC"><span class="nav-number">3.6.</span> <span class="nav-text">删除使用中的 PVC</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#理解手动创建的-PV-的生命周期"><span class="nav-number">4.</span> <span class="nav-text">理解手动创建的 PV 的生命周期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PV-的动态创建"><span class="nav-number">5.</span> <span class="nav-text">PV 的动态创建</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#StorageClass-对象"><span class="nav-number">5.1.</span> <span class="nav-text">StorageClass 对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#用-default-storage-class-动态创建-PV"><span class="nav-number">5.2.</span> <span class="nav-text">用 default storage class 动态创建 PV</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#动态生成-PV-的生命周期"><span class="nav-number">5.3.</span> <span class="nav-text">动态生成 PV 的生命周期</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.4m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">22:33</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
