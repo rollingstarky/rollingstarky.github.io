@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="OOP,Design,Pattern,JavaScript,Node.js,Singleton,Dependency Injection,Decoupling," />
+
+
+<meta name="description" content="Singleton单例（Singleton）模式是面向对象编程中最常见的设计模式之一，Node.js 已经有了很简单的实现。使用单例模式的目的在于确保某个类只有一个实例存在，并对该实例的访问进行统一的控制。其主要运用场景如下：  共享有状态的信息 优化资源消耗 同步对某个资源的访问  比如，一个标准的 Database 类会提供对数据库的访问：1234567// &apos;Database.js&apos;expo">
+<meta name="keywords" content="OOP,Design,Pattern,JavaScript,Node.js,Singleton,Dependency Injection,Decoupling">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node.js 设计模式笔记 —— 单例模式">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/05/09/node-js-design-patterns-singleton-pattern/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="Singleton单例（Singleton）模式是面向对象编程中最常见的设计模式之一，Node.js 已经有了很简单的实现。使用单例模式的目的在于确保某个类只有一个实例存在，并对该实例的访问进行统一的控制。其主要运用场景如下：  共享有状态的信息 优化资源消耗 同步对某个资源的访问  比如，一个标准的 Database 类会提供对数据库的访问：1234567// &apos;Database.js&apos;expo">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-187f28cb137f94fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-05-09T14:18:38.395Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Node.js 设计模式笔记 —— 单例模式">
+<meta name="twitter:description" content="Singleton单例（Singleton）模式是面向对象编程中最常见的设计模式之一，Node.js 已经有了很简单的实现。使用单例模式的目的在于确保某个类只有一个实例存在，并对该实例的访问进行统一的控制。其主要运用场景如下：  共享有状态的信息 优化资源消耗 同步对某个资源的访问  比如，一个标准的 Database 类会提供对数据库的访问：1234567// &apos;Database.js&apos;expo">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-187f28cb137f94fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/05/09/node-js-design-patterns-singleton-pattern/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Node.js 设计模式笔记 —— 单例模式 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/05/09/node-js-design-patterns-singleton-pattern/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Node.js 设计模式笔记 —— 单例模式</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-05-09T00:00:00+08:00">2022-05-09</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/05/09/node-js-design-patterns-singleton-pattern/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/05/09/node-js-design-patterns-singleton-pattern/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/05/09/node-js-design-patterns-singleton-pattern/" class="leancloud_visitors" data-flag-title="Node.js 设计模式笔记 —— 单例模式">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">8.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:09</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a>Singleton</h4><p>单例（<strong>Singleton</strong>）模式是面向对象编程中最常见的设计模式之一，Node.js 已经有了很简单的实现。<br>使用单例模式的目的在于确保某个类只有一个实例存在，并对该实例的访问进行统一的控制。其主要运用场景如下：</p>
+<ul>
+<li>共享有状态的信息</li>
+<li>优化资源消耗</li>
+<li>同步对某个资源的访问</li>
+</ul>
+<p>比如，一个标准的 Database 类会提供对数据库的访问：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 'Database.js'</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Database</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(dbName, connectionDetails) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在上述类的标准实现中，通常需要维护一个数据库连接池，毕竟为每一次数据库请求都分别创建一个新的 Database 实例显得不太现实。此外，Database 实例可能会保存部分有状态的数据，比如 pending 的事务列表。<br>因此，一般只在应用开始运行时初始化一个 Database 实例，此后其作为一个唯一的共享实例被所有其他组件使用。</p>
+<p>Node.js 的新用户可能会思考该如何从逻辑层面实现单例模式，事实上远比想象中更简单。<br><strong>将某个实例从模块中导入，即可实现单例模式的所有需求。</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file 'dbInstance.js'</span></span><br><span class="line"><span class="keyword">import</span> &#123;Database&#125; <span class="keyword">from</span> <span class="string">'./Database.js'</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> dbInstance = <span class="keyword">new</span> Database(<span class="string">'my-app-db'</span>, &#123;</span><br><span class="line">  url: <span class="string">'localhost:5432'</span>,</span><br><span class="line">  username: <span class="string">'user'</span>,</span><br><span class="line">  password: <span class="string">'password'</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>只需要简单地导出 Database 类的一个新实例（<code>dbInstance</code>），在当前的整个包中就可以认为只存在这一个 <code>dbInstance</code> 对象（单例），这得益于 Node.js 的模块系统。Node.js 会对模块进行缓存，保证不会在每次导入时都再执行一遍代码。</p>
+<p>再通过如下一行代码即可简单地获取上面创建的共享的 <code>dbInstance</code> 实例：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; dbInstance &#125; <span class="keyword">from</span> <span class="string">'./dbInstance.js'</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="例外情况"><a href="#例外情况" class="headerlink" title="例外情况"></a>例外情况</h4><p>Node.js 中缓存的模块以完整路径作为对其进行查找的 key，所以前面实现的 Singleton 只在当前的包中生效。每个包都有可能包含其私有的依赖，放置在它自己的 <code>node_modules</code> 路径下。因而就可能导致同一个模块存在多个实例，前面实现的 Singleton 不能再保证唯一性。</p>
+<p>例如，前面的 <code>Database.js</code> 和 <code>dbInstance.js</code> 同属于 <code>mydb</code> 包，其 <code>package.json</code> 内容如下：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"name"</span>: <span class="string">"mydb"</span>,</span><br><span class="line">  <span class="attr">"version"</span>: <span class="string">"2.0.0"</span>,</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"module"</span>,</span><br><span class="line">  <span class="attr">"main"</span>: <span class="string">"dbInstance.js"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>又假设有两个包（<code>package-a</code> 和 <code>package-b</code>）各自都拥有包含如下内容的 <code>index.js</code> 文件：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;dbInstance&#125; <span class="keyword">from</span> <span class="string">'mydb'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getDbInstance</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> dbInstance</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>package-a</code> 和 <code>package-b</code> 都依赖包 <code>mydb</code>，但 <code>package-a</code> 依赖版本 1.0.0，<code>package-b</code> 依赖版本 2.0.0。结果就会出现如下结构的依赖关系：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">app/</span><br><span class="line">`-- node_modules</span><br><span class="line">    |-- package-a</span><br><span class="line">    |  `-- node_modules</span><br><span class="line">    |      `-- mydb</span><br><span class="line">    `-- package-b</span><br><span class="line">        `-- node_modules</span><br><span class="line">            `-- mydb</span><br></pre></td></tr></table></figure></p>
+<p>当 <code>package-a</code> 和 <code>package-b</code> 依赖两个不兼容版本的 <code>mydb</code> 模块时，包管理器不会将 <code>mydb</code> 放置在 <code>node_modules</code> 的根路径下，而是在 <code>package-a</code> 和 <code>package-b</code> 下面各自放一个私有的 <code>mydb</code> 副本，从而解决版本冲突。</p>
+<p>此时假如 <code>app/</code> 路径下有一个如下内容的 <code>index.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;getDbInstance <span class="keyword">as</span> getDbFromA&#125; <span class="keyword">from</span> <span class="string">'package-a'</span></span><br><span class="line"><span class="keyword">import</span> &#123;getDbInstance <span class="keyword">as</span> getDbFromB&#125; <span class="keyword">from</span> <span class="string">'package-b'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> isSame = getDbFromA() === getDbFromB()</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'Is the db instance in package-a the same '</span> +</span><br><span class="line">  <span class="string">`as package-b? <span class="subst">$&#123;isSame ? <span class="string">'YES'</span> : <span class="string">'NO'</span>&#125;</span>`</span>)</span><br></pre></td></tr></table></figure></p>
+<p><code>getDbFromA()</code> 和 <code>getDbFromB()</code> 并不会获得同一个 <code>dbInstance</code> 实例，打破了 Singleton 模式的假设。</p>
+<p>当然了，大多数情况下我们并不需要一个 <em>pure</em> Singleton。事实上，通常也只会在应用的 main 包中创建和导入 Singleton。</p>
+<h4 id="Singleton-dependencies"><a href="#Singleton-dependencies" class="headerlink" title="Singleton dependencies"></a>Singleton dependencies</h4><p>最简单地将两个模块组合在一起的方式，就是直接利用 Node.js 的模块系统。如前面所说，这样组合起来的有状态的依赖关系其实就是单例模式。</p>
+<p>实现下面一个博客系统：<br><code>mkdir blog &amp;&amp; cd blog</code><br><code>npm install sqlite3</code></p>
+<p><code>blog/package.json</code>:<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"module"</span>,</span><br><span class="line">  <span class="attr">"dependencies"</span>: &#123;</span><br><span class="line">    <span class="attr">"sqlite3"</span>: <span class="string">"^5.0.8"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>blog/db.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;dirname, join&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"><span class="keyword">import</span> &#123;fileURLToPath&#125; <span class="keyword">from</span> <span class="string">'url'</span></span><br><span class="line"><span class="keyword">import</span> sqlite3 <span class="keyword">from</span> <span class="string">'sqlite3'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> __dirname = dirname(fileURLToPath(<span class="keyword">import</span>.meta.url))</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> db = <span class="keyword">new</span> sqlite3.Database(</span><br><span class="line">  join(__dirname, <span class="string">'data.sqlite'</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p><code>blog/blog.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;promisify&#125; <span class="keyword">from</span> <span class="string">'util'</span></span><br><span class="line"><span class="keyword">import</span> &#123;db&#125; <span class="keyword">from</span> <span class="string">'./db.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> dbRun = promisify(db.run.bind(db))</span><br><span class="line"><span class="keyword">const</span> dbAll = promisify(db.all.bind(db))</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Blog</span> </span>&#123;</span><br><span class="line">  initialize() &#123;</span><br><span class="line">    <span class="keyword">const</span> initQuery = <span class="string">`CREATE TABLE IF NOT EXISTS posts (</span></span><br><span class="line"><span class="string">      id TEXT PRIMARY KEY,</span></span><br><span class="line"><span class="string">      title TEXT NOT NULL,</span></span><br><span class="line"><span class="string">      content TEXT,</span></span><br><span class="line"><span class="string">      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span></span><br><span class="line"><span class="string">    );`</span></span><br><span class="line">    <span class="keyword">return</span> dbRun(initQuery)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  createPost(id, title, content, createdAt) &#123;</span><br><span class="line">    <span class="keyword">return</span> dbRun(<span class="string">'INSERT INTO posts VALUES (?, ?, ?, ?)'</span>,</span><br><span class="line">      id, title, content, createdAt)</span><br><span class="line">  &#125;</span><br><span class="line">  getAllPosts() &#123;</span><br><span class="line">    <span class="keyword">return</span> dbAll(<span class="string">'SELECT * FROM posts ORDER BY created_at DESC'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>blog/index.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Blog&#125; <span class="keyword">from</span> <span class="string">'./blog.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> blog = <span class="keyword">new</span> Blog()</span><br><span class="line">  <span class="keyword">await</span> blog.initialize()</span><br><span class="line">  <span class="keyword">const</span> posts = <span class="keyword">await</span> blog.getAllPosts()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (posts.length === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'No posts available.'</span>)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> post <span class="keyword">of</span> posts) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(post.title)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'-'</span>.repeat(post.title.length))</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Published on <span class="subst">$&#123;<span class="keyword">new</span> <span class="built_in">Date</span>(post.created_at).toISOString()&#125;</span>`</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(post.content)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="built_in">console</span>.error)</span><br></pre></td></tr></table></figure></p>
+<p><code>db.js</code> 创建了一个 <code>db</code> 数据库实例并导出，<code>blog.js</code> 从 <code>db.js</code> 中导入 <code>db</code> 实例并直接在代码中使用。形成了一种简单直观的 <code>blog.js</code> 依赖于 <code>db.js</code> 模块的关系。同时整个项目中的数据库连接都由唯一的 <code>db</code> 单例进行控制。</p>
+<p>运行效果：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ node index.js</span><br><span class="line">No posts available.</span><br></pre></td></tr></table></figure></p>
+<p>可以运行下面的命令插入测试数据：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// import-posts.js</span></span><br><span class="line"><span class="keyword">import</span> &#123;Blog&#125; <span class="keyword">from</span> <span class="string">'./blog.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> posts = [</span><br><span class="line">  &#123;</span><br><span class="line">    id: <span class="string">'my-first-post'</span>,</span><br><span class="line">    title: <span class="string">'My first post'</span>,</span><br><span class="line">    content: <span class="string">'Hello World!\nThis is my first post'</span>,</span><br><span class="line">    created_at: <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="string">'2020-02-03'</span>)</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    id: <span class="string">'iterator-patterns'</span>,</span><br><span class="line">    title: <span class="string">'Node.js iterator patterns'</span>,</span><br><span class="line">    content: <span class="string">'Let\'s talk about some iterator patterns in Node.js\n\n...'</span>,</span><br><span class="line">    created_at: <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="string">'2020-02-06'</span>)</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    id: <span class="string">'dependency-injection'</span>,</span><br><span class="line">    title: <span class="string">'Dependency injection in Node.js'</span>,</span><br><span class="line">    content: <span class="string">'Today we will discuss about dependency injection in Node.js\n\n...'</span>,</span><br><span class="line">    created_at: <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="string">'2020-02-29'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> blog = <span class="keyword">new</span> Blog()</span><br><span class="line">  <span class="keyword">await</span> blog.initialize()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> <span class="built_in">Promise</span>.all(</span><br><span class="line">    posts.map(</span><br><span class="line">      (post) =&gt; blog.createPost(</span><br><span class="line">        post.id,</span><br><span class="line">        post.title,</span><br><span class="line">        post.content,</span><br><span class="line">        post.created_at</span><br><span class="line">      )</span><br><span class="line">    )</span><br><span class="line">  )</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'All posts imported'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="built_in">console</span>.error)</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ node <span class="keyword">import</span>-posts.js</span><br><span class="line">All posts imported</span><br><span class="line">$ node index.js</span><br><span class="line">Dependency injection <span class="keyword">in</span> Node.js</span><br><span class="line">-------------------------------</span><br><span class="line">Published on <span class="number">2020</span><span class="number">-02</span><span class="number">-29</span>T00:<span class="number">00</span>:<span class="number">00.000</span>Z</span><br><span class="line">Today we will discuss about dependency injection <span class="keyword">in</span> Node.js</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line">Node.js iterator patterns</span><br><span class="line">-------------------------</span><br><span class="line">Published on <span class="number">2020</span><span class="number">-02</span><span class="number">-06</span>T00:<span class="number">00</span>:<span class="number">00.000</span>Z</span><br><span class="line">Let<span class="string">'s talk about some iterator patterns in Node.js</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">...</span></span><br><span class="line"><span class="string">My first post</span></span><br><span class="line"><span class="string">-------------</span></span><br><span class="line"><span class="string">Published on 2020-02-03T00:00:00.000Z</span></span><br><span class="line"><span class="string">Hello World!</span></span><br><span class="line"><span class="string">This is my first post</span></span><br></pre></td></tr></table></figure>
+<p>就如上面的代码所示，借助 Singleton 模式，将 <code>db</code> 实例自由地在文件之间传递，可以实现一个很简单的命令行博客管理系统。这也是大多数情况下我们管理有状态的依赖的方式。<br>使用 Singleton 诚然是最简单、即时，可读性最好的方案。但是，假如我们需要在测试过程中 mock 数据库，或者需要终端用户能够自主选择另一个数据库后端，而不是默认提供的 SQLite。<br>对于以上需求，Singleton 反而成为了一个设计更好结构的阻碍。可以在 <code>db.js</code> 中引入 <code>if</code> 语句根据某些条件来选择不同的实现，显然这种方式并不是很美观。</p>
+<h4 id="Dependency-Injection"><a href="#Dependency-Injection" class="headerlink" title="Dependency Injection"></a>Dependency Injection</h4><p>Node.js 的模块系统以及 Singleton 模式可以作为一个很好的管理和组合应用组件的工具，它们非常简单，容易上手。但另一方面，它们也可能会使各组件之间的<strong>耦合</strong>程度加深。<br>在前面的例子中，<code>blog.js</code> 和 <code>db.js</code> 模块是耦合度很高的，<code>blog.js</code> 没有了 <code>db.js</code> 就无法工作，当然也无法使用另一个不同的数据库模块。<br>可以借助 <strong>Dependency Injection</strong> 来弱化模块之间的耦合度。</p>
+<p><strong>依赖注入</strong>表示将某个组件的依赖模块由外部实体（injector）作为<strong>输入</strong>提供。<br>DI 的主要优势在于能够降低耦合度，尤其当模块依赖于有状态的实例（比如数据库连接）时。<strong>每个依赖项并不是硬编码进主体代码，而是由外部传入，意味着这些依赖项可以被替换成任意相互兼容的实例</strong>。使得主体代码本身可以以最小的改动在不同的背景下重用。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-187f28cb137f94fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Dependency injection schematic"></p>
+<p>修改 <code>blog.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;promisify&#125; <span class="keyword">from</span> <span class="string">'util'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Blog</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(db) &#123;</span><br><span class="line">    <span class="keyword">this</span>.db = db</span><br><span class="line">    <span class="keyword">this</span>.dbRun = promisify(db.run.bind(db))</span><br><span class="line">    <span class="keyword">this</span>.dbAll = promisify(db.all.bind(db))</span><br><span class="line">  &#125;</span><br><span class="line">  initialize() &#123;</span><br><span class="line">    <span class="keyword">const</span> initQuery = <span class="string">`CREATE TABLE IF NOT EXISTS posts (</span></span><br><span class="line"><span class="string">      id TEXT PRIMARY KEY,</span></span><br><span class="line"><span class="string">      title TEXT NOT NULL,</span></span><br><span class="line"><span class="string">      content TEXT,</span></span><br><span class="line"><span class="string">      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span></span><br><span class="line"><span class="string">    );`</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.dbRun(initQuery)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  createPost(id, title, content, createdAt) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.dbRun(<span class="string">'INSERT INTO posts VALUES (?, ?, ?, ?)'</span>,</span><br><span class="line">      id, title, content, createdAt)</span><br><span class="line">  &#125;</span><br><span class="line">  getAllPosts() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.dbAll(<span class="string">'SELECT * FROM posts ORDER BY created_at DESC'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最主要的改动在于为 <code>Blog</code> 类添加了 <code>constructor (db)</code> 构造方法，该方法的参数 <code>db</code> 即为 Dependency，Blog 的依赖项，需要在运行时由 Blog 的客户端提供。</p>
+<p>修改 <code>db.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sqlite3 <span class="keyword">from</span> <span class="string">'sqlite3'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createDb</span>(<span class="params">dbFile</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> sqlite3.Database(dbFile)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此版本的 <code>db</code> 模块提供了一个 <code>createDB()</code> 工厂函数，可以在运行时返回一个新的数据库实例。</p>
+<p>修改 <code>index.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;dirname, join&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"><span class="keyword">import</span> &#123;fileURLToPath&#125; <span class="keyword">from</span> <span class="string">'url'</span></span><br><span class="line"><span class="keyword">import</span> &#123;Blog&#125; <span class="keyword">from</span> <span class="string">'./blog.js'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createDb&#125; <span class="keyword">from</span> <span class="string">'./db.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> __dirname = dirname(fileURLToPath(<span class="keyword">import</span>.meta.url))</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> db = createDb(join(__dirname, <span class="string">'data.sqlite'</span>))</span><br><span class="line">  <span class="keyword">const</span> blog = <span class="keyword">new</span> Blog(db)</span><br><span class="line">  <span class="keyword">await</span> blog.initialize()</span><br><span class="line">  <span class="keyword">const</span> posts = <span class="keyword">await</span> blog.getAllPosts()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (posts.length === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'No posts available.'</span>)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> post <span class="keyword">of</span> posts) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(post.title)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'-'</span>.repeat(post.title.length))</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Published on <span class="subst">$&#123;<span class="keyword">new</span> <span class="built_in">Date</span>(post.created_at).toISOString()&#125;</span>`</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(post.content)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="built_in">console</span>.error)</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>createDB()</code> 工厂函数创建数据库实例 <code>db</code>，然后在初始化 Blog 实例时，将 <code>db</code> 作为 Blog 的依赖进行注入。<br>从而 <code>blog.js</code> 与具体的数据库实现进行了分离。</p>
+<p>依赖注入可以提供松耦合和代码重用等优势，但也存在一定的代价。比如无法在编码时解析依赖项，使得理解模块之间的逻辑关系变得更加困难，尤其当应用很大很复杂的时候。<br>此外，我们还必须确保数据库实例（依赖）在 Blog 实例之前创建，从而迫使我们手动构建整个应用的依赖图，以保证顺序正确。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.amazon.com/Node-js-Design-Patterns-production-grade-applications/dp/1839214112" target="_blank" rel="noopener">Node.js Design Patterns: Design and implement production-grade Node.js applications using proven patterns and techniques, 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/OOP/" rel="tag"># OOP</a>
+          
+            <a href="/tags/Design/" rel="tag"># Design</a>
+          
+            <a href="/tags/Pattern/" rel="tag"># Pattern</a>
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+            <a href="/tags/Node-js/" rel="tag"># Node.js</a>
+          
+            <a href="/tags/Singleton/" rel="tag"># Singleton</a>
+          
+            <a href="/tags/Dependency-Injection/" rel="tag"># Dependency Injection</a>
+          
+            <a href="/tags/Decoupling/" rel="tag"># Decoupling</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/05/05/node-js-design-patterns-builder-pattern/" rel="next" title="Node.js 设计模式笔记 —— Builder 模式">
+                <i class="fa fa-chevron-left"></i> Node.js 设计模式笔记 —— Builder 模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">199</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">307</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Singleton"><span class="nav-number">1.</span> <span class="nav-text">Singleton</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#例外情况"><span class="nav-number">2.</span> <span class="nav-text">例外情况</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Singleton-dependencies"><span class="nav-number">3.</span> <span class="nav-text">Singleton dependencies</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Dependency-Injection"><span class="nav-number">4.</span> <span class="nav-text">Dependency Injection</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.4m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">22:54</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
