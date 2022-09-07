@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Design,Pattern,JavaScript,Node.js,Callback,Event,Observer,Asynchronous," />
+
+
+<meta name="description" content="在同步式编程中，为了解决特定的问题，代码被组织成一系列连贯的计算步骤。其中每一个步骤都是阻塞的，即只有当某个操作完成以后，才有可能继续执行下一个步骤。这种方式形成的代码非常容易阅读、理解和调试。 而在异步式编程中，某些操作比如读取文件或者处理一个网络请求，是在“后台”启动和执行的。当我们调用某个异步操作后，即使其并没有执行完毕，该异步操作之后的代码指令也会立刻继续执行。在这种情况下，我们就需要一种">
+<meta name="keywords" content="Design,Pattern,JavaScript,Node.js,Callback,Event,Observer,Asynchronous">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node.js 设计模式笔记 —— Callbacks 和 Events">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/09/07/node-js-design-patterns-callbacks-and-events/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="在同步式编程中，为了解决特定的问题，代码被组织成一系列连贯的计算步骤。其中每一个步骤都是阻塞的，即只有当某个操作完成以后，才有可能继续执行下一个步骤。这种方式形成的代码非常容易阅读、理解和调试。 而在异步式编程中，某些操作比如读取文件或者处理一个网络请求，是在“后台”启动和执行的。当我们调用某个异步操作后，即使其并没有执行完毕，该异步操作之后的代码指令也会立刻继续执行。在这种情况下，我们就需要一种">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-9fbb0d2cfbef3f1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-9577c60299839e83.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-09-07T14:18:50.286Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Node.js 设计模式笔记 —— Callbacks 和 Events">
+<meta name="twitter:description" content="在同步式编程中，为了解决特定的问题，代码被组织成一系列连贯的计算步骤。其中每一个步骤都是阻塞的，即只有当某个操作完成以后，才有可能继续执行下一个步骤。这种方式形成的代码非常容易阅读、理解和调试。 而在异步式编程中，某些操作比如读取文件或者处理一个网络请求，是在“后台”启动和执行的。当我们调用某个异步操作后，即使其并没有执行完毕，该异步操作之后的代码指令也会立刻继续执行。在这种情况下，我们就需要一种">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-9fbb0d2cfbef3f1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/09/07/node-js-design-patterns-callbacks-and-events/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Node.js 设计模式笔记 —— Callbacks 和 Events | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/09/07/node-js-design-patterns-callbacks-and-events/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Node.js 设计模式笔记 —— Callbacks 和 Events</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-09-07T00:00:00+08:00">2022-09-07</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/09/07/node-js-design-patterns-callbacks-and-events/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/09/07/node-js-design-patterns-callbacks-and-events/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/09/07/node-js-design-patterns-callbacks-and-events/" class="leancloud_visitors" data-flag-title="Node.js 设计模式笔记 —— Callbacks 和 Events">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:09</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在同步式编程中，为了解决特定的问题，代码被组织成一系列连贯的计算步骤。其中每一个步骤都是阻塞的，即只有当某个操作完成以后，才有可能继续执行下一个步骤。这种方式形成的代码非常容易阅读、理解和调试。</p>
+<p>而在异步式编程中，某些操作比如读取文件或者处理一个网络请求，是在“后台”启动和执行的。当我们调用某个异步操作后，即使其并没有执行完毕，该异步操作之后的代码指令也会立刻继续执行。<br>在这种情况下，我们就需要一种“通知”机制。当异步操作执行完毕，我们会收到通知，获取该操作的结果并继续之前定义的执行流程。在 Node.js 中，最基础的通知机制就是<strong>回调函数</strong>。它本质上就是一种由 runtime 调用的带有异步操作结果的函数。</p>
+<h3 id="Callback-模式"><a href="#Callback-模式" class="headerlink" title="Callback 模式"></a>Callback 模式</h3><p>回调函数是一种能够传递操作结果的函数，正是异步编程所需要的。JavaScript 对于回调函数来说是一种理想的语言，函数是<strong>第一等对象</strong>，可以轻松地赋值给变量、作为参数传递给另一个函数、作为函数的返回值，以及存储到数据结构中。</p>
+<h4 id="The-continuation-passing-style"><a href="#The-continuation-passing-style" class="headerlink" title="The continuation-passing style"></a>The continuation-passing style</h4><p>在 JavaScript 中，回调函数会作为参数传递给另一个函数，并且在操作完成时连同结果一起被调用。即执行结果被传递给另一个函数（callback），而不是直接返回给调用者。这种方式在函数式编程里称作 <strong>continuation-passing style (CPS)</strong>。</p>
+<p>下面是一个非常简单的同步函数：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">a, b</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>和上述函数等效的 CPS 形式：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">addCps</span>(<span class="params">a, b, callback</span>) </span>&#123;</span><br><span class="line">  callback(a + b)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'before'</span>)</span><br><span class="line">addCps(<span class="number">1</span>, <span class="number">2</span>, result =&gt; <span class="built_in">console</span>.log(<span class="string">`Result: $result`</span>))</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'after'</span>)</span><br><span class="line"><span class="comment">// =&gt; before</span></span><br><span class="line"><span class="comment">// =&gt; Result: $result</span></span><br><span class="line"><span class="comment">// =&gt; after</span></span><br></pre></td></tr></table></figure></p>
+<p><code>addCps</code> 就是一个同步的 CPS 函数。</p>
+<h4 id="Asynchronous-CPS"><a href="#Asynchronous-CPS" class="headerlink" title="Asynchronous CPS"></a>Asynchronous CPS</h4><p><code>addCps</code> 函数的异步版本：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">additionAsync</span>(<span class="params">a, b, callback</span>) </span>&#123;</span><br><span class="line">  setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> callback(a + b), <span class="number">100</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'before'</span>)</span><br><span class="line">additionAsync(<span class="number">1</span>, <span class="number">2</span>, result =&gt; <span class="built_in">console</span>.log(<span class="string">`Result: <span class="subst">$&#123;result&#125;</span>`</span>))</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'after'</span>)</span><br><span class="line"><span class="comment">// =&gt; before</span></span><br><span class="line"><span class="comment">// =&gt; after</span></span><br><span class="line"><span class="comment">// =&gt; Result: 3</span></span><br></pre></td></tr></table></figure></p>
+<p>上面的代码使用 <code>setTimeout</code> 来模拟回调函数的异步调用。由于 <code>setTimeout</code> 触发的是异步操作，它并不会等待回调函数 callback 执行，而是立即返回。将控制权交还给 <code>additionAsync</code> 进而回到调用者身上，执行主程序中的第二个 <code>console.log</code>。当异步操作执行完毕后，程序从之前控制权转移时的位置起恢复执行，callback 中的 <code>console.log</code> 被执行。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-9fbb0d2cfbef3f1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Control flow of an asynchronous function&#39;s invocation"></p>
+<p>总结一下就是，同步函数会阻塞其他操作步骤，直到其自身执行完毕；异步函数会立即返回，它的执行结果会在 event loop 的后续周期中传递给 handler（即回调函数）。</p>
+<h4 id="同步-or-异步"><a href="#同步-or-异步" class="headerlink" title="同步 or 异步"></a>同步 or 异步</h4><p>指令的执行顺序取决于函数的自然属性——同步还是异步，这对于整个应用流程的正确性和效率都有很大的影响。所以需要时刻注意避免制造矛盾和困惑。</p>
+<h5 id="Unleashing-Zalgo"><a href="#Unleashing-Zalgo" class="headerlink" title="Unleashing Zalgo"></a>Unleashing Zalgo</h5><p>一个 API 最危险的情形之一，就是有些时候表现为同步另一些情况下表现为异步。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;readFile&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> cache = <span class="keyword">new</span> <span class="built_in">Map</span>()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">inconsistentRead</span>(<span class="params">filename, cb</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (cache.has(filename)) &#123;</span><br><span class="line">    <span class="comment">// invoked synchronously</span></span><br><span class="line">    cb(cache.get(filename))</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// asynchronous function</span></span><br><span class="line">    readFile(filename, <span class="string">'utf8'</span>, (err, data) =&gt; &#123;</span><br><span class="line">      cache.set(filename, data)</span><br><span class="line">      cb(data)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上述程序就是危险的。假如某个文件是第一次被读取，它会表现为异步操作，读取文件设置缓存；当某个文件的内容已经存在于缓存中时，它会表现为同步操作。</p>
+<p>参考下面的示例：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createFileReader</span>(<span class="params">filename</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> listeners = []</span><br><span class="line">  inconsistentRead(filename, value =&gt; &#123;</span><br><span class="line">    listeners.forEach(<span class="function"><span class="params">listener</span> =&gt;</span> listener(value))</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    onDataReady: <span class="function"><span class="params">listener</span> =&gt;</span> listeners.push(listener)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> reader1 = createFileReader(<span class="string">'data.txt'</span>)</span><br><span class="line">reader1.onDataReady(<span class="function"><span class="params">data</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`First call data: <span class="subst">$&#123;data&#125;</span>`</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> reader2 = createFileReader(<span class="string">'data.txt'</span>)</span><br><span class="line">  reader2.onDataReady(<span class="function"><span class="params">data</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Second call data: <span class="subst">$&#123;data&#125;</span>`</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>createFileReader</code> 函数会创建一个新的 <code>{ onDataReady: function() }</code> 对象作为通知器，以帮助我们为文件读取操作设置多个 listener。若 <code>inconsistentRead</code> 是纯异步操作，实际上 <code>onDataReady</code> 会先被调用，将传入的 listener 添加到 listeners 列表中。之后 <code>inconsistentRead</code> 读取文件内容完毕，回调函数 <code>cb</code> 执行，遍历 listeners 列表并将读取到的文件内容传给 listener。</p>
+<p>实际的执行结果为：<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">First <span class="keyword">call</span> data: some data</span><br></pre></td></tr></table></figure></p>
+<p>第二次读取同一个文件并没有获取到任何内容。</p>
+<p>原因在于，当 <code>reader1</code> 创建时，<code>inconsistentRead</code> 函数表现为异步的，因为该文件是第一次被读取。因而 <code>onDataReady</code> 会在刚开始读取文件时就将传入的 listener 添加到 listeners 列表中。文件读取完毕后 listeners 中注册的 listener 被调用。<br><code>reader2</code> 创建时同一个文件的缓存内容已经存在，<code>inconsistentRead</code> 表现为同步的。它的回调函数会立即调用，遍历 listeners 列表。然而我们是先创建的 <code>reader2</code> 再添加的 listener，这就导致遍历 listeners 列表时，向 listeners 添加 listener 的操作还没有执行，我们传入的 listener 并没有来得及注册。</p>
+<p>在实际的应用中，上述类型的 bug 会非常难以定位和复现。npm 的创造者 Isaac Z. Schlueter 将类似的使用不可预测函数的行为，叫做 <em>unleashing Zalgo</em>。</p>
+<h5 id="使用同步-API"><a href="#使用同步-API" class="headerlink" title="使用同步 API"></a>使用同步 API</h5><p>想修复前面的 <code>inconsistentRead</code> 函数，一种可能的方案就是令其彻底变成同步的。实际上 Node.js 针对基础的 I/O 操作提供了一系列同步的 API。比如 <code>fs.readFileSync</code>。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;readFileSync&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> cache = <span class="keyword">new</span> <span class="built_in">Map</span>()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">consistentReadSync</span>(<span class="params">filename</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (cache.has(filename)) &#123;</span><br><span class="line">    <span class="keyword">return</span> cache.get(filename)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = readFileSync(filename)</span><br><span class="line">    cache.set(filename, data)</span><br><span class="line">    <span class="keyword">return</span> data</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是，使用同步 API 而不是异步 API 也有一定的风险：</p>
+<ul>
+<li>针对特定功能的同步 API 有可能不存在</li>
+<li>同步 API 会阻塞 event loop，暂停任何并发请求。从而破坏 Node.js 的并发模型并拖慢整个应用</li>
+</ul>
+<p>在很多情况下，使用同步 I/O 操作在 Node.js 里都是非常不推荐的。但在一些场景下，同步 I/O 可能是最简单和高效的方案。比如在应用启动时使用同步阻塞 API 加载配置文件。</p>
+<h5 id="通过延迟执行保证异步性"><a href="#通过延迟执行保证异步性" class="headerlink" title="通过延迟执行保证异步性"></a>通过延迟执行保证异步性</h5><p>另一种修复 <code>inconsistentRead</code> 函数的方案就是，将其变成纯异步操作。诀窍就是将同步的回调函数延期到“未来”执行，而不是在同一个 event loop 周期里立即被调用。<br>在 Node.js 中，可以通过 <code>process.nextTick()</code> 来实现。它会接收一个回调函数作为参数，将其推入到事件队列顶部，位于所有 pending 的 I/O 事件之前，然后立即返回。回调函数会在 event loop 再次收回控制权时立即被调用。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;readFile&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> cache = <span class="keyword">new</span> <span class="built_in">Map</span>()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">inconsistentRead</span>(<span class="params">filename, callback</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (cache.has(filename)) &#123;</span><br><span class="line">    <span class="comment">// deferred callback invocation</span></span><br><span class="line">    process.nextTick(<span class="function"><span class="params">()</span> =&gt;</span> callback(cache.get(filename)))</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// asynchronous function</span></span><br><span class="line">    readFile(filename, <span class="string">'utf8'</span>, (err, data) =&gt; &#123;</span><br><span class="line">      cache.set(filename, data)</span><br><span class="line">      callback(data)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="Node-js-回调函数的最佳实践"><a href="#Node-js-回调函数的最佳实践" class="headerlink" title="Node.js 回调函数的最佳实践"></a>Node.js 回调函数的最佳实践</h4><h5 id="回调函数出现在最后"><a href="#回调函数出现在最后" class="headerlink" title="回调函数出现在最后"></a>回调函数出现在最后</h5><p>在所有核心的 Node.js 函数中，当其接收一个回调函数作为输入时，回调函数必须作为最后一个参数传入。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readFile(filename, [options], callback)</span><br></pre></td></tr></table></figure></p>
+<h5 id="error-总是出现在前面"><a href="#error-总是出现在前面" class="headerlink" title="error 总是出现在前面"></a>error 总是出现在前面</h5><p>在 Node.js 中，任何 CPS 函数产生的错误都必须作为回调函数的第一个参数传递，任何实际的执行结果都从第二个参数开始。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">readFile(<span class="string">'foo.txt'</span>, <span class="string">'utf8'</span>, (err, data) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    handleError(err)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    processData(data)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>最佳实践还在于总是检查 error 是否存在，以及 error 的定义必须是 <code>Error</code> 类型。</p>
+<h5 id="传递-error"><a href="#传递-error" class="headerlink" title="传递 error"></a>传递 error</h5><p>在同步的函数中，传递 error 可以通过常用的 <code>throw</code> 语句。而在异步的 CPS 函数中，则可以简单地将 error 传递给链条上的下一个回调函数。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;readFile&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">readJSON</span>(<span class="params">filename, callack</span>) </span>&#123;</span><br><span class="line">  readFile(filename, <span class="string">'utf8'</span>, (err, data) =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> parsed</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="comment">// propagate the error and exit the current function</span></span><br><span class="line">      <span class="keyword">return</span> callack(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">// parse the file contents</span></span><br><span class="line">      parsed = <span class="built_in">JSON</span>.parse(data)</span><br><span class="line">    &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">      <span class="comment">// catch parsing errors</span></span><br><span class="line">      <span class="keyword">return</span> callack(err)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// no errors, propagate just the data</span></span><br><span class="line">    callack(<span class="literal">null</span>, parsed)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="观察者模式"><a href="#观察者模式" class="headerlink" title="观察者模式"></a>观察者模式</h3><p>在 Node.js 中另外一种非常重要和基础的模式就是<strong>观察者（Ovserver）模式</strong>。同 Reactor 模式、回调函数一起，它们都是掌握 Node.js 异步编程的绝对要求。<br>观察者模式定义了一类称为 subject 的对象，它们可以在状态改变时向一系列称为观察者的对象发送通知。它是对回调函数的完美补充。主要区别在于 subject 能够通知多个观察者，而传统的 CPS 回调函数通常只会将结果传递给一个 listener。</p>
+<h4 id="EventEmitter"><a href="#EventEmitter" class="headerlink" title="EventEmitter"></a>EventEmitter</h4><p>观察者模式实际上已经通过 <code>EventEmitter</code> 类内置到 Node.js 的核心中了。<code>EventEmitter</code> 类允许我们注册一个或者多个函数作为 listener，这些 listener 会在特定的事件触发时自动被调用。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-9577c60299839e83.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Listeners receiving events from an EventEmitter"></p>
+<p><code>EventEmitter</code> 类的基础方法如下：</p>
+<ul>
+<li><code>on(event, listener)</code>：该方法允许我们为指定的事件类型（一个字符串）注册一个新的 listener（一个函数）</li>
+<li><code>once(event, listener)</code>：该方法允许我们注册一个新的 listener，并且该 listener 会在事件触发一次之后自动被移除</li>
+<li><code>emit(event, [arg1], [...])</code>：该方法会产生一个新的事件，并向指定向 listeners 传递的额外的参数</li>
+<li><code>removeListener(event, listener)</code>：该方法用来移除某个 listener</li>
+</ul>
+<p>上述所有的方法都会返回一个 <code>EventEmitter</code> 实例并允许被串联起来。</p>
+<h5 id="创建和使用-EventEmitter"><a href="#创建和使用-EventEmitter" class="headerlink" title="创建和使用 EventEmitter"></a>创建和使用 EventEmitter</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;EventEmitter&#125; <span class="keyword">from</span> <span class="string">'events'</span></span><br><span class="line"><span class="keyword">import</span> &#123;readFile&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">findRegex</span>(<span class="params">files, regex</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> emitter = <span class="keyword">new</span> EventEmitter()</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> file <span class="keyword">of</span> files) &#123;</span><br><span class="line">    readFile(file, <span class="string">'utf8'</span>, (err, content) =&gt; &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="keyword">return</span> emitter.emit(<span class="string">'error'</span>, err)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      emitter.emit(<span class="string">'fileread'</span>, file)</span><br><span class="line">      <span class="keyword">const</span> match = content.match(regex)</span><br><span class="line">      <span class="keyword">if</span> (match) &#123;</span><br><span class="line">        match.forEach(<span class="function"><span class="params">elem</span> =&gt;</span> emitter.emit(<span class="string">'found'</span>, file, elem))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> emitter</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">findRegex([<span class="string">'fileA.txt'</span>, <span class="string">'fileB.json'</span>], /hello \w+<span class="regexp">/g)</span></span><br><span class="line"><span class="regexp">  .on('fileread', file =&gt; console.log(`$&#123;file&#125; was read`))</span></span><br><span class="line"><span class="regexp">  .on('found', (file, match) =&gt; console.log(`Matched "$&#123;match&#125;" in $&#123;file&#125;`))</span></span><br><span class="line"><span class="regexp">  .on('error', err =&gt; console.error(`Error emitted $&#123;err.message&#125;`))</span></span><br></pre></td></tr></table></figure>
+<h5 id="令任意对象变得“可监测”"><a href="#令任意对象变得“可监测”" class="headerlink" title="令任意对象变得“可监测”"></a>令任意对象变得“可监测”</h5><p>在 Node.js 的世界里，<code>EventEmitter</code> 很少像上面的例子那样被直接使用。更为常见的情况是其他类继承 <code>EventEmitter</code> 从而变成一个可监测的对象。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;EventEmitter&#125; <span class="keyword">from</span> <span class="string">'events'</span></span><br><span class="line"><span class="keyword">import</span> &#123;readFile&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FindRegex</span> <span class="keyword">extends</span> <span class="title">EventEmitter</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(regex) &#123;</span><br><span class="line">    <span class="keyword">super</span>()</span><br><span class="line">    <span class="keyword">this</span>.regex = regex</span><br><span class="line">    <span class="keyword">this</span>.files = []</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  addFile(file) &#123;</span><br><span class="line">    <span class="keyword">this</span>.files.push(file)</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  find() &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> file <span class="keyword">of</span> <span class="keyword">this</span>.files) &#123;</span><br><span class="line">      readFile(file, <span class="string">'utf8'</span>, (err, content) =&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (err) &#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">this</span>.emit(<span class="string">'error'</span>, err)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.emit(<span class="string">'fileread'</span>, file)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> match = content.match(<span class="keyword">this</span>.regex)</span><br><span class="line">        <span class="keyword">if</span> (match) &#123;</span><br><span class="line">          match.forEach(<span class="function"><span class="params">elem</span> =&gt;</span> <span class="keyword">this</span>.emit(<span class="string">'found'</span>, file, elem))</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> findRegexInstance = <span class="keyword">new</span> FindRegex(<span class="regexp">/hello \w+/g</span>)</span><br><span class="line">findRegexInstance</span><br><span class="line">  .addFile(<span class="string">'fileA.txt'</span>)</span><br><span class="line">  .addFile(<span class="string">'fileB.json'</span>)</span><br><span class="line">  .find()</span><br><span class="line">  .on(<span class="string">'found'</span>, (file, match) =&gt; <span class="built_in">console</span>.log(<span class="string">`Matched "<span class="subst">$&#123;match&#125;</span>" in file <span class="subst">$&#123;file&#125;</span>`</span>))</span><br><span class="line">  .on(<span class="string">'error'</span>, err =&gt; <span class="built_in">console</span>.error(<span class="string">`Error emitted <span class="subst">$&#123;err.message&#125;</span>`</span>))</span><br></pre></td></tr></table></figure></p>
+<h4 id="EventEmitter-vs-Callback"><a href="#EventEmitter-vs-Callback" class="headerlink" title="EventEmitter vs Callback"></a>EventEmitter vs Callback</h4><p>以下的几点可以作为选择 EventEmitter 还是 Callback 的依据：</p>
+<ul>
+<li>当涉及到需要支持不同类型的事件时，Callback 会有一定的限制。实际上 Callback 也可以区分多个事件，只需要将事件类型作为参数传给回调函数，或者接收多个回调函数。但在这样的情况下，EventEmitter 可以提供更优雅的接口和更精简的代码</li>
+<li>当同样的事件可能多次发生或者根本不会发生时，应该使用 EventEmitter。而无论操作是否成功，回调函数都只会被调用一次</li>
+<li>回调函数机制只支持通知一个特定的 listener，而 EventEmitter 允许我们为同一个事件注册多个 listener</li>
+</ul>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="https://www.amazon.com/Node-js-Design-Patterns-production-grade-applications/dp/1839214112" target="_blank" rel="noopener">Node.js Design Patterns: Design and implement production-grade Node.js applications using proven patterns and techniques, 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Design/" rel="tag"># Design</a>
+          
+            <a href="/tags/Pattern/" rel="tag"># Pattern</a>
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+            <a href="/tags/Node-js/" rel="tag"># Node.js</a>
+          
+            <a href="/tags/Callback/" rel="tag"># Callback</a>
+          
+            <a href="/tags/Event/" rel="tag"># Event</a>
+          
+            <a href="/tags/Observer/" rel="tag"># Observer</a>
+          
+            <a href="/tags/Asynchronous/" rel="tag"># Asynchronous</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/09/05/node-js-design-patterns-nodejs-philosophy-and-internal-pattern/" rel="next" title="Node.js 设计模式笔记 —— Node.js 的设计哲学和原理">
+                <i class="fa fa-chevron-left"></i> Node.js 设计模式笔记 —— Node.js 的设计哲学和原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">207</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">318</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Callback-模式"><span class="nav-number">1.</span> <span class="nav-text">Callback 模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#The-continuation-passing-style"><span class="nav-number">1.1.</span> <span class="nav-text">The continuation-passing style</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Asynchronous-CPS"><span class="nav-number">1.2.</span> <span class="nav-text">Asynchronous CPS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同步-or-异步"><span class="nav-number">1.3.</span> <span class="nav-text">同步 or 异步</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Unleashing-Zalgo"><span class="nav-number">1.3.1.</span> <span class="nav-text">Unleashing Zalgo</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用同步-API"><span class="nav-number">1.3.2.</span> <span class="nav-text">使用同步 API</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#通过延迟执行保证异步性"><span class="nav-number">1.3.3.</span> <span class="nav-text">通过延迟执行保证异步性</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Node-js-回调函数的最佳实践"><span class="nav-number">1.4.</span> <span class="nav-text">Node.js 回调函数的最佳实践</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#回调函数出现在最后"><span class="nav-number">1.4.1.</span> <span class="nav-text">回调函数出现在最后</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#error-总是出现在前面"><span class="nav-number">1.4.2.</span> <span class="nav-text">error 总是出现在前面</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#传递-error"><span class="nav-number">1.4.3.</span> <span class="nav-text">传递 error</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#观察者模式"><span class="nav-number">2.</span> <span class="nav-text">观察者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#EventEmitter"><span class="nav-number">2.1.</span> <span class="nav-text">EventEmitter</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建和使用-EventEmitter"><span class="nav-number">2.1.1.</span> <span class="nav-text">创建和使用 EventEmitter</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#令任意对象变得“可监测”"><span class="nav-number">2.1.2.</span> <span class="nav-text">令任意对象变得“可监测”</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#EventEmitter-vs-Callback"><span class="nav-number">2.2.</span> <span class="nav-text">EventEmitter vs Callback</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.4m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">23:35</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
