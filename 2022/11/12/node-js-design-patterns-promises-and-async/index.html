@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Program,JavaScript,Node.js,Async,Promise,Event,Concurrent," />
+
+
+<meta name="description" content="回调函数（Callbacks）是 Node.js 中异步编程的底层构件，但它们远远达不到对用户友好的程度。对于实现代码中最常见的串行控制流，一个未经训练的开发者很容易陷入到 callback hell 问题中。即便实现是正确的，该串行控制流也会显得不必要的复杂和脆弱。 为了获得更好的异步编程体验，第一个出现的就是 promise，一种保存了异步操作的状态和最终结果的对象。Promise 可以轻易地">
+<meta name="keywords" content="Program,JavaScript,Node.js,Async,Promise,Event,Concurrent">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/11/12/node-js-design-patterns-promises-and-async/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="回调函数（Callbacks）是 Node.js 中异步编程的底层构件，但它们远远达不到对用户友好的程度。对于实现代码中最常见的串行控制流，一个未经训练的开发者很容易陷入到 callback hell 问题中。即便实现是正确的，该串行控制流也会显得不必要的复杂和脆弱。 为了获得更好的异步编程体验，第一个出现的就是 promise，一种保存了异步操作的状态和最终结果的对象。Promise 可以轻易地">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-a0d217ff414af74f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-bf70d3d597a899bf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-ae64bdc5e85d3d66.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-11-12T13:20:03.300Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式">
+<meta name="twitter:description" content="回调函数（Callbacks）是 Node.js 中异步编程的底层构件，但它们远远达不到对用户友好的程度。对于实现代码中最常见的串行控制流，一个未经训练的开发者很容易陷入到 callback hell 问题中。即便实现是正确的，该串行控制流也会显得不必要的复杂和脆弱。 为了获得更好的异步编程体验，第一个出现的就是 promise，一种保存了异步操作的状态和最终结果的对象。Promise 可以轻易地">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-a0d217ff414af74f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/11/12/node-js-design-patterns-promises-and-async/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/11/12/node-js-design-patterns-promises-and-async/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-11-12T00:00:00+08:00">2022-11-12</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/11/12/node-js-design-patterns-promises-and-async/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/11/12/node-js-design-patterns-promises-and-async/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/11/12/node-js-design-patterns-promises-and-async/" class="leancloud_visitors" data-flag-title="Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:12</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>回调函数（Callbacks）是 Node.js 中异步编程的底层构件，但它们远远达不到对用户友好的程度。对于实现代码中最常见的串行控制流，一个未经训练的开发者很容易陷入到 callback hell 问题中。即便实现是正确的，该串行控制流也会显得不必要的复杂和脆弱。</p>
+<p>为了获得更好的异步编程体验，第一个出现的就是 <strong>promise</strong>，一种保存了异步操作的状态和最终结果的对象。Promise 可以轻易地被串联起来，实现串行控制流，可以像其他任何对象一样自由地转移。Pormise 大大简化了异步代码，后来在此基础上又有了 <strong>async</strong> 和 <strong>await</strong>，能够令异步代码看起来就像是同步代码一样。</p>
+<h4 id="Promises"><a href="#Promises" class="headerlink" title="Promises"></a>Promises</h4><p>Promises 是 ECMAScript 2015 标准（ES6）的一部分，为传递异步结果提供了一种健壮的解决方案，替代原本的 CPS 样式的回调函数。Promise 能够令所有主要的异步控制流更加易读、简洁和健壮。</p>
+<p>Promise 是一种用来代表异步操作的最终结果（或错误）的对象。在专业术语中，当异步操作未完成时，我们称 Promise 是 <strong>pending</strong> 的；当异步操作成功结束时，Promise 是 <strong>fulfilled</strong> 的；当异步操作因为错误终止时，Promise 是 <strong>rejected</strong> 的；当 Promise 或者是 <strong>fulfilled</strong> 或者是 <strong>rejected</strong>，则将其认定为 <strong>settled</strong>。</p>
+<p>Promise 对象的 <code>then()</code> 方法可以获取成功执行后的结果或者终止时报出的错误：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">promise.then(onFulfilled, onRejected)</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>onFulfilled</code> 是一个回调函数，最终会接收到 Promise 成功时的值；<code>onRejected</code>是另一个回调函数，最终会接收 Promise 异常终止时的值（如果有的话）。</p>
+<p>基于回调函数的如下代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">asyncOperation(arg, (err, result) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) &#123;</span><br><span class="line">    <span class="comment">// handle the error</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// do stuff with the result</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>Promise 实现上述同样的功能，则更加优雅、结构化：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">asyncOperationPromise(arg)</span><br><span class="line">  .then(<span class="function"><span class="params">result</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// do stuff with result</span></span><br><span class="line">  &#125;, err =&gt; &#123;</span><br><span class="line">    <span class="comment">// handle the error</span></span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure></p>
+<p><code>asyncOperationPromise()</code> 会返回一个 Promise，可以被用来获取最终结果的值或者失败的原因。但最为关键的属性是，<code>then()</code> 方法会同步地返回另一个 Promise。<br>更进一步地，如果 <code>onFulfilled</code> 或者 <code>onRejected</code> 函数返回一个值 <code>x</code>，那么 <code>then()</code> 方法返回的 Promise 会有以下行为：</p>
+<ul>
+<li>若 <code>x</code> 是一个值，则 <code>then()</code> 返回的 Promise 使用 <code>x</code> 作为自身完成时的值</li>
+<li>若 <code>x</code> 是一个 Promise 且成功完成，则 <code>x</code> 完成时返回的值作为 <code>then()</code> 返回的 Promise 完成时的值</li>
+<li>若 <code>x</code> 是一个 Promise 且因为错误终止，则 <code>x</code> 终止的原因作为 <code>then()</code> 返回的 Promise 终止的原因</li>
+</ul>
+<p>上述行为能够令我们将多个 promise 连接成链，轻松地将异步操作聚合在一起。如果我们没有指定一个 <code>onFulfilled</code> 或者 <code>onRejected</code> handler，Promise 完成时的值或者终止时的原因都会自动地传递给链条中的下一个 Promise。通过 Promise 链，任务的执行顺序突然变得很简单。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">asyncOperationPromise(arg)</span><br><span class="line">  .then(<span class="function"><span class="params">result1</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// return another promise</span></span><br><span class="line">    <span class="keyword">return</span> asyncOperationPromise(arg2)</span><br><span class="line">  &#125;)</span><br><span class="line">  .then(<span class="function"><span class="params">result2</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// return a value</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'done'</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .then(<span class="literal">undefined</span>, err =&gt; &#123;</span><br><span class="line">    <span class="comment">// any error in the chain is caught here</span></span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure></p>
+<h4 id="promise-API"><a href="#promise-API" class="headerlink" title="promise API"></a>promise API</h4><p>Promise 构造函数（<code>new Promise((resolve, reject) =&gt; {})</code>）会创建一个新的 Promise 实例，其完成还是终止取决于作为参数传入的函数的行为。<br>作为参数传入的函数接收如下两个参数：</p>
+<ul>
+<li><code>resolve(obj)</code>：resolve 是一个函数，在调用时为 Promise 提供完成时的值。当 <code>obj</code> 是值时，则 <code>obj</code> 本身作为 Promise 完成时的值；当 <code>obj</code> 是另一个 Promise 时，则 <code>obj</code> 完成时的值作为当前 Promise 完成时的值</li>
+<li><code>reject(err)</code>：Promise 因为 <code>err</code> 终止</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">delay</span>(<span class="params">milliseconds</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(<span class="keyword">new</span> <span class="built_in">Date</span>())</span><br><span class="line">    &#125;, milliseconds)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;<span class="keyword">new</span> <span class="built_in">Date</span>().getSeconds()&#125;</span>s\nDelaying...`</span>)</span><br><span class="line">delay(<span class="number">1000</span>)</span><br><span class="line">  .then(<span class="function"><span class="params">newDate</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;newDate.getSeconds()&#125;</span>s`</span>)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+<p>Promise 最重要的静态方法：</p>
+<ul>
+<li><code>Promise.resolve(obj)</code>：从另一个 Promise、thenable 对象或者值创建一个新的 Promise</li>
+<li><code>Promise.reject(err)</code>：创建一个 Promise，该 Promise 会因为 <code>err</code> 终止</li>
+<li><code>Promise.all(iterable)</code>：从一个可迭代对象创建 Promise，若该 iterable 中的每一项都提供了一个 fulfill 值，则 Promise 最终以包含这些值的列表作为 fulfill 值；若其中有任意一项 reject，则 Promise.all() 返回的 Promise 以第一个 reject 的 err 终止</li>
+<li><code>Promise.allSettled(iterable)</code>：此方法会等待所有输入的 Promise 或者 fulfill 或者 reject，之后返回一个包含所有 fulfill 值和 reject 原因的列表</li>
+<li><code>Promise.race(iterable)</code>：返回可迭代对象中第一个 fulfill 或 reject 的 Promise</li>
+</ul>
+<p>Promise 关键的实例方法：</p>
+<ul>
+<li><code>promise.catch(onRejected)</code>：实际上就是 <code>promise.then(undefined, onRejected)</code> 的语法糖</li>
+<li><code>promise.finally(onFinally)</code>：允许我们设置一个 <code>onFinally</code> 回调函数，在 <code>promise</code> fulfill 或者 reject 时调用</li>
+</ul>
+<h4 id="顺序执行"><a href="#顺序执行" class="headerlink" title="顺序执行"></a>顺序执行</h4><p>顺序执行意味着，每次只执行一系列任务中的一个，完成后再依次执行后面的任务。这一系列任务的先后顺序必须是预先定义好的，因为一个任务的结果有可能影响后续任务的执行。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-a0d217ff414af74f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="An example of sequential execution flow with three tasks"></p>
+<p>上述执行流程有着不同形式的变种：</p>
+<ul>
+<li>顺序执行一系列已知的任务，不需要在它们之间传递数据</li>
+<li>前一个任务的输出作为后一个任务的输入（<em>chain</em>、<em>pipeline</em>、<em>waterfall</em>）</li>
+<li>迭代任务集合，同时在每个元素上一个接一个地运行异步任务</li>
+</ul>
+<p><code>package.json</code>：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"name"</span>: <span class="string">"03-promises-web-spider-v2"</span>,</span><br><span class="line">  <span class="attr">"version"</span>: <span class="string">"1.0.0"</span>,</span><br><span class="line">  <span class="attr">"private"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"module"</span>,</span><br><span class="line">  <span class="attr">"scripts"</span>: &#123;</span><br><span class="line">    <span class="attr">"test"</span>: <span class="string">"echo \"Error: no test specified\" &amp;&amp; exit 1"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"dependencies"</span>: &#123;</span><br><span class="line">    <span class="attr">"cheerio"</span>: <span class="string">"^1.0.0-rc.3"</span>,</span><br><span class="line">    <span class="attr">"mkdirp"</span>: <span class="string">"^0.5.1"</span>,</span><br><span class="line">    <span class="attr">"superagent"</span>: <span class="string">"^5.2.2"</span>,</span><br><span class="line">    <span class="attr">"slug"</span>: <span class="string">"^1.1.0"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"engines"</span>: &#123;</span><br><span class="line">    <span class="attr">"node"</span>: <span class="string">"&gt;=14"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"engineStrict"</span>: <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>spider.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;promises <span class="keyword">as</span> fsPromises&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;dirname&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"><span class="keyword">import</span> superagent <span class="keyword">from</span> <span class="string">'superagent'</span></span><br><span class="line"><span class="keyword">import</span> mkdirp <span class="keyword">from</span> <span class="string">'mkdirp'</span></span><br><span class="line"><span class="keyword">import</span> &#123;urlToFilename, getPageLinks&#125; <span class="keyword">from</span> <span class="string">'./utils.js'</span></span><br><span class="line"><span class="keyword">import</span> &#123;promisify&#125; <span class="keyword">from</span> <span class="string">'util'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> mkdirpPromises = promisify(mkdirp)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">download</span>(<span class="params">url, filename</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`Downloading <span class="subst">$&#123;url&#125;</span>`</span>)</span><br><span class="line">  <span class="keyword">let</span> content</span><br><span class="line">  <span class="keyword">return</span> superagent.get(url)</span><br><span class="line">    .then(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">      content = res.text</span><br><span class="line">      <span class="keyword">return</span> mkdirpPromises(dirname(filename))</span><br><span class="line">    &#125;)</span><br><span class="line">    .then(<span class="function"><span class="params">()</span> =&gt;</span> fsPromises.writeFile(filename, content))</span><br><span class="line">    .then(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">`Downloaded and saved: <span class="subst">$&#123;url&#125;</span>`</span>)</span><br><span class="line">      <span class="keyword">return</span> content</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">spiderLinks</span>(<span class="params">currentUrl, content, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> promise = <span class="built_in">Promise</span>.resolve()</span><br><span class="line">  <span class="keyword">if</span> (nesting === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> promise</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> links = getPageLinks(currentUrl, content)</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> link <span class="keyword">of</span> links) &#123;</span><br><span class="line">    promise = promise.then(<span class="function"><span class="params">()</span> =&gt;</span> spider(link, nesting - <span class="number">1</span>))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> promise</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">spider</span>(<span class="params">url, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> filename = urlToFilename(url)</span><br><span class="line">  <span class="keyword">return</span> fsPromises.readFile(filename, <span class="string">'utf8'</span>)</span><br><span class="line">    .catch(<span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (err.code !== <span class="string">'ENOENT'</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> err</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// The file doesn't exist, so let’s download it</span></span><br><span class="line">      <span class="keyword">return</span> download(url, filename)</span><br><span class="line">    &#125;)</span><br><span class="line">    .then(<span class="function"><span class="params">content</span> =&gt;</span> spiderLinks(url, content, nesting))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>spider-cli.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;spider&#125; <span class="keyword">from</span> <span class="string">'./spider.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> url = process.argv[<span class="number">2</span>]</span><br><span class="line"><span class="keyword">const</span> nesting = <span class="built_in">Number</span>.parseInt(process.argv[<span class="number">3</span>], <span class="number">10</span>) || <span class="number">1</span></span><br><span class="line"></span><br><span class="line">spider(url, nesting)</span><br><span class="line">  .then(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'Download complete'</span>))</span><br><span class="line">  .catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<p><code>utils.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;join, extname&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"><span class="keyword">import</span> &#123;URL&#125; <span class="keyword">from</span> <span class="string">'url'</span></span><br><span class="line"><span class="keyword">import</span> slug <span class="keyword">from</span> <span class="string">'slug'</span></span><br><span class="line"><span class="keyword">import</span> cheerio <span class="keyword">from</span> <span class="string">'cheerio'</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getLinkUrl</span>(<span class="params">currentUrl, element</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> parsedLink = <span class="keyword">new</span> URL(element.attribs.href || <span class="string">''</span>, currentUrl)</span><br><span class="line">  <span class="keyword">const</span> currentParsedUrl = <span class="keyword">new</span> URL(currentUrl)</span><br><span class="line">  <span class="keyword">if</span> (parsedLink.hostname !== currentParsedUrl.hostname ||</span><br><span class="line">    !parsedLink.pathname) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> parsedLink.toString()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">urlToFilename</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> parsedUrl = <span class="keyword">new</span> URL(url)</span><br><span class="line">  <span class="keyword">const</span> urlPath = parsedUrl.pathname.split(<span class="string">'/'</span>)</span><br><span class="line">    .filter(<span class="function"><span class="keyword">function</span> (<span class="params">component</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> component !== <span class="string">''</span></span><br><span class="line">    &#125;)</span><br><span class="line">    .map(<span class="function"><span class="keyword">function</span> (<span class="params">component</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> slug(component, &#123;<span class="attr">remove</span>: <span class="literal">null</span>&#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">    .join(<span class="string">'/'</span>)</span><br><span class="line">  <span class="keyword">let</span> filename = join(parsedUrl.hostname, urlPath)</span><br><span class="line">  <span class="keyword">if</span> (!extname(filename).match(<span class="regexp">/htm/</span>)) &#123;</span><br><span class="line">    filename += <span class="string">'.html'</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> filename</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getPageLinks</span>(<span class="params">currentUrl, body</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(cheerio.load(body)(<span class="string">'a'</span>))</span><br><span class="line">    .map(<span class="function"><span class="keyword">function</span> (<span class="params">element</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> getLinkUrl(currentUrl, element)</span><br><span class="line">    &#125;)</span><br><span class="line">    .filter(<span class="built_in">Boolean</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>node spider-cli.js http://www.baidu.com 2</code></p>
+<p>其中的 <code>spiderLinks()</code> 函数通过循环动态地构建了一条 Promise 链：</p>
+<ul>
+<li>先定义一个“空的” Promise 对象（resovle 到 <code>undefined</code>），这个空 Promise 只是作为链条的起点</li>
+<li>在循环中，不断将 <code>promise</code> 变量更新为新的 Promise 对象（通过调用上一个 Promise 的 <code>then()</code> 方法得到）。这就是 Promise 的异步遍历模式</li>
+</ul>
+<p>在 <code>for</code> 循环的最后，<code>promise</code> 变量会是最后一个 <code>then()</code> 方法返回的 Promise，因而只有当链条中的所有 Promise 都 resolve 时，<code>promise</code> 才会 resolve。</p>
+<p>纵观所有代码，我们可以不需要像使用 callback 那样，强制地包含众多错误传递逻辑。因而大大减少了代码量和出错的机会。</p>
+<h4 id="并行执行"><a href="#并行执行" class="headerlink" title="并行执行"></a>并行执行</h4><p>在某些情况下，一系列异步任务的执行顺序并不重要，我们需要的只是当所有的任务都完成后能收到通知。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-bf70d3d597a899bf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="An example of parallel execution with three tasks"></p>
+<p>虽然 Node.js 是单线程的，但得益于其 non-blocking nature，我们仍可以实现并发行为。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-ae64bdc5e85d3d66.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="An example of how asynchronous tasks run in parallel"></p>
+<p>比如我们有一个 Main 函数需要执行两个异步任务：</p>
+<ul>
+<li>Main 函数首先触发异步任务 Task1 和 Task2 的执行。异步任务触发后，会将程序控制权立即交还给 Main 函数，再转交给 event loop</li>
+<li>当 Task1 中的异步任务结束时，event loop 调用 Task1 的回调函数，将控制权交给 Task1。Task1 执行完成自身内部的同步指令，通知 Main 函数并返还控制权</li>
+<li>当 Task2 中的异步任务结束时，event loop 调用 Task2 的回调函数，将控制权交给 Task2。在 Task2 的终点，Main 函数再次被通知。Main 函数得知 Task1 和 Task2 全部结束，继续执行或者返回结果</li>
+</ul>
+<p>简单来说，在 Node.js 中，我们只能并发地执行异步操作，因为它们的并发行为是由内部的非阻塞 API 控制的。同步（阻塞）操作无法并发地执行，除非它们的执行与异步操作交织在一起，或者由 <code>setTimeout()</code>、<code>setImmediate()</code> 包裹。</p>
+<p>Promise 实现并发执行流，可以借助内置的 <code>Promise.all()</code> 方法。该方法会返回一个新的 Promise，只有当所有传入的 Promise 都 fulfill 时，新 Promise 才会 fulfill。如果传入的 Promise 之间没有因果关系，这些 Promise 就会并发地执行。</p>
+<p>对于前面的 spider 应用，只需要将 <code>spiderLinks()</code> 函数改为如下形式：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">spiderLinks</span>(<span class="params">currentUrl, content, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (nesting === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Promise</span>.resolve()</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> links = getPageLinks(currentUrl, content)</span><br><span class="line">  <span class="keyword">const</span> promises = links.map(<span class="function"><span class="params">link</span> =&gt;</span> spider(link, nesting - <span class="number">1</span>))</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Promise</span>.all(promises)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="Async-await"><a href="#Async-await" class="headerlink" title="Async/await"></a>Async/await</h4><p>Promise 链相对于 callback hell 来说肯定是要好太多的，但是我们仍然需要调用 <code>then()</code> 方法，以及为链条中的每一个任务创建新的函数，对于日常编程中非常普遍的控制流来说还是比较麻烦。而 Async/await 可以帮助我们写出像同步代码一样可读性强、容易理解的异步代码。<br>Async 函数是一种特殊的函数，在函数体里面可以使用 <code>await</code> 表达式“暂停”任意一个 Promise 的执行，将控制权交还给 async 函数的调用者，等该 Promise revolve 后再返回到暂停的地方继续执行。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">delay</span>(<span class="params">milliseconds</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(<span class="keyword">new</span> <span class="built_in">Date</span>())</span><br><span class="line">    &#125;, milliseconds)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">playingWithDelays</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'Initial date: '</span>, <span class="keyword">new</span> <span class="built_in">Date</span>())</span><br><span class="line">  <span class="keyword">const</span> dateAfterOneSecond = <span class="keyword">await</span> delay(<span class="number">1000</span>)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'Date after one second: '</span>, dateAfterOneSecond)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> dateAfterThreeSeconds = <span class="keyword">await</span> delay(<span class="number">3000</span>)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'Date after 3 secnods: '</span>, dateAfterThreeSeconds)</span><br><span class="line">  <span class="keyword">return</span> <span class="string">'done'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">playingWithDelays()</span><br><span class="line">  .then(<span class="function"><span class="params">result</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`After 4 seconds: <span class="subst">$&#123;result&#125;</span>`</span>)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h4><p>Async/await 的另一个巨大的优势在于，它能够标准化 <code>try...catch</code> 代码块的行为，不管是针对同步代码中的 <code>throw</code>，抑或是异步代码中的 Promise reject。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">delayError</span>(<span class="params">milliseconds</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      reject(<span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">`Error after <span class="subst">$&#123;milliseconds&#125;</span>ms`</span>))</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">playingWithErrors</span>(<span class="params">throwSyncError</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (throwSyncError) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'This is a synchronous error'</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">await</span> delayError(<span class="number">1000</span>)</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`We have an error: <span class="subst">$&#123;err.message&#125;</span>`</span>)</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Done'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// playingWithErrors(true)</span></span><br><span class="line">playingWithErrors(<span class="literal">false</span>)</span><br></pre></td></tr></table></figure></p>
+<h4 id="串行执行"><a href="#串行执行" class="headerlink" title="串行执行"></a>串行执行</h4><p>借助 Async/await，可以对之前的 spider 应用实现很多优化。比如 <code>download()</code> 函数：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">download</span>(<span class="params">url, filename</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`Downloading <span class="subst">$&#123;url&#125;</span>`</span>)</span><br><span class="line">  <span class="keyword">const</span> &#123;<span class="attr">text</span>: content&#125; = <span class="keyword">await</span> superagent.get(url)</span><br><span class="line">  <span class="keyword">await</span> mkdirpPromises(dirname(filename))</span><br><span class="line">  <span class="keyword">await</span> fsPromises.writeFile(filename, content)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`Downloaded and saved: <span class="subst">$&#123;url&#125;</span>`</span>)</span><br><span class="line">  <span class="keyword">return</span> content</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>整段代码行数大大减少，看起来也很“平整”，没有任何层级和缩进。</p>
+<p>接下来是 <code>spiderLinks()</code> 函数，使用 async/await 异步地遍历一个列表：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">spiderLinks</span>(<span class="params">currentUrl, content, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (nesting === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> links = getPageLinks(currentUrl, content)</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> link <span class="keyword">of</span> links) &#123;</span><br><span class="line">    <span class="keyword">await</span> spider(link, nesting - <span class="number">1</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后是 <code>spider()</code> 函数，如何简单地通过 <code>try...catch</code> 处理错误，令异步代码更加易读：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">spider</span>(<span class="params">url, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> filename = urlToFilename(url)</span><br><span class="line">  <span class="keyword">let</span> content</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    content = <span class="keyword">await</span> fsPromises.readFile(filename, <span class="string">'utf8'</span>)</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="keyword">if</span> (err.code !== <span class="string">'ENOENT'</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> err</span><br><span class="line">    &#125;</span><br><span class="line">    content = <span class="keyword">await</span> download(url, filename)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> spiderLinks(url, content, nesting)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="并行执行-1"><a href="#并行执行-1" class="headerlink" title="并行执行"></a>并行执行</h4><p>使用纯 async/await 实现并行的异步执行流程，可以参考如下代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">spiderLinks</span>(<span class="params">currentUrl, content, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (nesting === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> links = getPageLinks(currentUrl, content)</span><br><span class="line">  <span class="keyword">const</span> promises = links.map(<span class="function"><span class="params">link</span> =&gt;</span> spider(link, nesting - <span class="number">1</span>))</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> promise <span class="keyword">of</span> promises) &#123;</span><br><span class="line">    <span class="keyword">await</span> promise</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然而上述代码存在一定的问题。如果列表中有一个 Promise reject 了，我们不得不等待列表中其他所有的 Promise 都 resolve，<code>spiderLinks()</code> 函数返回的 Promise 才会 reject。这种行为在多数情况下都是不理想的。<br>我们通常都会想要在操作发生错误的第一时间捕获错误信息。因而并行执行异步操作，最后仍建议使用下面形式的代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">spiderLinks</span>(<span class="params">currentUrl, content, nesting</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (nesting === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> links = getPageLinks(currentUrl, content)</span><br><span class="line">  <span class="keyword">const</span> promises = links.map(<span class="function"><span class="params">link</span> =&gt;</span> spider(link, nesting - <span class="number">1</span>))</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Promise</span>.all(promises)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.amazon.com/Node-js-Design-Patterns-production-grade-applications/dp/1839214112" target="_blank" rel="noopener">Node.js Design Patterns: Design and implement production-grade Node.js applications using proven patterns and techniques, 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+            <a href="/tags/Node-js/" rel="tag"># Node.js</a>
+          
+            <a href="/tags/Async/" rel="tag"># Async</a>
+          
+            <a href="/tags/Promise/" rel="tag"># Promise</a>
+          
+            <a href="/tags/Event/" rel="tag"># Event</a>
+          
+            <a href="/tags/Concurrent/" rel="tag"># Concurrent</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/11/12/node-js-design-patterns-streams/" rel="next" title="Node.js 设计模式笔记 —— Streams 流编程">
+                <i class="fa fa-chevron-left"></i> Node.js 设计模式笔记 —— Streams 流编程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">209</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">322</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Promises"><span class="nav-number">1.</span> <span class="nav-text">Promises</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#promise-API"><span class="nav-number">2.</span> <span class="nav-text">promise API</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#顺序执行"><span class="nav-number">3.</span> <span class="nav-text">顺序执行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#并行执行"><span class="nav-number">4.</span> <span class="nav-text">并行执行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Async-await"><span class="nav-number">5.</span> <span class="nav-text">Async/await</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#错误处理"><span class="nav-number">6.</span> <span class="nav-text">错误处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#串行执行"><span class="nav-number">7.</span> <span class="nav-text">串行执行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#并行执行-1"><span class="nav-number">8.</span> <span class="nav-text">并行执行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">9.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.4m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">24:04</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

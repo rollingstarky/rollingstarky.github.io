@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Program,Functional,JavaScript,Node.js,Stream,Pipe," />
+
+
+<meta name="description" content="Streams 是 Node.js 的组件和模式中最重要的几个之一。在 Node.js 这类基于 event 的平台上，最高效的实时地处理 I/O 的方式，就是当有输入时就立即接收数据，应用产生输出时就立即发送数据。 Buffering vs streaming对于输入数据的处理，buffer 模式会将来自资源的所有数据收集到 buffer 中，待操作完成再将数据作为单一的 blob of dat">
+<meta name="keywords" content="Program,Functional,JavaScript,Node.js,Stream,Pipe">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node.js 设计模式笔记 —— Streams 流编程">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/11/12/node-js-design-patterns-streams/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="Streams 是 Node.js 的组件和模式中最重要的几个之一。在 Node.js 这类基于 event 的平台上，最高效的实时地处理 I/O 的方式，就是当有输入时就立即接收数据，应用产生输出时就立即发送数据。 Buffering vs streaming对于输入数据的处理，buffer 模式会将来自资源的所有数据收集到 buffer 中，待操作完成再将数据作为单一的 blob of dat">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-1a65d864ebeb31b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0e7f97e927ba0479.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-11-12T13:23:27.600Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Node.js 设计模式笔记 —— Streams 流编程">
+<meta name="twitter:description" content="Streams 是 Node.js 的组件和模式中最重要的几个之一。在 Node.js 这类基于 event 的平台上，最高效的实时地处理 I/O 的方式，就是当有输入时就立即接收数据，应用产生输出时就立即发送数据。 Buffering vs streaming对于输入数据的处理，buffer 模式会将来自资源的所有数据收集到 buffer 中，待操作完成再将数据作为单一的 blob of dat">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-1a65d864ebeb31b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/11/12/node-js-design-patterns-streams/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Node.js 设计模式笔记 —— Streams 流编程 | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/11/12/node-js-design-patterns-streams/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Node.js 设计模式笔记 —— Streams 流编程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-11-12T00:00:00+08:00">2022-11-12</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/11/12/node-js-design-patterns-streams/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/11/12/node-js-design-patterns-streams/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/11/12/node-js-design-patterns-streams/" class="leancloud_visitors" data-flag-title="Node.js 设计模式笔记 —— Streams 流编程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">16k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:16</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>Streams</strong> 是 Node.js 的组件和模式中最重要的几个之一。在 Node.js 这类基于 event 的平台上，最高效的实时地处理 I/O 的方式，就是当有输入时就立即接收数据，应用产生输出时就立即发送数据。</p>
+<h3 id="Buffering-vs-streaming"><a href="#Buffering-vs-streaming" class="headerlink" title="Buffering vs streaming"></a>Buffering vs streaming</h3><p>对于输入数据的处理，buffer 模式会将来自资源的所有数据收集到 buffer 中，待操作完成再将数据作为单一的 blob of data 传递给调用者；相反地，streams 允许我们一旦接收到数据就立即对其进行处理。<br>单从效率上说，streams 在空间（内存使用）和时间（CPU 时钟）的使用上都更加高效。此外 Node.js 中的 streams 还有另一个重要的优势：<strong>组合性</strong>。</p>
+<h4 id="空间效率"><a href="#空间效率" class="headerlink" title="空间效率"></a>空间效率</h4><p><strong>使用 buffered API 完成 Gzip 压缩：</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;promises <span class="keyword">as</span> fs&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;gzip&#125; <span class="keyword">from</span> <span class="string">'zlib'</span></span><br><span class="line"><span class="keyword">import</span> &#123;promisify&#125; <span class="keyword">from</span> <span class="string">'util'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> gzipPromise = promisify(gzip)</span><br><span class="line"><span class="keyword">const</span> filename = process.argv[<span class="number">2</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> data = <span class="keyword">await</span> fs.readFile(filename)</span><br><span class="line">  <span class="keyword">const</span> gzippedData = <span class="keyword">await</span> gzipPromise(data)</span><br><span class="line">  <span class="keyword">await</span> fs.writeFile(<span class="string">`<span class="subst">$&#123;filename&#125;</span>.gz`</span>, gzippedData)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'File successfully compressed'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main()</span><br></pre></td></tr></table></figure></p>
+<p><code>node gzip-buffer.js &lt;path to file&gt;</code></p>
+<p>如果我们使用上述代码压缩一个足够大的文件（比如说 8G），我们很有可能会收到一个错误信息，类似文件大小超过了允许的最大 buffer 大小。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RangeError [ERR_FS_FILE_TOO_LARGE]: File size (8130792448) is greater</span><br><span class="line">than possible Buffer: 2147483647 bytes</span><br></pre></td></tr></table></figure></p>
+<p>即便没有超过 V8 的 buffer 大小限制，也有可能出现物理内存不够用的情况。</p>
+<p><strong>使用 streams 实现 Gzip 压缩：</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createReadStream, createWriteStream&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createGzip&#125; <span class="keyword">from</span> <span class="string">'zlib'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> filename = process.argv[<span class="number">2</span>]</span><br><span class="line"></span><br><span class="line">createReadStream(filename)</span><br><span class="line">  .pipe(createGzip())</span><br><span class="line">  .pipe(createWriteStream(<span class="string">`<span class="subst">$&#123;filename&#125;</span>.gz`</span>))</span><br><span class="line">  .on(<span class="string">'finish'</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'File successfully compressed'</span>))</span><br></pre></td></tr></table></figure></p>
+<p>streams 的优势来自于其接口和可组合性，允许我们实现干净、优雅、简洁的代码。对于此处的示例，它可以对任意大小的文件进行压缩，只需要消耗常量的内存。</p>
+<h4 id="时间效率"><a href="#时间效率" class="headerlink" title="时间效率"></a>时间效率</h4><p>假设我们需要创建一个应用，能够压缩一个文件并将其上传到一个远程的 HTTP 服务器。而服务器端则负责将接收到的文件解压缩并保存。<br>如果我们使用 buffer API 实现客户端组件，则只有当整个文件读取和压缩完成之后，上传操作才开始触发。同时在服务器端，也只有当所有数据都接收完毕之后才开始解压缩操作。</p>
+<p>更好一些的方案是使用 streams。在客户端，streams 允许我们以 chunk 为单位从文件系统逐个、分段地读取数据，并立即进行压缩和发送。同时在服务器端，每个 chunk 被接收到后会立即进行解压缩。</p>
+<p>服务端程序：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createServer&#125; <span class="keyword">from</span> <span class="string">'http'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createWriteStream&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createGunzip&#125; <span class="keyword">from</span> <span class="string">'zlib'</span></span><br><span class="line"><span class="keyword">import</span> &#123;basename, join&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> server = createServer(<span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> filename = basename(req.headers[<span class="string">'x-filename'</span>])</span><br><span class="line">  <span class="keyword">const</span> destFilename = join(<span class="string">'received_files'</span>, filename)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`File request received: <span class="subst">$&#123;filename&#125;</span>`</span>)</span><br><span class="line">  req</span><br><span class="line">    .pipe(createGunzip())</span><br><span class="line">    .pipe(createWriteStream(destFilename))</span><br><span class="line">    .on(<span class="string">'finish'</span>, () =&gt; &#123;</span><br><span class="line">      res.writeHead(<span class="number">201</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/plain'</span>&#125;)</span><br><span class="line">      res.end(<span class="string">'OK\n'</span>)</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">`File saved: <span class="subst">$&#123;destFilename&#125;</span>`</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">server.listen(<span class="number">3000</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'Listening on http://localhost:3000'</span>))</span><br></pre></td></tr></table></figure></p>
+<p>客户端程序：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;request&#125; <span class="keyword">from</span> <span class="string">'http'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createGzip&#125; <span class="keyword">from</span> <span class="string">'zlib'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createReadStream&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;basename&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> filename = process.argv[<span class="number">2</span>]</span><br><span class="line"><span class="keyword">const</span> serverHost = process.argv[<span class="number">3</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> httpRequestOptions = &#123;</span><br><span class="line">  hostname: serverHost,</span><br><span class="line">  port: <span class="number">3000</span>,</span><br><span class="line">  path: <span class="string">'/'</span>,</span><br><span class="line">  method: <span class="string">'PUT'</span>,</span><br><span class="line">  headers: &#123;</span><br><span class="line">    <span class="string">'Content-Type'</span>: <span class="string">'application/octet-stream'</span>,</span><br><span class="line">    <span class="string">'Content-Encoding'</span>: <span class="string">'gzip'</span>,</span><br><span class="line">    <span class="string">'X-Filename'</span>: basename(filename)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> req = request(httpRequestOptions, (res) =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`Server response: <span class="subst">$&#123;res.statusCode&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">createReadStream(filename)</span><br><span class="line">  .pipe(createGzip())</span><br><span class="line">  .pipe(req)</span><br><span class="line">  .on(<span class="string">'finish'</span>, () =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'File successfully sent'</span>)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure></p>
+<p><code>mkdir received_files</code><br><code>node gzip-receive.js</code><br><code>node gzip-send.js &lt;path to file&gt; localhost</code></p>
+<p>借助 streams，整套流程的流水线在我们接收到第一个数据块的时候就开始启动了，完全不需要等待整个文件被读取。除此之外，下一个数据块能够被读取时，不需要等到之前的任务完成就能被处理。即另一条流水线被并行地被装配执行，Node.js 可以将这些异步的任务并行化地执行。只需要保证数据块最终的顺序是固定的，而 Node.js 中 streams 的内部实现机制保证了这一点。</p>
+<h4 id="组合性"><a href="#组合性" class="headerlink" title="组合性"></a>组合性</h4><p>借助于 <code>pipe()</code> 方法，不同的 stream 能够被组合在一起。每个处理单元负责各自的单一功能，最终被 <code>pipe()</code> 连接起来。因为 streams 拥有统一的接口，它们彼此之间在 API 层面是互通的。只需要 pipeline 支持前一个 stream 生成的数据类型（可以是二进制、纯文本甚至对象等）。</p>
+<h5 id="客户端加密"><a href="#客户端加密" class="headerlink" title="客户端加密"></a>客户端加密</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createCipheriv, randomBytes&#125; <span class="keyword">from</span> <span class="string">'crypto'</span></span><br><span class="line"><span class="keyword">import</span> &#123;request&#125; <span class="keyword">from</span> <span class="string">'http'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createGzip&#125; <span class="keyword">from</span> <span class="string">'zlib'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createReadStream&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;basename&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> filename = process.argv[<span class="number">2</span>]</span><br><span class="line"><span class="keyword">const</span> serverHost = process.argv[<span class="number">3</span>]</span><br><span class="line"><span class="keyword">const</span> secret = Buffer.from(process.argv[<span class="number">4</span>], <span class="string">'hex'</span>)</span><br><span class="line"><span class="keyword">const</span> iv = randomBytes(<span class="number">16</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> httpRequestOptions = &#123;</span><br><span class="line">  hostname: serverHost,</span><br><span class="line">  port: <span class="number">3000</span>,</span><br><span class="line">  path: <span class="string">'/'</span>,</span><br><span class="line">  method: <span class="string">'PUT'</span>,</span><br><span class="line">  headers: &#123;</span><br><span class="line">    <span class="string">'Content-Type'</span>: <span class="string">'application/octet-stream'</span>,</span><br><span class="line">    <span class="string">'Content-Encoding'</span>: <span class="string">'gzip'</span>,</span><br><span class="line">    <span class="string">'X-Filename'</span>: basename(filename),</span><br><span class="line">    <span class="string">'X-Initialization-Vector'</span>: iv.toString(<span class="string">'hex'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> req = request(httpRequestOptions, (res) =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`Server response: <span class="subst">$&#123;res.statusCode&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">createReadStream(filename)</span><br><span class="line">  .pipe(createGzip())</span><br><span class="line">  .pipe(createCipheriv(<span class="string">'aes192'</span>, secret, iv))</span><br><span class="line">  .pipe(req)</span><br><span class="line">  .on(<span class="string">'finish'</span>, () =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'File successfully sent'</span>)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+<h5 id="服务端加密"><a href="#服务端加密" class="headerlink" title="服务端加密"></a>服务端加密</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createServer&#125; <span class="keyword">from</span> <span class="string">'http'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createWriteStream&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createGunzip&#125; <span class="keyword">from</span> <span class="string">'zlib'</span></span><br><span class="line"><span class="keyword">import</span> &#123;basename, join&#125; <span class="keyword">from</span> <span class="string">'path'</span></span><br><span class="line"><span class="keyword">import</span> &#123;createDecipheriv, randomBytes&#125; <span class="keyword">from</span> <span class="string">'crypto'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> secret = randomBytes(<span class="number">24</span>)</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`Generated secret: <span class="subst">$&#123;secret.toString(<span class="string">'hex'</span>)&#125;</span>`</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> server = createServer(<span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> filename = basename(req.headers[<span class="string">'x-filename'</span>])</span><br><span class="line">  <span class="keyword">const</span> iv = Buffer.from(</span><br><span class="line">    req.headers[<span class="string">'x-initialization-vector'</span>], <span class="string">'hex'</span></span><br><span class="line">  )</span><br><span class="line">  <span class="keyword">const</span> destFilename = join(<span class="string">'received_files'</span>, filename)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`File request received: <span class="subst">$&#123;filename&#125;</span>`</span>)</span><br><span class="line">  req</span><br><span class="line">    .pipe(createDecipheriv(<span class="string">'aes192'</span>, secret, iv))</span><br><span class="line">    .pipe(createGunzip())</span><br><span class="line">    .pipe(createWriteStream(destFilename))</span><br><span class="line">    .on(<span class="string">'finish'</span>, () =&gt; &#123;</span><br><span class="line">      res.writeHead(<span class="number">201</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/plain'</span>&#125;)</span><br><span class="line">      res.end(<span class="string">'OK\n'</span>)</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">`File saved: <span class="subst">$&#123;destFilename&#125;</span>`</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">server.listen(<span class="number">3000</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'Listening on http://localhost:3000'</span>))</span><br></pre></td></tr></table></figure>
+<h3 id="Streams-详解"><a href="#Streams-详解" class="headerlink" title="Streams 详解"></a>Streams 详解</h3><p>实际上在 Node.js 中的任何地方都可见到 streams。比如核心模块 fs 有 <code>createReadStream()</code> 方法用来读取文件内容，<code>createWriteStream()</code> 方法用来向文件写入数据；HTTP <code>request</code> 和 <code>response</code> 对象本质上也是 stream；zlib 模块允许我们通过流接口压缩和解压缩数据；甚至 crypto 模块也提供了一些有用的流函数比如 <code>createCipheriv</code> 和 <code>createDecipheriv</code>。</p>
+<h4 id="streams-的结构"><a href="#streams-的结构" class="headerlink" title="streams 的结构"></a>streams 的结构</h4><p>Node.js 中的每一个 stream 对象，都是对以下四种虚拟基类里任意一种的实现，这四个虚拟类都属于 <code>stream</code> 核心模块：</p>
+<ul>
+<li><code>Readable</code></li>
+<li><code>Writable</code></li>
+<li><code>Duplex</code></li>
+<li><code>Transform</code></li>
+</ul>
+<p>每一个 stream 类同时也是 <code>EventEmitter</code> 的实例，实际上 Streams 可以生成几种类型的 event。比如当一个 <code>Readable</code> 流读取完毕时触发 <code>end</code> 事件，<code>Writable</code> 流吸入完毕时触发 <code>finish</code> 事件，或者当任意错误发生时抛出 <code>error</code>。</p>
+<p>Steams 之所以足够灵活，一个重要的原因就是它们不仅仅能够处理 binary data，还支持几乎任意的 JavaScript 值。实际上 streams 有以下两种操作模式：</p>
+<ul>
+<li>Binary mode：以 chunk 的形式（比如 buffers 或 strings）传输数据</li>
+<li>Object mode：通过由独立对象（可以包含任意 JavaScript 值）组成的序列传输数据</li>
+</ul>
+<p>上述两种模式使得我们不仅仅可以利用 streams 处理 I/O 操作，还能够帮助我们以函数式的方式将多个处理单元优雅地组合起来。</p>
+<h4 id="从-Readable-streams-读取数据"><a href="#从-Readable-streams-读取数据" class="headerlink" title="从 Readable streams 读取数据"></a>从 Readable streams 读取数据</h4><h5 id="non-flowing-mode"><a href="#non-flowing-mode" class="headerlink" title="non-flowing mode"></a>non-flowing mode</h5><p>默认模式。<code>readable</code> 事件表示有新的数据可供读取，再通过 <code>read()</code> 方法同步地从内部 buffer 读取数据，返回一个 Buffer 对象。<br>即从 stream 按需拉取数据。当 stream 以 Binary 模式工作时，我们还可以给 <code>read()</code> 方法指定一个 <code>size</code> 值，以读取特定数量的数据。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">process.stdin</span><br><span class="line">  .on(<span class="string">'readable'</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> chunk</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'New data available'</span>)</span><br><span class="line">    <span class="keyword">while</span> ((chunk = process.stdin.read()) !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(</span><br><span class="line">        <span class="string">`Chunk read (<span class="subst">$&#123;chunk.length&#125;</span> bytes): "<span class="subst">$&#123;chunk.toString()&#125;</span>"`</span></span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">  .on(<span class="string">'end'</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'End of stream'</span>))</span><br></pre></td></tr></table></figure></p>
+<h5 id="flowing-mode"><a href="#flowing-mode" class="headerlink" title="flowing mode"></a>flowing mode</h5><p>此模式下，数据并不会像之前那样通过 <code>read()</code> 方法拉取，而是一旦有数据可用，就主动推送给 <code>data</code> 事件的 listener。flowing 模式对于数据流的控制，相对而言灵活性较低一些。<br>由于默认是 non-flowing 模式，为了使用 flowing 模式，需要绑定一个 listener 给 <code>data</code> 事件或者显式地调用 <code>resume()</code> 方法。调用 <code>pause()</code> 方法会导致 stream 暂时停止发送 <code>data</code> 事件，任何传入的数据会先被缓存到内部 buffer。即 stream 又切换回 non-flowing 模式。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">process.stdin</span><br><span class="line">  .on(<span class="string">'readable'</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> chunk</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'New data available'</span>)</span><br><span class="line">    <span class="keyword">while</span> ((chunk = process.stdin.read()) !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(</span><br><span class="line">        <span class="string">`Chunk read (<span class="subst">$&#123;chunk.length&#125;</span> bytes): "<span class="subst">$&#123;chunk.toString()&#125;</span>"`</span></span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">  .on(<span class="string">'end'</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'End of stream'</span>))</span><br></pre></td></tr></table></figure></p>
+<h5 id="Async-iterators"><a href="#Async-iterators" class="headerlink" title="Async iterators"></a>Async iterators</h5><p>Readable 流同时也是 async iterators。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> chunk <span class="keyword">of</span> process.stdin) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'New data available'</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(</span><br><span class="line">      <span class="string">`Chunk read (<span class="subst">$&#123;chunk.length&#125;</span> bytes): "<span class="subst">$&#123;chunk.toString()&#125;</span>"`</span></span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'End of stream'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main()</span><br></pre></td></tr></table></figure></p>
+<h4 id="实现-Readable-streams"><a href="#实现-Readable-streams" class="headerlink" title="实现 Readable streams"></a>实现 Readable streams</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Readable&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"><span class="keyword">import</span> Chance <span class="keyword">from</span> <span class="string">'chance'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> chance = Chance()</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomStream</span> <span class="keyword">extends</span> <span class="title">Readable</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(options) &#123;</span><br><span class="line">    <span class="keyword">super</span>(options)</span><br><span class="line">    <span class="keyword">this</span>.emittedBytes = <span class="number">0</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _read(size) &#123;</span><br><span class="line">    <span class="keyword">const</span> chunk = chance.string(&#123;<span class="attr">length</span>: size&#125;)</span><br><span class="line">    <span class="keyword">this</span>.push(chunk, <span class="string">'utf8'</span>)</span><br><span class="line">    <span class="keyword">this</span>.emittedBytes += chunk.length</span><br><span class="line">    <span class="keyword">if</span> (chance.bool(&#123;<span class="attr">likelihood</span>: <span class="number">5</span>&#125;)) &#123;</span><br><span class="line">      <span class="keyword">this</span>.push(<span class="literal">null</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> randomStream = <span class="keyword">new</span> RandomStream()</span><br><span class="line">randomStream</span><br><span class="line">  .on(<span class="string">'data'</span>, (chunk) =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Chunk received (<span class="subst">$&#123;chunk.length&#125;</span> bytes): <span class="subst">$&#123;chunk.toString()&#125;</span>`</span>)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+<p>为了实现一个自定义的 Readable stream，首先必须创建一个新的类，该类继承自 <code>stream</code> 模块中的 <code>Readable</code>。其次新创建的类中必须包含 <code>_read()</code> 方法的实现。<br>上面代码中的 <code>_read()</code> 方法做了以下几件事：</p>
+<ul>
+<li>借助第三方的 <code>chance</code> 模块，生成一个长度为 <code>size</code> 的随机字符串</li>
+<li>通过 <code>push()</code> 方法将字符传推送到内部 buffer</li>
+<li>依据 5% 的几率自行终止，终止时推送 <code>null</code> 到内部 buffer，作为 stream 的结束标志</li>
+</ul>
+<p><strong>简化版实现</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Readable&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"><span class="keyword">import</span> Chance <span class="keyword">from</span> <span class="string">'chance'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> chance = <span class="keyword">new</span> Chance()</span><br><span class="line"><span class="keyword">let</span> emittedBytes = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> randomStream = <span class="keyword">new</span> Readable(&#123;</span><br><span class="line">  read(size) &#123;</span><br><span class="line">    <span class="keyword">const</span> chunk = chance.string(&#123;<span class="attr">length</span>: size&#125;)</span><br><span class="line">    <span class="keyword">this</span>.push(chunk, <span class="string">'utf8'</span>)</span><br><span class="line">    emittedBytes += chunk.length</span><br><span class="line">    <span class="keyword">if</span> (chance.bool(&#123;<span class="attr">likelihood</span>: <span class="number">5</span>&#125;)) &#123;</span><br><span class="line">      <span class="keyword">this</span>.push(<span class="literal">null</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">randomStream</span><br><span class="line">  .on(<span class="string">'data'</span>, (chunk) =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Chunk received (<span class="subst">$&#123;chunk.length&#125;</span> bytes): <span class="subst">$&#123;chunk.toString()&#125;</span>`</span>)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure></p>
+<h5 id="从可迭代对象创建-Readable-streams"><a href="#从可迭代对象创建-Readable-streams" class="headerlink" title="从可迭代对象创建 Readable streams"></a>从可迭代对象创建 Readable streams</h5><p><code>Readable.from()</code> 方法支持从数组或者其他可迭代对象（比如 generators, iterators, async iterators）创建 Readable streams。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Readable&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> mountains = [</span><br><span class="line">  &#123;<span class="attr">name</span>: <span class="string">'Everest'</span>, <span class="attr">height</span>: <span class="number">8848</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">name</span>: <span class="string">'K2'</span>, <span class="attr">height</span>: <span class="number">8611</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">name</span>: <span class="string">'Kangchenjunga'</span>, <span class="attr">height</span>: <span class="number">8586</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">name</span>: <span class="string">'Lhotse'</span>, <span class="attr">height</span>: <span class="number">8516</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">name</span>: <span class="string">'Makalu'</span>, <span class="attr">height</span>: <span class="number">8481</span>&#125;</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> mountainsStream = Readable.from(mountains)</span><br><span class="line">mountainsStream.on(<span class="string">'data'</span>, (mountain) =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;mountain.name.padStart(<span class="number">14</span>)&#125;</span>\t<span class="subst">$&#123;mountain.height&#125;</span>m`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<h4 id="Writable-streams"><a href="#Writable-streams" class="headerlink" title="Writable streams"></a>Writable streams</h4><h5 id="向流写入数据"><a href="#向流写入数据" class="headerlink" title="向流写入数据"></a>向流写入数据</h5><p><code>write()</code> 方法可以向 Writable stream 写入数据。<br><code>writable.write(chunk, [encoding], [callback])</code></p>
+<p><code>end()</code> 方法可以向 stream 表明没有更多的数据需要写入。<br><code>writable.end([chunk], [encoding], [callback])</code></p>
+<p><code>callback</code> 回调函数等同于为 <code>finish</code> 事件注册了一个 listener，会在流中写入的所有数据刷新到底层资源中时触发。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createServer&#125; <span class="keyword">from</span> <span class="string">'http'</span></span><br><span class="line"><span class="keyword">import</span> Chance <span class="keyword">from</span> <span class="string">'chance'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> chance = <span class="keyword">new</span> Chance()</span><br><span class="line"><span class="keyword">const</span> server = createServer(<span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">  res.writeHead(<span class="number">200</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/plain'</span>&#125;)</span><br><span class="line">  <span class="keyword">while</span> (chance.bool(&#123;<span class="attr">likelihood</span>: <span class="number">95</span>&#125;)) &#123;</span><br><span class="line">    res.write(<span class="string">`<span class="subst">$&#123;chance.string()&#125;</span>\n`</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  res.end(<span class="string">'\n\n'</span>)</span><br><span class="line">  res.on(<span class="string">'finish'</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'All data sent'</span>))</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">server.listen(<span class="number">8080</span>, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'listening on http://localhost:8080'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>上面代码中 HTTP 服务里的 <code>res</code> 对象是一个 <code>http.ServerResponse</code> 对象，实际上也是一个 Writable stream。</p>
+<h5 id="实现-Writable-stream"><a href="#实现-Writable-stream" class="headerlink" title="实现 Writable stream"></a>实现 Writable stream</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Writable&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"><span class="keyword">import</span> &#123;promises <span class="keyword">as</span> fs&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ToFileStream</span> <span class="keyword">extends</span> <span class="title">Writable</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(options) &#123;</span><br><span class="line">    <span class="keyword">super</span>(&#123;...options, <span class="attr">objectMode</span>: <span class="literal">true</span>&#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _write(chunk, encoding, cb) &#123;</span><br><span class="line">    fs.writeFile(chunk.path, chunk.content)</span><br><span class="line">      .then(<span class="function"><span class="params">()</span> =&gt;</span> cb())</span><br><span class="line">      .catch(cb)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tfs = <span class="keyword">new</span> ToFileStream()</span><br><span class="line"></span><br><span class="line">tfs.write(&#123;<span class="attr">path</span>: <span class="string">'file1.txt'</span>, <span class="attr">content</span>: <span class="string">'Hello'</span>&#125;)</span><br><span class="line">tfs.write(&#123;<span class="attr">path</span>: <span class="string">'file2.txt'</span>, <span class="attr">content</span>: <span class="string">'Node.js'</span>&#125;)</span><br><span class="line">tfs.write(&#123;<span class="attr">path</span>: <span class="string">'file3.txt'</span>, <span class="attr">content</span>: <span class="string">'streams'</span>&#125;)</span><br><span class="line">tfs.end(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'All files created'</span>))</span><br></pre></td></tr></table></figure>
+<p><strong>简化形式</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Writable&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"><span class="keyword">import</span> &#123;promises <span class="keyword">as</span> fs&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tfs = <span class="keyword">new</span> Writable(&#123;</span><br><span class="line">  objectMode: <span class="literal">true</span>,</span><br><span class="line">  write(chunk, encoding, cb) &#123;</span><br><span class="line">    fs.writeFile(chunk.path, chunk.content)</span><br><span class="line">      .then(<span class="function"><span class="params">()</span> =&gt;</span> cb())</span><br><span class="line">      .catch(cb)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">tfs.write(&#123;<span class="attr">path</span>: <span class="string">'file1.txt'</span>, <span class="attr">content</span>: <span class="string">'Hello'</span>&#125;)</span><br><span class="line">tfs.write(&#123;<span class="attr">path</span>: <span class="string">'file2.txt'</span>, <span class="attr">content</span>: <span class="string">'Node.js'</span>&#125;)</span><br><span class="line">tfs.write(&#123;<span class="attr">path</span>: <span class="string">'file3.txt'</span>, <span class="attr">content</span>: <span class="string">'streams'</span>&#125;)</span><br><span class="line">tfs.end(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'All files created'</span>))</span><br></pre></td></tr></table></figure></p>
+<h4 id="Duplex-streams"><a href="#Duplex-streams" class="headerlink" title="Duplex streams"></a>Duplex streams</h4><p>Duplex 流，既 Readable 又 Writable 的流。它的场景在于，有时候我们描述的实体既是数据源，也是数据的接收者，比如网络套接字。<br>Duplex 流同时继承来着 <code>stream.Readable</code> 和 <code>stream.Writable</code> 的方法。<br>为了创建一个自定义的 Duplex 流，我们必须同时提供 <code>_read()</code> 和 <code>_write()</code> 的实现。</p>
+<h4 id="Transform-streams"><a href="#Transform-streams" class="headerlink" title="Transform streams"></a>Transform streams</h4><p>Transform 流是一种特殊类型的 Duplex 流，主要针对数据的转换。<br>对于 Duplex 流来说，流入和流出的数据之间并没有直接的联系。比如一个 TCP 套接字，只是从远端接收或者发送数据，套接字本身不知晓输入输出之间的任何关系。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-1a65d864ebeb31b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Duplex stream"></p>
+<p>而 Transform 流则会对收到的每一段数据都应用某种转换操作，从 Writable 端接收数据，进行某种形式地转换后再通过 Readable 端提供给外部。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-0e7f97e927ba0479.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Transform stream"></p>
+<h5 id="实现-Transform-流"><a href="#实现-Transform-流" class="headerlink" title="实现 Transform 流"></a>实现 Transform 流</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Transform&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReplaceStream</span> <span class="keyword">extends</span> <span class="title">Transform</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(searchStr, replaceStr, options) &#123;</span><br><span class="line">    <span class="keyword">super</span>(&#123;...options&#125;)</span><br><span class="line">    <span class="keyword">this</span>.searchStr = searchStr</span><br><span class="line">    <span class="keyword">this</span>.replaceStr = replaceStr</span><br><span class="line">    <span class="keyword">this</span>.tail = <span class="string">''</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _transform(chunk, encoding, callback) &#123;</span><br><span class="line">    <span class="keyword">const</span> pieces = (<span class="keyword">this</span>.tail + chunk).split(<span class="keyword">this</span>.searchStr)</span><br><span class="line">    <span class="keyword">const</span> lastPiece = pieces[pieces.length - <span class="number">1</span>]</span><br><span class="line">    <span class="keyword">const</span> tailLen = <span class="keyword">this</span>.searchStr.length - <span class="number">1</span></span><br><span class="line">    <span class="keyword">this</span>.tail = lastPiece.slice(-tailLen)</span><br><span class="line">    pieces[pieces.length - <span class="number">1</span>] = lastPiece.slice(<span class="number">0</span>, -tailLen)</span><br><span class="line">    <span class="keyword">this</span>.push(pieces.join(<span class="keyword">this</span>.replaceStr))</span><br><span class="line">    callback()</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _flush(callback) &#123;</span><br><span class="line">    <span class="keyword">this</span>.push(<span class="keyword">this</span>.tail)</span><br><span class="line">    callback()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> replaceStream = <span class="keyword">new</span> ReplaceStream(<span class="string">'World'</span>, <span class="string">'Node.js'</span>)</span><br><span class="line">replaceStream.on(<span class="string">'data'</span>, chunk =&gt; <span class="built_in">console</span>.log(chunk.toString()))</span><br><span class="line">replaceStream.write(<span class="string">'Hello W'</span>)</span><br><span class="line">replaceStream.write(<span class="string">'orld'</span>)</span><br><span class="line">replaceStream.end()</span><br></pre></td></tr></table></figure>
+<p>其中核心的 <code>_transform()</code> 方法，其有着和 Writable 流的 <code>_write()</code> 方法基本一致的签名，但并不会将处理后的数据写入底层资源，而是通过 <code>this.push()</code> 推送给内部 buffer，正如 Readable 流中 <code>_read()</code> 方法的行为。<br>所以形成了 Transform 流整体上接收、转换、发送的行为。<br><code>_flush()</code> 则会在流结束前调用。</p>
+<p><strong>简化形式</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Transform&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> searchStr = <span class="string">'World'</span></span><br><span class="line"><span class="keyword">const</span> replaceStr = <span class="string">'Node.js'</span></span><br><span class="line"><span class="keyword">let</span> tail = <span class="string">''</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> replaceStream = <span class="keyword">new</span> Transform(&#123;</span><br><span class="line">  defaultEncoding: <span class="string">'utf-8'</span>,</span><br><span class="line"></span><br><span class="line">  transform(chunk, encoding, cb) &#123;</span><br><span class="line">    <span class="keyword">const</span> pieces = (tail + chunk).split(searchStr)</span><br><span class="line">    <span class="keyword">const</span> lastPiece = pieces[pieces.length - <span class="number">1</span>]</span><br><span class="line">    <span class="keyword">const</span> tailLen = searchStr.length - <span class="number">1</span></span><br><span class="line">    tail = lastPiece.slice(-tailLen)</span><br><span class="line">    pieces[pieces.length - <span class="number">1</span>] = lastPiece.slice(<span class="number">0</span>, -tailLen)</span><br><span class="line">    <span class="keyword">this</span>.push(pieces.join(replaceStr))</span><br><span class="line">    cb()</span><br><span class="line">  &#125;,</span><br><span class="line">  flush(cb) &#123;</span><br><span class="line">    <span class="keyword">this</span>.push(tail)</span><br><span class="line">    cb()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line">replaceStream.on(<span class="string">'data'</span>, chunk =&gt; <span class="built_in">console</span>.log(chunk.toString()))</span><br><span class="line">replaceStream.write(<span class="string">'Hello W'</span>)</span><br><span class="line">replaceStream.write(<span class="string">'orld'</span>)</span><br><span class="line">replaceStream.end()</span><br></pre></td></tr></table></figure></p>
+<h4 id="Transform-流筛选和聚合数据"><a href="#Transform-流筛选和聚合数据" class="headerlink" title="Transform 流筛选和聚合数据"></a>Transform 流筛选和聚合数据</h4><p>数据源 <code>data.csv</code>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">type,country,profit</span><br><span class="line">Household,Namibia,597290.92</span><br><span class="line">Baby Food,Iceland,808579.10</span><br><span class="line">Meat,Russia,277305.60</span><br><span class="line">Meat,Italy,413270.00</span><br><span class="line">Cereal,Malta,174965.25</span><br><span class="line">Meat,Indonesia,145402.40</span><br><span class="line">Household,Italy,728880.54</span><br></pre></td></tr></table></figure></p>
+<p><code>package.json</code>:<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"module"</span>,</span><br><span class="line">  <span class="attr">"main"</span>: <span class="string">"index.js"</span>,</span><br><span class="line">  <span class="attr">"dependencies"</span>: &#123;</span><br><span class="line">    <span class="attr">"csv-parse"</span>: <span class="string">"^4.10.1"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"engines"</span>: &#123;</span><br><span class="line">    <span class="attr">"node"</span>: <span class="string">"&gt;=14"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"engineStrict"</span>: <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>FilterByCountry</code> Transform 流 <code>filter-by-country.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Transform&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">FilterByCountry</span> <span class="keyword">extends</span> <span class="title">Transform</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(country, options = &#123;&#125;) &#123;</span><br><span class="line">    options.objectMode = <span class="literal">true</span></span><br><span class="line">    <span class="keyword">super</span>(options)</span><br><span class="line">    <span class="keyword">this</span>.country = country</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _transform(record, enc, cb) &#123;</span><br><span class="line">    <span class="keyword">if</span> (record.country === <span class="keyword">this</span>.country) &#123;</span><br><span class="line">      <span class="keyword">this</span>.push(record)</span><br><span class="line">    &#125;</span><br><span class="line">    cb()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>SumProfit</code> Transform 流 <code>sum-profit.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;Transform&#125; <span class="keyword">from</span> <span class="string">'stream'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">SumProfit</span> <span class="keyword">extends</span> <span class="title">Transform</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(options = &#123;&#125;) &#123;</span><br><span class="line">    options.objectMode = <span class="literal">true</span></span><br><span class="line">    <span class="keyword">super</span>(options)</span><br><span class="line">    <span class="keyword">this</span>.total = <span class="number">0</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _transform(record, enc, cb) &#123;</span><br><span class="line">    <span class="keyword">this</span>.total += <span class="built_in">Number</span>.parseFloat(record.profit)</span><br><span class="line">    cb()</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _flush(cb) &#123;</span><br><span class="line">    <span class="keyword">this</span>.push(<span class="keyword">this</span>.total.toString())</span><br><span class="line">    cb()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>index.js</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createReadStream&#125; <span class="keyword">from</span> <span class="string">'fs'</span></span><br><span class="line"><span class="keyword">import</span> parse <span class="keyword">from</span> <span class="string">'csv-parse'</span></span><br><span class="line"><span class="keyword">import</span> &#123;FilterByCountry&#125; <span class="keyword">from</span> <span class="string">'./filter-by-conutry.js'</span></span><br><span class="line"><span class="keyword">import</span> &#123;SumProfit&#125; <span class="keyword">from</span> <span class="string">'./sum-profit.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> csvParser = parse(&#123;<span class="attr">columns</span>: <span class="literal">true</span>&#125;)</span><br><span class="line"></span><br><span class="line">createReadStream(<span class="string">'data.csv'</span>)</span><br><span class="line">  .pipe(csvParser)</span><br><span class="line">  .pipe(<span class="keyword">new</span> FilterByCountry(<span class="string">'Italy'</span>))</span><br><span class="line">  .pipe(<span class="keyword">new</span> SumProfit())</span><br><span class="line">  .pipe(process.stdout)</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.amazon.com/Node-js-Design-Patterns-production-grade-applications/dp/1839214112" target="_blank" rel="noopener">Node.js Design Patterns: Design and implement production-grade Node.js applications using proven patterns and techniques, 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Program/" rel="tag"># Program</a>
+          
+            <a href="/tags/Functional/" rel="tag"># Functional</a>
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+            <a href="/tags/Node-js/" rel="tag"># Node.js</a>
+          
+            <a href="/tags/Stream/" rel="tag"># Stream</a>
+          
+            <a href="/tags/Pipe/" rel="tag"># Pipe</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/09/07/node-js-design-patterns-callbacks-and-events/" rel="next" title="Node.js 设计模式笔记 —— Callbacks 和 Events">
+                <i class="fa fa-chevron-left"></i> Node.js 设计模式笔记 —— Callbacks 和 Events
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2022/11/12/node-js-design-patterns-promises-and-async/" rel="prev" title="Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式">
+                Node.js 设计模式笔记 —— 由 Promises 和 Async、Await 实现的异步模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">209</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">322</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Buffering-vs-streaming"><span class="nav-number">1.</span> <span class="nav-text">Buffering vs streaming</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#空间效率"><span class="nav-number">1.1.</span> <span class="nav-text">空间效率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#时间效率"><span class="nav-number">1.2.</span> <span class="nav-text">时间效率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组合性"><span class="nav-number">1.3.</span> <span class="nav-text">组合性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#客户端加密"><span class="nav-number">1.3.1.</span> <span class="nav-text">客户端加密</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#服务端加密"><span class="nav-number">1.3.2.</span> <span class="nav-text">服务端加密</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Streams-详解"><span class="nav-number">2.</span> <span class="nav-text">Streams 详解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#streams-的结构"><span class="nav-number">2.1.</span> <span class="nav-text">streams 的结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#从-Readable-streams-读取数据"><span class="nav-number">2.2.</span> <span class="nav-text">从 Readable streams 读取数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#non-flowing-mode"><span class="nav-number">2.2.1.</span> <span class="nav-text">non-flowing mode</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#flowing-mode"><span class="nav-number">2.2.2.</span> <span class="nav-text">flowing mode</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Async-iterators"><span class="nav-number">2.2.3.</span> <span class="nav-text">Async iterators</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现-Readable-streams"><span class="nav-number">2.3.</span> <span class="nav-text">实现 Readable streams</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#从可迭代对象创建-Readable-streams"><span class="nav-number">2.3.1.</span> <span class="nav-text">从可迭代对象创建 Readable streams</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Writable-streams"><span class="nav-number">2.4.</span> <span class="nav-text">Writable streams</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#向流写入数据"><span class="nav-number">2.4.1.</span> <span class="nav-text">向流写入数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现-Writable-stream"><span class="nav-number">2.4.2.</span> <span class="nav-text">实现 Writable stream</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Duplex-streams"><span class="nav-number">2.5.</span> <span class="nav-text">Duplex streams</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Transform-streams"><span class="nav-number">2.6.</span> <span class="nav-text">Transform streams</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#实现-Transform-流"><span class="nav-number">2.6.1.</span> <span class="nav-text">实现 Transform 流</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Transform-流筛选和聚合数据"><span class="nav-number">2.7.</span> <span class="nav-text">Transform 流筛选和聚合数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">2.8.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.4m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">24:04</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
