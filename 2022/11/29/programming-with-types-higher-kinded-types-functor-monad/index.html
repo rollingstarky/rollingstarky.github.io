@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Functional,Type,Map,TypeScript,Functor,Monad,generic,Optional,Either," />
+
+
+<meta name="description" content="通用的 map 实现map 是函数式编程中非常常见的一类接口，可以将某个函数操作应用到一系列元素上。一个通用的 map() 实现如下： 123456function* map&amp;lt;T, U&amp;gt;(iter: Iterable&amp;lt;T&amp;gt;, func: (item: T) =&amp;gt; U):    IterableIterator&amp;lt;U&amp;gt; &amp;#123;    for (const">
+<meta name="keywords" content="Functional,Type,Map,TypeScript,Functor,Monad,generic,Optional,Either">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Programming with Types —— 高阶类型（Functor、Monad）">
+<meta property="og:url" content="https://rollingstarky.github.io/2022/11/29/programming-with-types-higher-kinded-types-functor-monad/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="通用的 map 实现map 是函数式编程中非常常见的一类接口，可以将某个函数操作应用到一系列元素上。一个通用的 map() 实现如下： 123456function* map&amp;lt;T, U&amp;gt;(iter: Iterable&amp;lt;T&amp;gt;, func: (item: T) =&amp;gt; U):    IterableIterator&amp;lt;U&amp;gt; &amp;#123;    for (const">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-671697213fda1f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-8fd119a44a530d07.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-266798b640197653.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-26bc7d77056c267f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-893278c77eac1c8a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-6184c38e9b9f1c45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2022-11-29T12:40:07.173Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Programming with Types —— 高阶类型（Functor、Monad）">
+<meta name="twitter:description" content="通用的 map 实现map 是函数式编程中非常常见的一类接口，可以将某个函数操作应用到一系列元素上。一个通用的 map() 实现如下： 123456function* map&amp;lt;T, U&amp;gt;(iter: Iterable&amp;lt;T&amp;gt;, func: (item: T) =&amp;gt; U):    IterableIterator&amp;lt;U&amp;gt; &amp;#123;    for (const">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-671697213fda1f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2022/11/29/programming-with-types-higher-kinded-types-functor-monad/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Programming with Types —— 高阶类型（Functor、Monad） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2022/11/29/programming-with-types-higher-kinded-types-functor-monad/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Programming with Types —— 高阶类型（Functor、Monad）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-11-29T00:00:00+08:00">2022-11-29</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/11/29/programming-with-types-higher-kinded-types-functor-monad/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2022/11/29/programming-with-types-higher-kinded-types-functor-monad/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2022/11/29/programming-with-types-higher-kinded-types-functor-monad/" class="leancloud_visitors" data-flag-title="Programming with Types —— 高阶类型（Functor、Monad）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:11</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="通用的-map-实现"><a href="#通用的-map-实现" class="headerlink" title="通用的 map 实现"></a>通用的 map 实现</h4><p><strong>map</strong> 是函数式编程中非常常见的一类接口，可以将某个函数操作应用到一系列元素上。一个通用的 <code>map()</code> 实现如下：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function* map&lt;T, U&gt;(iter: Iterable&lt;T&gt;, func: (item: T) =&gt; U):</span><br><span class="line">    IterableIterator&lt;U&gt; &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> value of iter) &#123;</span><br><span class="line">        <span class="keyword">yield</span> func(value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-671697213fda1f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Map over Iterable"></p>
+<p>上述实现主要针对可迭代对象，可以将函数 <code>func</code>（类型为 <code>(item: T) =&gt; U</code>）应用给可迭代对象 <code>iter</code> 中的每一个元素。<br>为了使 <code>map()</code> 函数的场景更为通用，<code>func</code> 的参数 <code>item: T</code> 理应能够接收更多类型的值，比如 <code>Option&lt;T&gt;</code>。<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Optional&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> value: T | <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">private</span> assigned: <span class="built_in">boolean</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params">value?: T</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (value) &#123;</span><br><span class="line">            <span class="keyword">this</span>.value = value;</span><br><span class="line">            <span class="keyword">this</span>.assigned = <span class="literal">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.value = <span class="literal">undefined</span>;</span><br><span class="line">            <span class="keyword">this</span>.assigned = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    hasValue(): <span class="built_in">boolean</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.assigned;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    getValue(): T &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.assigned) <span class="keyword">throw</span> <span class="built_in">Error</span>();</span><br><span class="line">        <span class="keyword">return</span> &lt;T&gt;<span class="keyword">this</span>.value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从逻辑上看，将一个类型为 <code>(value: T) =&gt; U</code> 的函数 map 到 <code>Optional&lt;T&gt;</code> 类型，如果该 <code>Optional&lt;T&gt;</code> 里面包含一个类型为 <code>T</code> 的值，则返回值应该是包含 <code>U</code> 的 <code>Optional&lt;U&gt;</code> 类型；若 <code>Optional&lt;T&gt;</code> 并不包含任何值，则 map 操作应该返回一个空的 <code>Optional&lt;U&gt;</code>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-8fd119a44a530d07.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Mapping a function over an optional value"></p>
+<p>下面是支持 Optional 类型的 map 实现：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> Optional &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">map</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params"></span></span></span><br><span class="line">        optional: Optional&lt;T&gt;, func: (value: T) =&gt; U): Optional&lt;U&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (optional.hasValue()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Optional&lt;U&gt;(func(optional.getValue()));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Optional&lt;U&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>另一种简单的通用类型 <code>Box&lt;T&gt;</code> 及其 map 实现：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Box&lt;T&gt; &#123;</span><br><span class="line">    value: T;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params">value: T</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.value = value</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> Box &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">map</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params"></span></span></span><br><span class="line">        box: Box&lt;T&gt;, func: (value: T) =&gt; U): Box&lt;U&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Box&lt;U&gt;(func(box.value));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>将类型为 <code>(value: T) =&gt; U</code> 的函数 map 到 <code>Box&lt;T&gt;</code>，返回一个 <code>Box&lt;U&gt;</code>。<code>Box&lt;T&gt;</code> 中 <code>T</code> 类型的值会被取出来，传递给被 map 的函数，再将结果放入 <code>Box&lt;U&gt;</code> 中返回。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-266798b640197653.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Mapping a function over a value in a Box"></p>
+<h4 id="处理结果-or-传递错误"><a href="#处理结果-or-传递错误" class="headerlink" title="处理结果 or 传递错误"></a>处理结果 or 传递错误</h4><p>假设我们需要实现一个 <code>square()</code> 函数来计算某个数字的平方，以及一个 <code>stringify</code> 函数将数字转换为字符串。示例如下：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">square</span>(<span class="params">value: <span class="built_in">number</span></span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value ** <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stringify</span>(<span class="params">value: <span class="built_in">number</span></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>还有一个 <code>readNumber()</code> 函数负责从文件中读取数字。当我们需要处理输入数据时，有可能会遇到某些问题，比如文件不存在或者无法打开等。在上述情况下，<code>readNumber()</code> 函数会返回 <code>undefined</code>。<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">readNumber</span>(<span class="params"></span>): <span class="title">number</span> | <span class="title">undefined</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* Implementation omitted */</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果我们想通过 <code>readNumber()</code> 读取一个数字，再将其传递给 <code>square()</code> 处理，就必须确保 <code>readNumber()</code> 返回的值是一个实际的数字，而不是 <code>undefined</code>。一种可行的方案就是借助 <code>if</code> 语句将 <code>number | undefined</code> 转换为 <code>number</code>。<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>): <span class="title">string</span> | <span class="title">undefined</span> </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> value: <span class="built_in">number</span> | <span class="literal">undefined</span> = readNumber();</span><br><span class="line">    <span class="keyword">if</span> (value == <span class="literal">undefined</span>) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">return</span> stringify(square(value));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>square()</code> 接收数字类型的参数，因而当输入有可能是 <code>undefined</code> 时，我们需要显式地处理这类情况。但通常意义上讲，代码的分支越少，其复杂性就越低，就更易于理解和维护。<br>另一种实现 <code>process()</code> 的方式就是，并不对 <code>undefined</code> 做任何处理，只是将其简单地传递下去。即只让 <code>process()</code> 负责数字的处理工作，error 则交给后续的其他人。</p>
+<p>可以借助 为 sum type 实现的 <code>map()</code>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> SumType &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">map</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params"></span></span></span><br><span class="line">        value: T | undefined, func: (value: T) =&gt; U): U | undefined &#123;</span><br><span class="line">        <span class="keyword">if</span> (value == <span class="literal">undefined</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> func(value);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params"></span>): <span class="title">string</span> | <span class="title">undefined</span> </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> value: <span class="built_in">number</span> | <span class="literal">undefined</span> = readNumber();</span><br><span class="line">    <span class="keyword">let</span> squaredValue: <span class="built_in">number</span> | <span class="literal">undefined</span> = SumType.map(value, square)</span><br><span class="line">    <span class="keyword">return</span> SumType.map(squaredValue, stringify);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时的 <code>process()</code> 实现不再包含分支逻辑。将 <code>number | undefined</code> 解包为 <code>number</code> 并对 <code>underfined</code> 进行检查的操作由 <code>map()</code> 负责。</p>
+<p>同时 <code>map()</code> 是通用的函数，可以直接在其他 process 函数中对更多不同类型的数据使用（如 <code>string | undefined</code>），减少重复代码。</p>
+<p>版本一（不借助 <code>map</code>）：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">squareSumType</span>(<span class="params">value: <span class="built_in">number</span> | <span class="literal">undefined</span></span>): <span class="title">number</span> | <span class="title">undefined</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (value == <span class="literal">undefined</span>) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">return</span> square(value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">squareBox</span>(<span class="params">box: Box&lt;<span class="built_in">number</span>&gt;</span>): <span class="title">Box</span>&lt;<span class="title">number</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Box(square(box.value))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stringifySumType</span>(<span class="params">value: <span class="built_in">number</span> | <span class="literal">undefined</span></span>): <span class="title">string</span> | <span class="title">undefined</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (value == <span class="literal">undefined</span>) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">return</span> stringify(value)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stringifyBox</span>(<span class="params">box: Box&lt;<span class="built_in">number</span>&gt;</span>): <span class="title">Box</span>&lt;<span class="title">string</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Box(stringify(box.value));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>版本二（借助 <code>map</code>）：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> x: <span class="built_in">number</span> | <span class="literal">undefined</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">let</span> y: Box&lt;<span class="built_in">number</span>&gt; = <span class="keyword">new</span> Box(<span class="number">42</span>);</span><br><span class="line"><span class="built_in">console</span>.log(SumType.map(x, stringify))</span><br><span class="line"><span class="built_in">console</span>.log(Box.map(y, stringify))</span><br><span class="line"><span class="built_in">console</span>.log(SumType.map(x, square))</span><br><span class="line"><span class="built_in">console</span>.log(Box.map(y, square))</span><br></pre></td></tr></table></figure></p>
+<h4 id="Functor-定义"><a href="#Functor-定义" class="headerlink" title="Functor 定义"></a>Functor 定义</h4><p><strong>Functor</strong>：对于任意的泛型，比如 <code>Box&lt;T&gt;</code>，能够通过 <code>map()</code> 操作将函数 <code>(value: T) =&gt; U</code> 应用给 <code>Box&lt;T&gt;</code>，并返回一个 <code>Box&lt;U&gt;</code>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-26bc7d77056c267f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Functor"></p>
+<p>又或者说，Functor 是支持某种 <code>map()</code> 函数的任意类型 <code>H&lt;T&gt;</code>。该 <code>map()</code> 函数接收 <code>H&lt;T&gt;</code> 作为参数，一个从 <code>T</code> 到 <code>U</code> 的函数作为另一个参数，最终返回 <code>H&lt;U&gt;</code>。<br>以更面向对象一点的形式来表现的话，参考如下代码（当然这段代码是编译不通过的，因为 TypeScript 不支持高阶类型，如 <code>&lt;H&lt;T&gt;&gt;</code>）：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> Functor&lt;H&lt;T&gt;&gt; &#123;</span><br><span class="line">    map&lt;U&gt;<span class="function">(<span class="params">func: (<span class="params">value: T</span>) =&gt; U</span>): <span class="params">H</span>&lt;<span class="params">U</span>&gt;;</span></span><br><span class="line"><span class="function">&#125;</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="params">class</span> <span class="params">Box</span>&lt;<span class="params">T</span>&gt; <span class="params">implements</span> <span class="params">Functor</span>&lt;<span class="params">Box</span>&lt;<span class="params">T</span>&gt;&gt; &#123;</span></span><br><span class="line"><span class="function">    <span class="params">value</span>: <span class="params">T</span>;</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">    <span class="params">constructor</span>(<span class="params">value: T</span>) &#123;</span></span><br><span class="line"><span class="function">        <span class="params">this</span>.<span class="params">value</span> = <span class="params">value</span>;</span></span><br><span class="line"><span class="function">    &#125;</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">    <span class="params">map</span>&lt;<span class="params">U</span>&gt;(<span class="params">func: (<span class="params">value: T</span>) =&gt; U</span>): <span class="params">Box</span>&lt;<span class="params">U</span>&gt; &#123;</span></span><br><span class="line"><span class="function">        <span class="params">return</span> <span class="params">new</span> <span class="params">Box</span>(<span class="params">func(<span class="params"><span class="keyword">this</span>.value</span>)</span>);</span></span><br><span class="line"><span class="function">    &#125;</span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="Functors-for-functions"><a href="#Functors-for-functions" class="headerlink" title="Functors for functions"></a>Functors for functions</h4><p>实际上还存在针对函数的 Functor。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-893278c77eac1c8a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Functor for function"></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="built_in">Function</span> &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">map</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params"></span></span></span><br><span class="line">        f: (arg1: T, arg2: T) =&gt; T, func: (value: T) =&gt; U)</span><br><span class="line">        : <span class="function">(<span class="params">arg1: T, arg2: T</span>) =&gt;</span> U &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function">(<span class="params">arg1: T, arg2: T</span>) =&gt;</span> func(f(arg1, arg2));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">x: <span class="built_in">number</span>, y: <span class="built_in">number</span></span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stringify</span>(<span class="params">value: <span class="built_in">number</span></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value.toString();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> result: <span class="built_in">string</span> = <span class="built_in">Function</span>.map(add, stringify)(<span class="number">40</span>, <span class="number">2</span>);</span><br><span class="line"><span class="built_in">console</span>.log(result)</span><br></pre></td></tr></table></figure>
+<h4 id="Monads"><a href="#Monads" class="headerlink" title="Monads"></a>Monads</h4><p>在前面的例子中，只有第一个函数 <code>readNumber()</code> 有可能返回错误（<code>undefined</code>）。借助 Functor，<code>square()</code> 和 <code>stringify()</code> 可以不经修改地正常调用，若 <code>readNumber()</code> 返回 <code>undefined</code>，该 <code>undefined</code> 不会被处理，只是简单地传递下去。<br>但是假如链条中的每一个函数都有可能返回错误，又该如何处理呢？</p>
+<p>假设我们需要打开某个文件，读取其内容，再将读取到的字符串反序列化为一个 <code>Cat</code> 对象。<br>负责打开文件的 <code>openFile()</code> 函数可能返回一个 <code>Error</code> 或者 <code>FileHandle</code>。比如当文件不存在、文件被其他进程锁定或者用户没有权限读取文件，都会导致返回 <code>Error</code>。<br>还需要一个 <code>readFile()</code> 函数，接收 <code>FileHandle</code> 作为参数，返回一个 <code>Error</code> 或者 <code>String</code>。比如有可能内存不足导致文件无法被读取，返回 <code>Error</code>。<br>最后还需要一个 <code>deserializeCat()</code> 函数接收 <code>string</code> 作为参数，返回一个 <code>Error</code> 或者 <code>Cat</code> 对象。同样的道理，string 有可能格式不符合要求，无法被反序列化为 <code>Cat</code> 对象，返回 <code>Error</code>。</p>
+<p>所有上述函数都遵循一种“返回一个正常结果或者一个错误对象”的模式，其返回值类型为 <code>Either&lt;Error, ...&gt;</code>。<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">declare</span> <span class="function"><span class="keyword">function</span> <span class="title">openFile</span>(<span class="params">path: <span class="built_in">string</span></span>): <span class="title">Either</span>&lt;<span class="title">Error</span>, <span class="title">FileHandle</span>&gt;</span>;</span><br><span class="line"><span class="keyword">declare</span> <span class="function"><span class="keyword">function</span> <span class="title">readFile</span>(<span class="params">handle: FileHandle</span>): <span class="title">Either</span>&lt;<span class="title">Error</span>, <span class="title">string</span>&gt;</span>;</span><br><span class="line"><span class="keyword">declare</span> <span class="function"><span class="keyword">function</span> <span class="title">deserializeCat</span>(<span class="params">serializedCat: <span class="built_in">string</span></span>): <span class="title">Either</span>&lt;<span class="title">Error</span>, <span class="title">Cat</span>&gt;</span>;</span><br></pre></td></tr></table></figure></p>
+<p>只是为了方便举例，上述函数并不包含具体的实现代码。同时 <code>Either</code> 类型的实现如下：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Either&lt;TLeft, TRight&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> readonly value: TLeft | TRight;</span><br><span class="line">    <span class="keyword">private</span> readonly left: <span class="built_in">boolean</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">constructor</span>(<span class="params">value: TLeft | TRight, left: <span class="built_in">boolean</span></span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.value = value;</span><br><span class="line">        <span class="keyword">this</span>.left = left;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    isLeft(): <span class="built_in">boolean</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.left;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    getLeft(): TLeft &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.isLeft()) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>();</span><br><span class="line">        <span class="keyword">return</span> &lt;TLeft&gt;<span class="keyword">this</span>.value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    isRight(): <span class="built_in">boolean</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> !<span class="keyword">this</span>.left;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    getRight(): TRight &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.isRight()) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>();</span><br><span class="line">        <span class="keyword">return</span> &lt;TRight&gt;<span class="keyword">this</span>.value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> makeLeft&lt;TLeft, TRight&gt;(value: TLeft) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Either&lt;TLeft, TRight&gt;(value, <span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> makeRight&lt;TLeft, TRight&gt;(value: TRight) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Either&lt;TLeft, TRight&gt;(value, <span class="literal">false</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最终将上述各个函数连接起来的 process 函数类似下面这样：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">readCatFromFile</span>(<span class="params">path: <span class="built_in">string</span></span>): <span class="title">Either</span>&lt;<span class="title">Error</span>, <span class="title">Cat</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> handle: Either&lt;<span class="built_in">Error</span>, FileHandle&gt; = openFile(path);</span><br><span class="line">    <span class="keyword">if</span> (handle.isLeft()) <span class="keyword">return</span> Either.makeLeft(handle.getLeft());</span><br><span class="line">    <span class="keyword">let</span> content: Either&lt;<span class="built_in">Error</span>, <span class="built_in">string</span>&gt; = readFile(handle.getRight());</span><br><span class="line">    <span class="keyword">if</span> (content.isLeft()) <span class="keyword">return</span> Either.makeLeft(content.getLeft());</span><br><span class="line">    <span class="keyword">return</span> deserializeCat(content.getRight());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>就像在上一个例子中对 <code>process</code> 函数做的那样，我们可以实现一个类似的 <code>map()</code> 函数，将 <code>readCatFromFile()</code> 中的所有分支结构和错误检查都转移到通用的 <code>map()</code> 中。<br>按照普遍的约定，<code>Either&lt;TLeft, TRight&gt;</code> 中的 <code>TLeft</code> 包含错误对象，<code>map()</code> 只会将其不做改动地传递下去。只有当 <code>TRight</code> 存在时，<code>map()</code> 才会对 <code>Either</code> 应用给定的函数。<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> Either &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">map</span>&lt;<span class="title">TLeft</span>, <span class="title">TRight</span>, <span class="title">URight</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">        value: Either&lt;TLeft, TRight&gt;,</span></span></span><br><span class="line">        func: (value: TRight) =&gt; URight): Either&lt;TLeft, URight&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (value.isLeft()) <span class="keyword">return</span> Either.makeLeft(value.getLeft());</span><br><span class="line">        <span class="keyword">return</span> Either.makeRight(func(value.getRight()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上述 <code>map()</code> 实现的问题在于，当我们调用 <code>openFile()</code> 得到返回值 <code>Either&lt;Error, FileHandle&gt;</code>，接下来就需要一个类型为 <code>(value: FileHandle) =&gt; string</code> 的函数从 <code>FileHandle</code> 读取文件内容。<br>但是实际上的 <code>readFile()</code> 函数的返回类型不是 <code>string</code>，而是 <code>Either&lt;Error, string&gt;</code>。</p>
+<p>当我们调用<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> handle: Either&lt;<span class="built_in">Error</span>, FileHandle&gt; = openFile(path);</span><br><span class="line"><span class="keyword">let</span> content: Either&lt;<span class="built_in">Error</span>, <span class="built_in">string</span>&gt; = Either.map(handle, readFile);</span><br></pre></td></tr></table></figure></p>
+<p>会导致爆出 <code>Type &#39;Either&lt;Error, Either&lt;Error, string&gt;&gt;&#39; is not assignable to type &#39;Either&lt;Error, string&gt;&#39;.</code> 错误。</p>
+<p>正确的实现应该是如下形式的 <code>bind()</code> 方法：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> Either &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">bind</span>&lt;<span class="title">TLeft</span>, <span class="title">TRight</span>, <span class="title">URight</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">        value: Either&lt;TLeft, TRight&gt;,</span></span></span><br><span class="line">        func: (value: TRight) =&gt; Either&lt;TLeft, URight&gt;</span><br><span class="line">    ): Either&lt;TLeft, URight&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (value.isLeft()) <span class="keyword">return</span> Either.makeLeft(value.getLeft());</span><br><span class="line">        <span class="keyword">return</span> func(value.getRight());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>借助 <code>bind()</code> 实现的 <code>readCatFromFile()</code> 函数：<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">readCatFromFile</span>(<span class="params">path: <span class="built_in">string</span></span>): <span class="title">Either</span>&lt;<span class="title">Error</span>, <span class="title">Cat</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> handle: Either&lt;<span class="built_in">Error</span>, FileHandle&gt; = openFile(path);</span><br><span class="line">    <span class="keyword">let</span> content: Either&lt;<span class="built_in">Error</span>, <span class="built_in">string</span>&gt; = Either.bind(handle, readFile);</span><br><span class="line">    <span class="keyword">return</span> Either.bind(content, deserializeCat);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="Functor-vs-Monad"><a href="#Functor-vs-Monad" class="headerlink" title="Functor vs Monad"></a>Functor vs Monad</h4><p>对于 <code>Box&lt;T&gt;</code>，Functor（<code>map()</code>）会接收一个 <code>Box&lt;T&gt;</code> 值和一个从 <code>T</code> 到 <code>U</code> 的函数（<code>(value: T) =&gt; U</code>）作为参数，将 <code>T</code> 值取出并应用给传入的函数，最终返回 <code>Box&lt;U&gt;</code>。<br>Monad（<code>bind()</code>）接收一个 <code>Box&lt;T&gt;</code> 值和一个从 <code>T</code> 到 <code>Box&lt;U&gt;</code> 的函数（<code>(value: T) =&gt; Box&lt;U&gt;</code>）作为参数，将 <code>T</code> 值取出并应用给传入的函数，最终返回 <code>Box&lt;U&gt;</code>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-6184c38e9b9f1c45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Functor vs Monad"></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Box&lt;T&gt; &#123;</span><br><span class="line">    value: T;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params">value: T</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.value = value</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> Box &#123;</span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">map</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params"></span></span></span><br><span class="line">        box: Box&lt;T&gt;, func: (value: T) =&gt; U): Box&lt;U&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Box&lt;U&gt;(func(box.value));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">bind</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params"></span></span></span><br><span class="line">        box: Box&lt;T&gt;, func: (value: T) =&gt; Box&lt;U&gt;): Box&lt;U&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> func(box.value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stringify</span>(<span class="params">value: <span class="built_in">number</span></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value.toString();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> s: Box&lt;<span class="built_in">string</span>&gt; = Box.map(<span class="keyword">new</span> Box(<span class="number">42</span>), stringify);</span><br><span class="line"><span class="built_in">console</span>.log(s)</span><br><span class="line"><span class="comment">// =&gt; Box &#123; value: '42' &#125;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">boxify</span>(<span class="params">value: <span class="built_in">number</span></span>): <span class="title">Box</span>&lt;<span class="title">string</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Box(value.toString());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> b: Box&lt;<span class="built_in">string</span>&gt; = Box.bind(<span class="keyword">new</span> Box(<span class="number">42</span>), boxify);</span><br><span class="line"><span class="built_in">console</span>.log(b)</span><br><span class="line"><span class="comment">// =&gt; Box &#123; value: '42' &#125;</span></span><br></pre></td></tr></table></figure>
+<h4 id="Monad-定义"><a href="#Monad-定义" class="headerlink" title="Monad 定义"></a>Monad 定义</h4><p>Monad 表示对于泛型 <code>H&lt;T&gt;</code>，我们有一个 <code>unit()</code> 函数能够接收 <code>T</code> 作为参数，返回类型为 <code>H&lt;T&gt;</code> 的值；同时还有一个 <code>bind()</code> 函数接收 <code>H&lt;T&gt;</code> 和一个从 <code>T</code> 到 <code>H&lt;U&gt;</code> 的函数作为参数，返回 <code>H&lt;U&gt;</code>。<br>现实中能够将 Promise 串联起来的 <code>then()</code> 方法实际上就等同于 <code>bind()</code>，能够从值创建 Promise 的 <code>resolve()</code> 方法等同于 <code>unit()</code>。</p>
+<p>借助 Monad，函数调用序列可以表示为一条抽离了数据管理、控制流程或副作用的管道。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.manning.com/books/programming-with-types" target="_blank" rel="noopener">Programming with Types</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Functional/" rel="tag"># Functional</a>
+          
+            <a href="/tags/Type/" rel="tag"># Type</a>
+          
+            <a href="/tags/Map/" rel="tag"># Map</a>
+          
+            <a href="/tags/TypeScript/" rel="tag"># TypeScript</a>
+          
+            <a href="/tags/Functor/" rel="tag"># Functor</a>
+          
+            <a href="/tags/Monad/" rel="tag"># Monad</a>
+          
+            <a href="/tags/generic/" rel="tag"># generic</a>
+          
+            <a href="/tags/Optional/" rel="tag"># Optional</a>
+          
+            <a href="/tags/Either/" rel="tag"># Either</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/11/29/programming-with-types-type-and-type-system/" rel="next" title="Programming with Types —— 类型及类型系统">
+                <i class="fa fa-chevron-left"></i> Programming with Types —— 类型及类型系统
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">212</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">334</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#通用的-map-实现"><span class="nav-number">1.</span> <span class="nav-text">通用的 map 实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理结果-or-传递错误"><span class="nav-number">2.</span> <span class="nav-text">处理结果 or 传递错误</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Functor-定义"><span class="nav-number">3.</span> <span class="nav-text">Functor 定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Functors-for-functions"><span class="nav-number">4.</span> <span class="nav-text">Functors for functions</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Monads"><span class="nav-number">5.</span> <span class="nav-text">Monads</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Functor-vs-Monad"><span class="nav-number">6.</span> <span class="nav-text">Functor vs Monad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Monad-定义"><span class="nav-number">7.</span> <span class="nav-text">Monad 定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.5m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">24:23</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
