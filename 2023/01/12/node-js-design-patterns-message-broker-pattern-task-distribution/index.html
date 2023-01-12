@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.5" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.5">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.5">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.5" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.0.5',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  
+  <meta name="keywords" content="Pattern,JavaScript,Pipeline,Message,Node.js,Task,Stream,RabbitMQ,AMQP,Redis," />
+
+
+<meta name="description" content="将高成本的任务委派给多个工作节点，这种类型的应用并不适合由 Pub/Sub 模式实现。因为我们并不想同一个任务被多个消费者收到，相反我们更需要一种类似负载均衡的消息分发模式。在消息系统术语中，也被称为 competing consumers，fanout distribution 或 ventilator。与 HTTP 负载均衡器不同的是，任务分发系统中的消费者是一种更活跃的角色。绝大多数时候都">
+<meta name="keywords" content="Pattern,JavaScript,Pipeline,Message,Node.js,Task,Stream,RabbitMQ,AMQP,Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node.js 设计模式笔记 —— 消息中间件及其应用模式（任务分发）">
+<meta property="og:url" content="https://rollingstarky.github.io/2023/01/12/node-js-design-patterns-message-broker-pattern-task-distribution/index.html">
+<meta property="og:site_name" content="StarryLand">
+<meta property="og:description" content="将高成本的任务委派给多个工作节点，这种类型的应用并不适合由 Pub/Sub 模式实现。因为我们并不想同一个任务被多个消费者收到，相反我们更需要一种类似负载均衡的消息分发模式。在消息系统术语中，也被称为 competing consumers，fanout distribution 或 ventilator。与 HTTP 负载均衡器不同的是，任务分发系统中的消费者是一种更活跃的角色。绝大多数时候都">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-0ad90045a8fe8b1d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-6258cabc8d854f4b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-91adec0584325527.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-d4b87b3295b700ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-e0f424ea12f666ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6875152-1df8534f81ab4f51.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2023-01-12T12:33:13.527Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Node.js 设计模式笔记 —— 消息中间件及其应用模式（任务分发）">
+<meta name="twitter:description" content="将高成本的任务委派给多个工作节点，这种类型的应用并不适合由 Pub/Sub 模式实现。因为我们并不想同一个任务被多个消费者收到，相反我们更需要一种类似负载均衡的消息分发模式。在消息系统术语中，也被称为 competing consumers，fanout distribution 或 ventilator。与 HTTP 负载均衡器不同的是，任务分发系统中的消费者是一种更活跃的角色。绝大多数时候都">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6875152-0ad90045a8fe8b1d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="StarryLand" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://rollingstarky.github.io/2023/01/12/node-js-design-patterns-message-broker-pattern-task-distribution/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+  <title>Node.js 设计模式笔记 —— 消息中间件及其应用模式（任务分发） | StarryLand</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">StarryLand</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我的全部道路，就是从孤独走向人间</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://rollingstarky.github.io/2023/01/12/node-js-design-patterns-message-broker-pattern-task-distribution/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="星舞">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="StarryLand">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Node.js 设计模式笔记 —— 消息中间件及其应用模式（任务分发）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-01-12T00:00:00+08:00">2023-01-12</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Program/" itemprop="url" rel="index"><span itemprop="name">Program</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/01/12/node-js-design-patterns-message-broker-pattern-task-distribution/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2023/01/12/node-js-design-patterns-message-broker-pattern-task-distribution/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2023/01/12/node-js-design-patterns-message-broker-pattern-task-distribution/" class="leancloud_visitors" data-flag-title="Node.js 设计模式笔记 —— 消息中间件及其应用模式（任务分发）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">0:11</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="https://upload-images.jianshu.io/upload_images/6875152-0ad90045a8fe8b1d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Distributing tasks to a set of consumers"></p>
+<p>将高成本的任务委派给多个工作节点，这种类型的应用并不适合由 Pub/Sub 模式实现。因为我们并不想同一个任务被多个消费者收到，相反我们更需要一种类似负载均衡的消息分发模式。在消息系统术语中，也被称为 <em>competing consumers</em>，<em>fanout distribution</em> 或 <em>ventilator</em>。<br>与 HTTP 负载均衡器不同的是，任务分发系统中的消费者是一种更活跃的角色。绝大多数时候都是消费者连接到任务队列，请求新的任务。这一点在可扩展系统中非常关键，允许我们在不修改生产者部分的情况下，直接平滑地增加工作节点的数量。<br>此外，在一个通用的消息系统中，我们没有必要强调生产者和消费者之间的请求/响应通信。多数情况下，更优先的选择是使用单向的异步通信，从而获得更优异的并行能力和扩展性。消息基本上总是沿着一个方向流动，这样的管道允许我们构建复杂的信息处理架构，又不必承受同步通信带来的开销。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-6258cabc8d854f4b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="A messaging pipeline"></p>
+<h4 id="ZeroMQ-Fanout-Fanin-模式"><a href="#ZeroMQ-Fanout-Fanin-模式" class="headerlink" title="ZeroMQ Fanout/Fanin 模式"></a>ZeroMQ Fanout/Fanin 模式</h4><h5 id="分布式-hashsum-破解器"><a href="#分布式-hashsum-破解器" class="headerlink" title="分布式 hashsum 破解器"></a>分布式 hashsum 破解器</h5><p>需要以下组件实现一个标准的并行管线：</p>
+<ul>
+<li>一个协调节点负责在多个工作节点间分发任务</li>
+<li>多个工作节点承担具体的计算任务</li>
+<li>一个用于收集计算结果的节点</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-91adec0584325527.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="The architecture of a typical pipeline with ZeroMQ"></p>
+<p>即一个节点负责生成所有可能的字符串组合，并将它们分发给不同的工作节点；工作节点则负责计算接收到的字符串，比较 hash 值；最后一个节点负责收集暴力破解的结果。</p>
+<h5 id="实现-producer"><a href="#实现-producer" class="headerlink" title="实现 producer"></a>实现 producer</h5><p>为了表示所有可能的字符组合，这里使用 N 维索引树。每个节点包含一个当前位置下可能出现的字母，比如只有 <code>a</code>、<code>b</code> 两个字母的话，长度为 3 的字符串组合共有图示的以下几种：<br><img src="https://upload-images.jianshu.io/upload_images/6875152-d4b87b3295b700ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Indexed n-ary tree for alphabet (a, b)"></p>
+<p><code>indexed-string-variation</code> 包可以帮助我们由索引计算出对应的字符串，这项工作可以在工作节点完成，因此 producer 这里只需要将分好组的索引值分发给工作节点。<br>generateTasks.js：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span>* <span class="title">generateTasks</span>(<span class="params">searchHash, alphabet,</span></span></span><br><span class="line"><span class="function"><span class="params">    maxWordLength, batchSize</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> nVariations = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> n = <span class="number">1</span>; n &lt;= maxWordLength; n++) &#123;</span><br><span class="line">        nVariations += <span class="built_in">Math</span>.pow(alphabet.length, n)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Finding the hashsum source string over '</span> +</span><br><span class="line">        <span class="string">`<span class="subst">$&#123;nVariations&#125;</span> possible variations`</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> batchStart = <span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> (batchStart &lt;= nVariations) &#123;</span><br><span class="line">        <span class="keyword">const</span> batchEnd = <span class="built_in">Math</span>.min(</span><br><span class="line">            batchStart + batchSize - <span class="number">1</span>, nVariations)</span><br><span class="line">        <span class="keyword">yield</span> &#123;</span><br><span class="line">            searchHash,</span><br><span class="line">            alphabet: alphabet,</span><br><span class="line">            batchStart,</span><br><span class="line">            batchEnd</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        batchStart = batchEnd + <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>producer.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> zmq <span class="keyword">from</span> <span class="string">'zeromq'</span></span><br><span class="line"><span class="keyword">import</span> delay <span class="keyword">from</span> <span class="string">'delay'</span></span><br><span class="line"><span class="keyword">import</span> &#123; generateTasks &#125; <span class="keyword">from</span> <span class="string">'./generateTasks.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ALPHABET = <span class="string">'abcdefghijklmnopqrstuvwxyz'</span></span><br><span class="line"><span class="keyword">const</span> BATCH_SIZE = <span class="number">10000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> [, , maxLength, searchHash] = process.argv</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> ventilator = <span class="keyword">new</span> zmq.Push()</span><br><span class="line">    <span class="keyword">await</span> ventilator.bind(<span class="string">'tcp://*:5016'</span>)</span><br><span class="line">    <span class="keyword">await</span> delay(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> generatorObj = generateTasks(searchHash, ALPHABET, maxLength, BATCH_SIZE)</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> task <span class="keyword">of</span> generatorObj) &#123;</span><br><span class="line">        <span class="keyword">await</span> ventilator.send(<span class="built_in">JSON</span>.stringify(task))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.log(err))</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>创建一个 PUSH socket 并绑定给本地的 5016 端口，工作节点的 PULL socket 会连接到此端口并接收任务</li>
+<li>将每一个生成的任务字符串化，通过 PUSH socket 的 <code>send()</code> 方法发送给工作节点。工作节点以轮询的方式接收不同的任务</li>
+</ul>
+<h5 id="实现-worker"><a href="#实现-worker" class="headerlink" title="实现 worker"></a>实现 worker</h5><p>process Task.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> isv <span class="keyword">from</span> <span class="string">'indexed-string-variation'</span></span><br><span class="line"><span class="keyword">import</span> &#123; createHash &#125; <span class="keyword">from</span> <span class="string">'crypto'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">processTask</span>(<span class="params">task</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> variationGen = isv.generator(task.alphabet)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'processing from '</span> +</span><br><span class="line">        <span class="string">`<span class="subst">$&#123;variationGen(task.batchStart)&#125;</span> (<span class="subst">$&#123;task.batchStart&#125;</span>)`</span> +</span><br><span class="line">        <span class="string">`to <span class="subst">$&#123;variationGen(task.batchEnd)&#125;</span> (<span class="subst">$&#123;task.batchEnd&#125;</span>`</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> idx = task.batchStart; idx &lt;= task.batchEnd; idx++) &#123;</span><br><span class="line">        <span class="keyword">const</span> word = variationGen(idx)</span><br><span class="line">        <span class="keyword">const</span> shasum = createHash(<span class="string">'sha1'</span>)</span><br><span class="line">        shasum.update(word)</span><br><span class="line">        <span class="keyword">const</span> digest = shasum.digest(<span class="string">'hex'</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (digest === task.searchHash) &#123;</span><br><span class="line">            <span class="keyword">return</span> word</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>processTask()</code> 遍历给定区间内的所有索引值，对每一个索引生成对应的字符串，再计算其 SHA1 值，与传入的 <code>task</code> 对象中的 <code>searchHash</code> 比较。</p>
+<p>worker.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> zmq <span class="keyword">from</span> <span class="string">'zeromq'</span></span><br><span class="line"><span class="keyword">import</span> &#123; processTask &#125; <span class="keyword">from</span> <span class="string">'./processTask.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> fromVentilator = <span class="keyword">new</span> zmq.Pull()</span><br><span class="line">    <span class="keyword">const</span> toSink = <span class="keyword">new</span> zmq.Push()</span><br><span class="line"></span><br><span class="line">    fromVentilator.connect(<span class="string">'tcp://localhost:5016'</span>)</span><br><span class="line">    toSink.connect(<span class="string">'tcp://localhost:5017'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> rawMessage <span class="keyword">of</span> fromVentilator) &#123;</span><br><span class="line">        <span class="keyword">const</span> found = processTask(<span class="built_in">JSON</span>.parse(rawMessage.toString()))</span><br><span class="line">        <span class="keyword">if</span> (found) &#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">`Found! =&gt; <span class="subst">$&#123;found&#125;</span>`</span>)</span><br><span class="line">            <span class="keyword">await</span> toSink.send(<span class="string">`Found: $found`</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<p><code>worker.js</code> 创建了两个 socket。PULL socket 负责连接到任务发布方（Ventilator），接收任务；PUSH socket 负责连接到结果收集方（sink），传递任务执行的结果。</p>
+<h5 id="实现-results-collector"><a href="#实现-results-collector" class="headerlink" title="实现 results collector"></a>实现 results collector</h5><p>collector.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> zmq <span class="keyword">from</span> <span class="string">'zeromq'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> sink = <span class="keyword">new</span> zmq.Pull()</span><br><span class="line">    <span class="keyword">await</span> sink.bind(<span class="string">'tcp://*:5017'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> rawMessage <span class="keyword">of</span> sink) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'Message from worker: '</span>, rawMessage.toString())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<p>运行以下命令测试结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">node worker.js</span><br><span class="line">node worker.js</span><br><span class="line">node collector.js</span><br><span class="line">node producer.js 4 f8e966d1e207d02c44511a58dccff2f5429e9a3b</span><br></pre></td></tr></table></figure></p>
+<h4 id="AMQP-实现-pipeline-和-competing-consumers"><a href="#AMQP-实现-pipeline-和-competing-consumers" class="headerlink" title="AMQP 实现 pipeline 和 competing consumers"></a>AMQP 实现 pipeline 和 competing consumers</h4><p><img src="https://upload-images.jianshu.io/upload_images/6875152-e0f424ea12f666ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Task distribution architecture using a message queue broker"></p>
+<p>像前面那样在点对点的模式下，实现 pipeline 是非常直观的。假设我们需要借助 AMQP 这类系统实现任务分配模式，就必须确保每条消息都只会被一个消费者接收到。<br>可以直接将任务发布到目标 queue，不经过 exchange。避免了 exchange 有可能绑定了多个 queue 的情况。之后，多个消费者同时监听这一个 queue，消息即会以 fanout 的方式均匀地分发给所有的消费者。</p>
+<h5 id="hashsum-破解器的-AMQP-实现"><a href="#hashsum-破解器的-AMQP-实现" class="headerlink" title="hashsum 破解器的 AMQP 实现"></a>hashsum 破解器的 AMQP 实现</h5><p>producer-amqp.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> amqp <span class="keyword">from</span> <span class="string">'amqplib'</span></span><br><span class="line"><span class="keyword">import</span> &#123; generateTasks &#125; <span class="keyword">from</span> <span class="string">'./generateTasks.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ALPHABET = <span class="string">'abcdefghijklmnopqrstuvwxyz'</span></span><br><span class="line"><span class="keyword">const</span> BATCH_SIZE = <span class="number">10000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> [, , maxLength, searchHash] = process.argv</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> connection = <span class="keyword">await</span> amqp.connect(<span class="string">'amqp://localhost'</span>)</span><br><span class="line">    <span class="keyword">const</span> channel = <span class="keyword">await</span> connection.createConfirmChannel()</span><br><span class="line">    <span class="keyword">await</span> channel.assertQueue(<span class="string">'tasks_queue'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> generatorObj = generateTasks(searchHash, ALPHABET,</span><br><span class="line">        maxLength, BATCH_SIZE)</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> task <span class="keyword">of</span> generatorObj) &#123;</span><br><span class="line">        channel.sendToQueue(<span class="string">'tasks_queue'</span>, Buffer.from(<span class="built_in">JSON</span>.stringify(task)))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> channel.waitForConfirms()</span><br><span class="line">    channel.close()</span><br><span class="line">    connection.close()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>此处创建的是一个 <code>confirmChannel</code>，它提供了一个 <code>waitForConfirms()</code> 函数，可以在 broker 确认收到消息前等待，确保应用不会过早地关闭到 broker 的连接</li>
+<li><code>channel.sendToQueue()</code> 负责将一条消息直接发送给某个 queue，跳过任何 exchange 或者路由</li>
+</ul>
+<p>worker-amqp.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> amqp <span class="keyword">from</span> <span class="string">'amqplib'</span></span><br><span class="line"><span class="keyword">import</span> &#123; processTask &#125; <span class="keyword">from</span> <span class="string">'./processTask.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> connection = <span class="keyword">await</span> amqp.connect(<span class="string">'amqp://localhost'</span>)</span><br><span class="line">    <span class="keyword">const</span> channel = <span class="keyword">await</span> connection.createChannel()</span><br><span class="line">    <span class="keyword">const</span> &#123; queue &#125; = <span class="keyword">await</span> channel.assertQueue(<span class="string">'tasks_queue'</span>)</span><br><span class="line">    channel.consume(queue, <span class="keyword">async</span> (rawMessage) =&gt; &#123;</span><br><span class="line">        <span class="keyword">const</span> found = processTask(</span><br><span class="line">            <span class="built_in">JSON</span>.parse(rawMessage.content.toString()))</span><br><span class="line">        <span class="keyword">if</span> (found) &#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">`Found! =&gt; <span class="subst">$&#123;found&#125;</span>`</span>)</span><br><span class="line">            <span class="keyword">await</span> channel.sendToQueue(<span class="string">'results_queue'</span>,</span><br><span class="line">                Buffer.from(<span class="string">`Found: <span class="subst">$&#123;found&#125;</span>`</span>))</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">await</span> channel.ack(rawMessage)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<p>collector-amqp.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> amqp <span class="keyword">from</span> <span class="string">'amqplib'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> connection = <span class="keyword">await</span> amqp.connect(<span class="string">'amqp://localhost'</span>)</span><br><span class="line">    <span class="keyword">const</span> channel = <span class="keyword">await</span> connection.createChannel()</span><br><span class="line">    <span class="keyword">const</span> &#123; queue &#125; = <span class="keyword">await</span> channel.assertQueue(<span class="string">'results_queue'</span>)</span><br><span class="line">    channel.consume(queue, msg =&gt; &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`Message from worker: <span class="subst">$&#123;msg.content.toString()&#125;</span>`</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<p>运行如下命令测试效果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">node worker-amqp.js</span><br><span class="line">node worker-amqp.js</span><br><span class="line">node collector-amqp.js</span><br><span class="line">node producer-amqp.js 4 f8e966d1e207d02c44511a58dccff2f5429e9a3b</span><br></pre></td></tr></table></figure></p>
+<h4 id="通过-Redis-Streams-实现任务分发"><a href="#通过-Redis-Streams-实现任务分发" class="headerlink" title="通过 Redis Streams 实现任务分发"></a>通过 Redis Streams 实现任务分发</h4><p>Redis Stream 可以借助一种叫做 <strong>consumer groups</strong> 的特性实现任务分发模式。Consumer group 是一个有状态的实体，由一组名称标识的消费者组成，组中的消费者会以 round-robin 的方式接收记录。<br>每条记录都必须被显式地确认，否则该记录会一直处于 <em>pending</em> 状态。每个消费者都只能访问它自己的 pending 记录，假如消费者突然崩溃，在其回到线上后会先尝试获取其 pending 的记录。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/6875152-1df8534f81ab4f51.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="A Redis Stream consumer group"></p>
+<p>Consumer group 也会记录其读取的上一条消息的 ID，因而在连续的读取操作中，consumer group 知道下一条要读取的记录时是哪个。</p>
+<p>producer-redis.js：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Redis <span class="keyword">from</span> <span class="string">'ioredis'</span></span><br><span class="line"><span class="keyword">import</span> &#123; generateTasks &#125; <span class="keyword">from</span> <span class="string">'./generateTasks.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ALPHABET = <span class="string">'abcdefghijklmnopqrstuvwxyz'</span></span><br><span class="line"><span class="keyword">const</span> BATCH_SIZE = <span class="number">10000</span></span><br><span class="line"><span class="keyword">const</span> redisClient = <span class="keyword">new</span> Redis()</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> [, , maxLength, searchHash] = process.argv</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> generatorObj = generateTasks(searchHash, ALPHABET,</span><br><span class="line">        maxLength, BATCH_SIZE)</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> task <span class="keyword">of</span> generatorObj) &#123;</span><br><span class="line">        <span class="keyword">await</span> redisClient.xadd(<span class="string">'tasks_stream'</span>, <span class="string">'*'</span>,</span><br><span class="line">            <span class="string">'task'</span>, <span class="built_in">JSON</span>.stringify(task))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    redisClient.disconnect()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure>
+<p>worker-redis.js：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Redis <span class="keyword">from</span> <span class="string">'ioredis'</span></span><br><span class="line"><span class="keyword">import</span> &#123; processTask &#125; <span class="keyword">from</span> <span class="string">'./processTask.js'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> redisClient = <span class="keyword">new</span> Redis()</span><br><span class="line"><span class="keyword">const</span> [, , consumerName] = process.argv</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">await</span> redisClient.xgroup(<span class="string">'CREATE'</span>, <span class="string">'tasks_stream'</span>,</span><br><span class="line">        <span class="string">'workers_group'</span>, <span class="string">'$'</span>, <span class="string">'MKSTREAM'</span>)</span><br><span class="line">        .catch(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'Consumer group already exists'</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> [[, records]] = <span class="keyword">await</span> redisClient.xreadgroup(</span><br><span class="line">        <span class="string">'GROUP'</span>, <span class="string">'workers_group'</span>, consumerName, <span class="string">'STREAMS'</span>,</span><br><span class="line">        <span class="string">'tasks_stream'</span>, <span class="string">'0'</span>)</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> [recordId, [, rawTask]] <span class="keyword">of</span> records) &#123;</span><br><span class="line">        <span class="keyword">await</span> processAndAck(recordId, rawTask)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> [[, records]] = <span class="keyword">await</span> redisClient.xreadgroup(</span><br><span class="line">            <span class="string">'GROUP'</span>, <span class="string">'workers_group'</span>, consumerName, <span class="string">'BLOCK'</span>, <span class="string">'0'</span>,</span><br><span class="line">            <span class="string">'COUNT'</span>, <span class="string">'1'</span>, <span class="string">'STREAMS'</span>, <span class="string">'tasks_stream'</span>, <span class="string">'&gt;'</span>)</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> [recordId, [, rawTask]] <span class="keyword">of</span> records) &#123;</span><br><span class="line">            <span class="keyword">await</span> processAndAck(recordId, rawTask)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">processAndAck</span>(<span class="params">recordId, rawTask</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> found = processTask(<span class="built_in">JSON</span>.parse(rawTask))</span><br><span class="line">    <span class="keyword">if</span> (found) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`Found! =&gt; <span class="subst">$&#123;found&#125;</span>`</span>)</span><br><span class="line">        <span class="keyword">await</span> redisClient.xadd(<span class="string">'results_stream'</span>, <span class="string">'*'</span>, <span class="string">'result'</span>,</span><br><span class="line">            <span class="string">`Found: <span class="subst">$&#123;found&#125;</span>`</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> redisClient.xack(<span class="string">'tasks_stream'</span>, <span class="string">'workers_group'</span>, recordId)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>xgroup</code> 命令用来确保 consumer group 存在。<ul>
+<li><code>CREATE</code> 表示我们希望创建一个 consumer group</li>
+<li><code>tasks_stream</code> 表示我们想要读取的 stream 的名字</li>
+<li><code>workers_group</code> 是 consumer group 的名字</li>
+<li>第四个参数表示 consumer group 开始读取的记录的位置。<code>$</code> 表示当前 stream 中最后一条记录的 ID</li>
+<li><code>MKSTREAM</code> 表示如果 stream 不存在则创建它</li>
+</ul>
+</li>
+<li>通过 <code>xreadgroup</code> 命令读取属于当前 consumer 的所有 pending 的记录。<ul>
+<li><code>&#39;GROUP&#39;</code>、<code>&#39;workers_group&#39;</code>、<code>consumerName</code> 用来指代 consumer group 和 consumer 的名字</li>
+<li><code>STREAMS</code> 和 <code>tasks_stream</code> 用来指代我们想要读取的 stream 的名字</li>
+<li><code>0</code> 用来表示我们想要开始读取的记录的位置。这里表示从属于当前 consumer 的第一条记录开始，读取所有 pending 的消息</li>
+</ul>
+</li>
+<li>通过另外一条 <code>xreadgroup</code> 命令读取 stream 里新增加的记录。<ul>
+<li><code>&#39;BLOCK&#39;</code> 和 <code>&#39;0&#39;</code> 两个参数表示如果没有新的消息，就一直阻塞等待。<code>&#39;0&#39;</code> 具体表示一直等待永不超时</li>
+<li><code>&#39;COUNT&#39;</code> 和 <code>&#39;1&#39;</code> 表示一次请求只获取一条记录</li>
+<li>特殊 ID <code>&gt;</code> 表示只获取还没有被当前的 consumer group 处理过的消息</li>
+</ul>
+</li>
+<li><code>processAndAck()</code> 函数负责当 <code>xreadgroup()</code> 返回的记录被处理完成时，调用 <code>xack</code> 命令进行确认，将该记录从当前 consumer 的 pending 列表里移除</li>
+</ul>
+<p>collector-redis.js：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Redis <span class="keyword">from</span> <span class="string">'ioredis'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> redisClient = <span class="keyword">new</span> Redis()</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> lastRecordId = <span class="string">'$'</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> data = <span class="keyword">await</span> redisClient.xread(</span><br><span class="line">            <span class="string">'BLOCK'</span>, <span class="string">'0'</span>, <span class="string">'STREAMS'</span>, <span class="string">'results_stream'</span>, lastRecordId)</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> [, logs] <span class="keyword">of</span> data) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">const</span> [recordId, [, message]] <span class="keyword">of</span> logs) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">`Message from worker: <span class="subst">$&#123;message&#125;</span>`</span>)</span><br><span class="line">                lastRecordId = recordId</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main().catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err))</span><br></pre></td></tr></table></figure></p>
+<p>运行程序测试效果：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">node worker-redis.js workerA</span><br><span class="line">node worker-redis.js workerB</span><br><span class="line">node collector-redis.js</span><br><span class="line">node producer-redis.js 4 f8e966d1e207d02c44511a58dccff2f5429e9a3b</span><br></pre></td></tr></table></figure></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><p><a href="https://www.amazon.com/Node-js-Design-Patterns-production-grade-applications/dp/1839214112" target="_blank" rel="noopener">Node.js Design Patterns: Design and implement production-grade Node.js applications using proven patterns and techniques, 3rd Edition</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Pattern/" rel="tag"># Pattern</a>
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+            <a href="/tags/Pipeline/" rel="tag"># Pipeline</a>
+          
+            <a href="/tags/Message/" rel="tag"># Message</a>
+          
+            <a href="/tags/Node-js/" rel="tag"># Node.js</a>
+          
+            <a href="/tags/Task/" rel="tag"># Task</a>
+          
+            <a href="/tags/Stream/" rel="tag"># Stream</a>
+          
+            <a href="/tags/RabbitMQ/" rel="tag"># RabbitMQ</a>
+          
+            <a href="/tags/AMQP/" rel="tag"># AMQP</a>
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/01/03/node-js-design-patterns-message-queue-pub-sub-pattern/" rel="next" title="Node.js 设计模式笔记 —— 消息中间件及其应用模式（发布订阅）">
+                <i class="fa fa-chevron-left"></i> Node.js 设计模式笔记 —— 消息中间件及其应用模式（发布订阅）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/01/12/python-concurrency-with-coroutine-and-asyncio-basics/" rel="prev" title="Python 借助 asyncio 实现并发编程">
+                Python 借助 asyncio 实现并发编程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="星舞" />
+            
+              <p class="site-author-name" itemprop="name">星舞</p>
+              <p class="site-description motion-element" itemprop="description">Personal blogs about Linux / System Administration / Arduino / Programming / Python and etc. Just something I want to do and share.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">216</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">344</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/rollingstarky" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:rollingstars380@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/rollingstarky" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/rollingstarky" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/rollingstarky" target="_blank" title="FB Page"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://instagram.com/rollingstarky" target="_blank" title="Instagram"><i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#ZeroMQ-Fanout-Fanin-模式"><span class="nav-number">1.</span> <span class="nav-text">ZeroMQ Fanout/Fanin 模式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#分布式-hashsum-破解器"><span class="nav-number">1.1.</span> <span class="nav-text">分布式 hashsum 破解器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现-producer"><span class="nav-number">1.2.</span> <span class="nav-text">实现 producer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现-worker"><span class="nav-number">1.3.</span> <span class="nav-text">实现 worker</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现-results-collector"><span class="nav-number">1.4.</span> <span class="nav-text">实现 results collector</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AMQP-实现-pipeline-和-competing-consumers"><span class="nav-number">2.</span> <span class="nav-text">AMQP 实现 pipeline 和 competing consumers</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#hashsum-破解器的-AMQP-实现"><span class="nav-number">2.1.</span> <span class="nav-text">hashsum 破解器的 AMQP 实现</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通过-Redis-Streams-实现任务分发"><span class="nav-number">3.</span> <span class="nav-text">通过 Redis Streams 实现任务分发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星舞</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">1.5m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点总阅读时长">25:15</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.0.5</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.5"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.5"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.5"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.5"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.5"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz',
+        appKey: 'Oskj6RUWskJf5Ahzp75nOcgc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("tuf79KlfkPXu7L0sNNhh3LyS-gzGzoHsz", "Oskj6RUWskJf5Ahzp75nOcgc");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
